@@ -914,7 +914,9 @@
 <!-- トースト通知 -->
 <div id="toast" class="toast"></div>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<!-- Firebase SDK (Realtime Database for reliable online battle & signaling) -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script src="js/data/cards.js"></script>
 <script src="js/data/deck-parser.js"></script>
 <script src="js/util.js"></script>
@@ -935,6 +937,7 @@
 <script src="js/ui/lobby.js?v=20261015_06"></script>
 <script src="js/ui/playmat.js"></script>
 <script src="js/ui/sleeve.js"></script>
+<script src="js/net/firebase-config.js"></script>
 <script src="js/net/p2p.js"></script>
 <script src="js/net/voice.js"></script>
 <script src="js/main.js"></script>

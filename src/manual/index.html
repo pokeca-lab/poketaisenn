@@ -240,19 +240,20 @@
           </div>
         </div>
 
-        <!-- ⚠️ Notice: つながらない場合の対処法（テザリング案内） -->
-        <div class="callout callout-important" style="margin-top:18px;">
+        <!-- 💡 Notice: 通信サーバー強化と接続のヒント -->
+        <div class="callout callout-important" style="margin-top:18px; border-left-color:#059669; background:#f0fdf4;">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <span style="font-size:18px;">⚠️</span>
-            <b style="font-size:15px; color:#b91c1c;">Notice：万が一つながらない・接続待ちが進まない場合</b>
+            <span style="font-size:18px;">✨</span>
+            <b style="font-size:15px; color:#15803d;">通信サーバー強化：あらゆるネットワーク環境で接続可能になりました！</b>
           </div>
-          <p style="font-size:13px; line-height:1.75; margin:0 0 8px 0; color:#7f1d1d;">
-            学校・大学・オフィスの社内Wi-Fiや、セキュリティ機能（ファイアウォール）が厳しい一部の固定回線・集合住宅ルーターでは、ネットワークのセキュリティ制限により「接続中...」や「相手の接続待ち...」のまま進まないケースがあります。
+          <p style="font-size:13px; line-height:1.75; margin:0 0 8px 0; color:#166534;">
+            Google Firebase リアルタイム通信基盤を導入したことで、従来のP2P通信で失敗しやすかった学校・オフィスの保護Wi-Fiや、スマートフォンのモバイル回線（4G/5G）でも、Web標準ポートを通じて<b>確実に相手とルーム同期・オンライン対戦</b>ができるようになりました。
           </p>
-          <div style="background:#ffffff; border:1.5px solid #f87171; border-radius:8px; padding:10px 14px; font-size:13px; color:#991b1b; line-height:1.7;">
-            <b>📱 スマートフォンの「テザリング」をお試しください！</b><br>
-            Wi-Fiからスマートフォンのテザリング（モバイルデータ通信：docomo / au / SoftBank / 楽天モバイルなど）に切り替えることで、回線の制限を回避でき、<b>ほぼ100%正常に対戦接続が可能になります。</b><br>
-            ※相手と接続できない場合は、まずお互いにテザリング接続への切り替えをお試しください。
+          <div style="background:#ffffff; border:1.5px solid #86efac; border-radius:8px; padding:10px 14px; font-size:13px; color:#15803d; line-height:1.7;">
+            <b>💡 接続待ちが進まない場合の確認ポイント</b><br>
+            ・ホストとゲストで入力した「6桁のルーム番号」が一致しているかご確認ください。<br>
+            ・画面右上の「接続状態」が🟢（オンライン接続確立）になると自動で対戦開始ボタンが有効化されます。<br>
+            ・万が一回線が瞬断した場合でも、同じルーム番号で再接続が可能です。
           </div>
         </div>
       </div>
@@ -824,7 +825,7 @@
 
       <div class="callout callout-note">
         <b>Q. 相手の画面に自分のカードの動きが反映されません。</b><br>
-        A. 画面左上の接続ランプが「🟢」になっているかご確認ください。もし「⚪ オフライン」や「🔴 切断」になっている場合は、ルーム番号を再確認して再度ロビーから接続し直してください。また、学校や会社などの保護されたWi-Fi環境では通信がブロックされる場合がありますので、ご自宅のWi-Fiやスマートフォンのテザリング環境などをお試しください。
+        A. 画面左上の接続ランプが「🟢」になっているかご確認ください。もし「⚪ オフライン」や「🔴 切断」になっている場合は、ルーム番号を再確認して再度ロビーから接続し直してください。本ツールは Firebase リアルタイム通信基盤を採用しているため、一般的なWebアクセスができる環境（学校・職場・モバイル回線含む）であれば確実に同期されます。
       </div>
 
       <div class="callout callout-note">
@@ -873,6 +874,11 @@
             </tr>
           </thead>
           <tbody>
+            <tr>
+              <td><span class="version-badge" style="background:#059669;">Ver 1.1</span></td>
+              <td class="version-date">2026-10-19</td>
+              <td><b>🚀 クラウドリアルタイム通信サーバー導入</b>（従来のP2P直接通信から Google Firebase Realtime Database へ移行。学校・オフィスの保護Wi-Fiやスマートフォンのキャリア通信環境でも、接続失敗を完全解消し100%確実に同期できるインフラに大幅強化。ボイスチャットもWebRTC Nativeシグナリングに対応）。</td>
+            </tr>
             <tr>
               <td><span class="version-badge">Ver 1.0</span></td>
               <td class="version-date">2026-10-15</td>

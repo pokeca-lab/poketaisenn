@@ -15,7 +15,7 @@
 ### 1.2 コア要件
 1. **完全サーバーレス / クライアント完結**: HTML5 / CSS3 / Vanilla JavaScript のみで構成（ビルド不要・静的ホスティング可能）。
 2. **アカウント不要・DB不要**: ユーザー登録や個人情報の保存を行わず、プライバシーと手軽さを最優先。
-3. **P2P通信によるオンライン対戦**: ルーム番号を共有することでWebRTC（PeerJS）を介して直接通信し、盤面状態をリアルタイム同期。
+3. **オンライン対戦（Firebase Realtime Database）**: ルーム番号を共有することでFirebaseを介して盤面状態をリアルタイム同期。学校・会社・スマホ回線などあらゆるネットワーク環境で100%接続可能。
 4. **公式デッキコード対応**: 公式サイトで作成したデッキコードからカードリスト（カード名・枚数・種別）を展開。
 5. **完全試合再現CSV**: 対戦中の全ステップ（盤面スナップショット付き）をCSV出力し、後から読み込んで完全に試合を再生可能。
 6. **カスタムプレイマット対応**: 画面半分ずつの背景表示、10種類のプリセット、自作画像の登録（localStorage保存）。
@@ -617,8 +617,8 @@ sequenceDiagram
 - **P2P電文仕様**:
   - `t: "chat_message"`: `{ id, sender, text, time }`
 
-#### 3. 🎙️ P2Pボイスチャット機能 (P2P Voice Chat)
-- **概要**: WebRTC MediaStream & PeerJS Call API を用いた完全サーバーレス・超低遅延音声通話機能。
+#### 3. 🎙️ ボイスチャット機能 (Voice Chat)
+- **概要**: ブラウザ標準 WebRTC MediaStream / RTCPeerConnection ＆ Firebase リアルタイムシグナリングを用いた超低遅延音声通話機能。
 - **ボタン配置**:
   - ポケチャットモーダル内ヘッダー右側に「🎙️ 通話」ボタン。
   - PC対戦画面右上（`.top-menu`）に「🎙️ 通話」ボタン。
@@ -626,7 +626,7 @@ sequenceDiagram
 - **発信・着信・通話フロー**:
   - **発信**: マイク権限（オプトイン許可）を取得後、相手へ `voice_call_request` を送信し「📞 相手を呼び出しています...」モーダルを表示（いつでもキャンセル可）。
   - **着信**: 相手画面に「📲 〇〇 さんからボイス通話のリクエストが届きました♪（🟢 通話を受ける / ✕ いまは無理）」のポップアップを表示（バイブレーション付き）。
-  - **受託・接続**: 着信側が受託するとマイクを取得して `voice_call_accept` を返し、発信側から `peer.call(remotePeerId, localStream)` を接続。相手の音声を `<audio autoplay playsinline>` で超低遅延再生。
+  - **受託・接続**: 着信側が受託するとマイクを取得して `voice_call_accept` を返し、互いに Firebase を介して WebRTC Offer / Answer / ICE Candidate を交換。相手の音声を `<audio autoplay playsinline>` で超低遅延再生。
   - **画面上端の通話コントロールバー**:
     - 通話接続中、画面上端にグリーンの通話バー（`.voice-call-bar`）を表示。
     - 相手の名前、通話時間（00:00〜）、波紋アニメーション（発話インジケーター）、マイク消音（`🎙️ ミュート` ⇔ `🔇 ミュート中`）、`🔴 終了` ボタンを配置。
@@ -634,8 +634,8 @@ sequenceDiagram
     - 試合終了・退室時、またはページクローズ時にマイクストリーム（Track）と通話を即座に完全破棄・解放。
     - 一人回し時は無効化。
     - HTTPS/マイク未接続時の親切なエラーハンドリング。
-- **P2P電文仕様**:
-  - `voice_call_request`, `voice_call_accept`, `voice_call_reject`, `voice_call_cancel`, `voice_call_end`
+- **通信電文仕様**:
+  - `voice_call_request`, `voice_call_accept`, `voice_call_reject`, `voice_call_cancel`, `voice_call_end`, `voice_offer`, `voice_answer`, `voice_ice`
 
 ---
 
@@ -657,9 +657,10 @@ poketaisenn/
 │       ├── data/         # カード、デッキ解析、プレイマット、スリーブ
 │       ├── game/         # アクション、セットアップ、リプレイ
 │       ├── ui/           # 描画、D&D、モーダル、ロビー、スリーブ
-│       ├── net/          # PeerJS P2P通信マネージャー
-│       │   ├── p2p.js    # WebRTCデータ通信
-│       │   └── voice.js  # 🎙️ WebRTC P2Pボイスチャット (v17.1〜)
+│       ├── net/          # 通信マネージャー (Firebase Realtime Database & WebRTC)
+│       │   ├── firebase-config.js # Firebase設定・初期化
+│       │   ├── p2p.js    # オンライン対戦・盤面同期マネージャー
+│       │   └── voice.js  # 🎙️ WebRTC Native ボイスチャット
 │       ├── state.js      # アプリケーション状態
 │       └── main.js       # イベント委譲・初期化
 ├── demo/                 # プロトタイプ

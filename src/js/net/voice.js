@@ -1,17 +1,80 @@
 /**
- * PokéCa Lab Arena - P2P Voice Chat Module (WebRTC Audio)
- * WebRTC MediaStream & PeerJS Call API を用いた完全サーバーレス・超低遅延ボイスチャット
+ * PokéCa Lab Arena - Voice Chat Module (WebRTC Native Audio)
+ * ブラウザ標準 RTCPeerConnection ＆ Firebase リアルタイムシグナリングによる超低遅延ボイスチャット
  */
 
+const RTC_CONFIG = {
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" }
+  ]
+};
+
 const VoiceChat = {
+  _iceCandidateQueue: [],
+
+  // ---- RTCPeerConnection 生成 & イベントバインド ----
+  _createPeerConnection() {
+    this._closePeerConnection();
+
+    const pc = new RTCPeerConnection(RTC_CONFIG);
+    state.voiceCall.peerConnection = pc;
+
+    // ICE Candidate 探索イベント
+    pc.onicecandidate = (event) => {
+      if (event.candidate && P2P.connected) {
+        P2P.send({
+          t: "voice_ice",
+          candidate: event.candidate.toJSON ? event.candidate.toJSON() : event.candidate
+        });
+      }
+    };
+
+    // リモート音声ストリーム受信イベント
+    pc.ontrack = (event) => {
+      if (event.streams && event.streams[0]) {
+        this._onRemoteStream(event.streams[0]);
+      }
+    };
+
+    // 接続状態監視
+    pc.onconnectionstatechange = () => {
+      console.log("[VoiceChat ConnectionState]", pc.connectionState);
+      if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
+        if (state.voiceCall.active) {
+          this.endCall(false);
+        }
+      }
+    };
+
+    // ローカル音声トラックの追加
+    if (state.voiceCall.localStream) {
+      state.voiceCall.localStream.getTracks().forEach((track) => {
+        pc.addTrack(track, state.voiceCall.localStream);
+      });
+    }
+
+    return pc;
+  },
+
+  _closePeerConnection() {
+    if (state.voiceCall && state.voiceCall.peerConnection) {
+      try {
+        state.voiceCall.peerConnection.close();
+      } catch (e) {}
+      state.voiceCall.peerConnection = null;
+    }
+    this._iceCandidateQueue = [];
+  },
+
   // ---- 通話開始リクエスト（発信側） ----
   async startCall() {
     if (state.isSoloMode) {
       if (typeof showToast === "function") showToast("一人回しモードではボイス通話は利用できません");
       return;
     }
-    if (!P2P.connected || !P2P.conn) {
-      if (typeof showToast === "function") showToast("対戦相手とP2P接続されていません");
+    if (!P2P.connected) {
+      if (typeof showToast === "function") showToast("対戦相手と接続されていません");
       return;
     }
     if (state.voiceCall && state.voiceCall.active) {
@@ -48,7 +111,7 @@ const VoiceChat = {
       state.voiceCall.status = "calling";
       state.voiceCall.isMuted = false;
 
-      // 相手へP2Pリクエスト送信
+      // 相手へリクエスト送信
       P2P.send({
         t: "voice_call_request",
         callerName: state.myName || "プレイヤーA"
@@ -61,7 +124,7 @@ const VoiceChat = {
       console.warn("[VoiceChat] getUserMedia error:", err);
       let errMsg = "マイクへのアクセスが拒否されたか、マイク機器が見つかりませんでした。";
       if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-        errMsg = "ブラウザのマイク権限が許可されていません。ブラウザのアドレスバー横の鍵アイコンからマイクの利用を許可してください。";
+        errMsg = "ブラウザのマイク権限が許可されていません。アドレスバー横のアイコンからマイクの利用を許可してください。";
       }
       if (typeof showToast === "function") showToast(`⚠️ ${errMsg}`);
       this.resetVoiceCallState();
@@ -104,7 +167,6 @@ const VoiceChat = {
   // ---- 着信リクエスト受信（着信側） ----
   handleIncomingCallRequest(callerName) {
     if (state.voiceCall && state.voiceCall.active) {
-      // 既に通話中の場合は多重着信拒否
       P2P.send({ t: "voice_call_reject", reason: "busy" });
       return;
     }
@@ -112,7 +174,6 @@ const VoiceChat = {
     state.voiceCall.status = "incoming";
     state.voiceCall.callerName = callerName || state.oppName || "対戦相手";
 
-    // 着信バイブ
     if (navigator.vibrate) {
       try { navigator.vibrate([100, 100, 100, 100, 200]); } catch (e) {}
     }
@@ -160,7 +221,7 @@ const VoiceChat = {
       state.voiceCall.status = "incoming_accepted";
       state.voiceCall.isMuted = false;
 
-      // 相手に通話受託を通知（相手側が peer.call() を発行する）
+      // 相手に通話受諾を通知（相手側が createOffer を発行する）
       P2P.send({ t: "voice_call_accept" });
 
       if (typeof showToast === "function") {
@@ -184,80 +245,103 @@ const VoiceChat = {
     this.resetVoiceCallState();
   },
 
-  // ---- 相手が受託した（発信側） ----
-  handleCallAccepted() {
+  // ---- 相手が受諾した（発信側: Offer生成） ----
+  async handleCallAccepted() {
     if (typeof closeModal === "function") closeModal();
 
-    if (!P2P.peer || !P2P.conn || !state.voiceCall.localStream) {
-      console.warn("[VoiceChat] Cannot start call: missing peer/conn/stream");
+    if (!P2P.connected || !state.voiceCall.localStream) {
+      console.warn("[VoiceChat] Cannot start call: missing stream");
       this.resetVoiceCallState();
       return;
     }
 
     try {
-      const targetPeerId = P2P.conn.peer;
-      const call = P2P.peer.call(targetPeerId, state.voiceCall.localStream);
+      const pc = this._createPeerConnection();
+      const offer = await pc.createOffer({ offerToReceiveAudio: true });
+      await pc.setLocalDescription(offer);
 
-      state.voiceCall.mediaConnection = call;
-
-      call.on("stream", (remoteStream) => {
-        this._onRemoteStream(remoteStream);
+      P2P.send({
+        t: "voice_offer",
+        offer: {
+          type: offer.type,
+          sdp: offer.sdp
+        }
       });
-
-      call.on("close", () => {
-        this.endCall(false);
-      });
-
-      call.on("error", (err) => {
-        console.warn("[VoiceChat MediaConnection error]", err);
-        this.endCall(false);
-      });
-
-      this._onConnected();
     } catch (err) {
-      console.error("[VoiceChat] peer.call failed:", err);
-      if (typeof showToast === "function") showToast("通話接続に失敗しました");
+      console.error("[VoiceChat] createOffer failed:", err);
+      if (typeof showToast === "function") showToast("通話接続の確立に失敗しました");
       this.resetVoiceCallState();
     }
   },
 
-  // ---- 着信側での peer.on("call") 処理 ----
-  handlePeerIncomingCall(incomingCall) {
-    state.voiceCall.mediaConnection = incomingCall;
+  // ---- 着信側: Offer受信 ＆ Answer送信 ----
+  async handleRemoteOffer(offerData) {
+    if (!offerData || !offerData.sdp) return;
 
-    const answerWithStream = (stream) => {
-      incomingCall.answer(stream);
+    try {
+      const pc = this._createPeerConnection();
+      await pc.setRemoteDescription(new RTCSessionDescription(offerData));
 
-      incomingCall.on("stream", (remoteStream) => {
-        this._onRemoteStream(remoteStream);
-      });
+      // 溜まっていた ICE Candidate があれば適用
+      while (this._iceCandidateQueue.length > 0) {
+        const cand = this._iceCandidateQueue.shift();
+        try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
+      }
 
-      incomingCall.on("close", () => {
-        this.endCall(false);
-      });
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
 
-      incomingCall.on("error", (err) => {
-        console.warn("[VoiceChat MediaConnection error]", err);
-        this.endCall(false);
+      P2P.send({
+        t: "voice_answer",
+        answer: {
+          type: answer.type,
+          sdp: answer.sdp
+        }
       });
 
       this._onConnected();
-    };
+    } catch (err) {
+      console.error("[VoiceChat] handleRemoteOffer failed:", err);
+      this.resetVoiceCallState();
+    }
+  },
 
-    if (state.voiceCall.localStream) {
-      answerWithStream(state.voiceCall.localStream);
-    } else {
-      navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-        video: false
-      }).then((stream) => {
-        state.voiceCall.localStream = stream;
-        answerWithStream(stream);
-      }).catch((err) => {
-        console.warn("[VoiceChat] incoming call getUserMedia error:", err);
-        incomingCall.close();
-        this.resetVoiceCallState();
-      });
+  // ---- 発信側: Answer受信 ----
+  async handleRemoteAnswer(answerData) {
+    if (!answerData || !answerData.sdp) return;
+    const pc = state.voiceCall.peerConnection;
+    if (!pc) return;
+
+    try {
+      await pc.setRemoteDescription(new RTCSessionDescription(answerData));
+
+      // 溜まっていた ICE Candidate があれば適用
+      while (this._iceCandidateQueue.length > 0) {
+        const cand = this._iceCandidateQueue.shift();
+        try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
+      }
+
+      this._onConnected();
+    } catch (err) {
+      console.error("[VoiceChat] handleRemoteAnswer failed:", err);
+      this.resetVoiceCallState();
+    }
+  },
+
+  // ---- ICE Candidate 受信 ----
+  async handleRemoteIceCandidate(candidateData) {
+    if (!candidateData) return;
+    const pc = state.voiceCall.peerConnection;
+    if (!pc || !pc.remoteDescription) {
+      // remoteDescription 未設定時はキューに保存
+      this._iceCandidateQueue.push(candidateData);
+      return;
+    }
+
+    try {
+      await pc.addIceCandidate(new RTCIceCandidate(candidateData));
+    } catch (err) {
+      console.warn("[VoiceChat] addIceCandidate error:", err);
     }
   },
 
@@ -312,7 +396,6 @@ const VoiceChat = {
       showToast("🟢 ボイス通話が接続されました♪");
     }
 
-    // チャットモーダル内にも通話ステータスを反映
     this.updateChatVoiceButton();
   },
 
@@ -377,12 +460,7 @@ const VoiceChat = {
       state.voiceCall.localStream = null;
     }
 
-    if (state.voiceCall.mediaConnection) {
-      try {
-        state.voiceCall.mediaConnection.close();
-      } catch (e) {}
-      state.voiceCall.mediaConnection = null;
-    }
+    this._closePeerConnection();
 
     const audioEl = document.getElementById("remote-voice-audio");
     if (audioEl) {
