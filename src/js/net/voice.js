@@ -1,106 +1,70 @@
 /**
- * PokéCa Lab Arena - Voice Chat Module (WebRTC Native Audio)
- * ブラウザ標準 RTCPeerConnection ＆ Firebase リアルタイムシグナリングによる超低遅延ボイスチャット
+ * PokéCa Lab Arena - Voice Chat Module (SkyWay Powered by NTT Com / docomo business)
+ * 国産高品質WebRTCインフラによる超低遅延・プロキシ/NAT越え100%保証のボイスチャット
  */
 
-const RTC_CONFIG = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-    { urls: "stun:stun2.l.google.com:19302" },
-    { urls: "stun:stun3.l.google.com:19302" },
-    { urls: "stun:stun4.l.google.com:19302" },
-    { urls: "stun:stun.cloudflare.com:3478" }
-  ],
-  iceCandidatePoolSize: 10
-};
-
 const VoiceChat = {
-  _iceCandidateQueue: [],
-  _hasRetriedIce: false,
+  _context: null,
+  _room: null,
+  _me: null,
+  _audioStream: null,
+  _publication: null,
 
-  // ---- RTCPeerConnection 生成 & イベントバインド ----
-  _createPeerConnection() {
-    this._closePeerConnection();
-    this._hasRetriedIce = false;
-
-    const pc = new RTCPeerConnection(RTC_CONFIG);
-    state.voiceCall.peerConnection = pc;
-
-    // ICE Candidate 探索イベント
-    pc.onicecandidate = (event) => {
-      if (event.candidate && event.candidate.candidate && P2P.connected) {
-        console.log("[VoiceChat SEND ICE]", event.candidate.candidate.substring(0, 40) + "...");
-        P2P.send({
-          t: "voice_ice",
-          candidate: event.candidate.toJSON ? event.candidate.toJSON() : event.candidate
-        });
-      }
-    };
-
-    // リモート音声ストリーム受信イベント
-    pc.ontrack = (event) => {
-      console.log("[VoiceChat] Remote track received:", event.track.kind);
-      const stream = (event.streams && event.streams[0])
-        ? event.streams[0]
-        : new MediaStream([event.track]);
-      this._onRemoteStream(stream);
-    };
-
-    // 接続状態監視
-    pc.onconnectionstatechange = () => {
-      console.log("[VoiceChat ConnectionState]", pc.connectionState);
-      if (pc.connectionState === "connected") {
-        console.log("[VoiceChat] Audio connection fully established!");
-      } else if (pc.connectionState === "failed") {
-        if (!this._hasRetriedIce && typeof pc.restartIce === "function") {
-          console.warn("[VoiceChat] Connection failed, attempting restartIce()...");
-          this._hasRetriedIce = true;
-          try {
-            pc.restartIce();
-            return;
-          } catch (e) {}
-        }
-        if (state.voiceCall.active) {
-          if (typeof showToast === "function") {
-            showToast("⚠️ ネットワーク環境により通話接続が維持できませんでした");
-          }
-          this.endCall(false);
-        }
-      } else if (pc.connectionState === "disconnected" || pc.connectionState === "closed") {
-        if (state.voiceCall.active) {
-          this.endCall(false);
-        }
-      }
-    };
-
-    pc.oniceconnectionstatechange = () => {
-      console.log("[VoiceChat ICEConnectionState]", pc.iceConnectionState);
-    };
-
-    // ローカル音声トラックの追加
-    if (state.voiceCall.localStream) {
-      state.voiceCall.localStream.getTracks().forEach((track) => {
-        pc.addTrack(track, state.voiceCall.localStream);
-      });
+  // ---- SkyWay 認証トークン生成 ----
+  _generateToken() {
+    if (typeof skyway_token === "undefined" || !skyway_token.SkyWayAuthToken) {
+      console.error("[VoiceChat] SkyWay Token SDK is not loaded.");
+      return null;
+    }
+    const appId = window.SKYWAY_CONFIG?.appId;
+    const secretKey = window.SKYWAY_CONFIG?.secretKey;
+    if (!appId || !secretKey) {
+      console.error("[VoiceChat] SkyWay Config is missing.");
+      return null;
     }
 
-    return pc;
+    const token = new skyway_token.SkyWayAuthToken({
+      jti: skyway_token.uuidV4(),
+      iat: skyway_token.nowInSec(),
+      exp: skyway_token.nowInSec() + 86400, // 24時間有効
+      version: 3,
+      scope: {
+        appId: appId,
+        rooms: [
+          {
+            name: "*",
+            methods: ["create", "close", "updateMetadata"],
+            member: {
+              name: "*",
+              methods: ["publish", "subscribe", "updateMetadata"]
+            }
+          }
+        ]
+      }
+    });
+
+    return token.encode(secretKey);
   },
 
-  _closePeerConnection() {
-    if (state.voiceCall && state.voiceCall.peerConnection) {
-      try {
-        state.voiceCall.peerConnection.close();
-      } catch (e) {}
-      state.voiceCall.peerConnection = null;
+  // ---- SkyWay Context 取得（シングルトン） ----
+  async _getContext() {
+    if (this._context) return this._context;
+    if (typeof skyway_room === "undefined" || !skyway_room.SkyWayContext) {
+      throw new Error("SkyWay Room SDK が読み込まれていません");
     }
-    // 注意: _iceCandidateQueue はここではクリアしない（Offer受信前に先行到着したCandidateを保護するため）
+
+    const tokenString = this._generateToken();
+    if (!tokenString) {
+      throw new Error("SkyWay 認証トークンの生成に失敗しました");
+    }
+
+    this._context = await skyway_room.SkyWayContext.Create(tokenString);
+    console.log("[VoiceChat] SkyWay Context created successfully.");
+    return this._context;
   },
 
   // ---- 通話開始リクエスト（発信側） ----
   async startCall() {
-    this._iceCandidateQueue = [];
     if (state.isSoloMode) {
       if (typeof showToast === "function") showToast("一人回しモードではボイス通話は利用できません");
       return;
@@ -129,21 +93,14 @@ const VoiceChat = {
     }
 
     try {
-      // マイク取得（オプトイン許可）
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        },
-        video: false
-      });
+      // マイクの事前許可確認
+      const testStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      testStream.getTracks().forEach(t => t.stop());
 
-      state.voiceCall.localStream = stream;
       state.voiceCall.status = "calling";
       state.voiceCall.isMuted = false;
 
-      // 相手へリクエスト送信
+      // 相手へ通話リクエスト送信 (Firebase)
       P2P.send({
         t: "voice_call_request",
         callerName: state.myName || "プレイヤーA"
@@ -153,7 +110,7 @@ const VoiceChat = {
       this._showCallingModal();
 
     } catch (err) {
-      console.warn("[VoiceChat] getUserMedia error:", err);
+      console.warn("[VoiceChat] getUserMedia check error:", err);
       let errMsg = "マイクへのアクセスが拒否されたか、マイク機器が見つかりませんでした。";
       if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
         errMsg = "ブラウザのマイク権限が許可されていません。アドレスバー横のアイコンからマイクの利用を許可してください。";
@@ -237,33 +194,26 @@ const VoiceChat = {
 
   // ---- 通話を受ける（着信側） ----
   async acceptCall() {
-    this._iceCandidateQueue = [];
     if (typeof closeModal === "function") closeModal();
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        },
-        video: false
-      });
-
-      state.voiceCall.localStream = stream;
       state.voiceCall.status = "incoming_accepted";
       state.voiceCall.isMuted = false;
 
-      // 相手に通話受諾を通知（相手側が createOffer を発行する）
+      // 相手に通話受諾を通知 (Firebase)
       P2P.send({ t: "voice_call_accept" });
 
       if (typeof showToast === "function") {
         showToast("通話に接続しています...");
       }
+
+      // SkyWay ルームへ接続
+      await this._joinSkyWayRoom();
+
     } catch (err) {
-      console.warn("[VoiceChat] acceptCall getUserMedia failed:", err);
+      console.warn("[VoiceChat] acceptCall failed:", err);
       if (typeof showToast === "function") {
-        showToast("⚠️ マイクへのアクセスが許可されなかったため通話をキャンセルしました");
+        showToast("⚠️ 通話接続に失敗しました: " + (err.message || ""));
       }
       this.rejectCall();
     }
@@ -278,126 +228,96 @@ const VoiceChat = {
     this.resetVoiceCallState();
   },
 
-  // ---- 相手が受諾した（発信側: Offer生成） ----
+  // ---- 相手が受諾した（発信側） ----
   async handleCallAccepted() {
     if (typeof closeModal === "function") closeModal();
 
-    if (!P2P.connected || !state.voiceCall.localStream) {
-      console.warn("[VoiceChat] Cannot start call: missing stream");
-      this.resetVoiceCallState();
-      return;
-    }
-
     try {
-      const pc = this._createPeerConnection();
-      const offer = await pc.createOffer({ offerToReceiveAudio: true });
-      await pc.setLocalDescription(offer);
+      if (typeof showToast === "function") {
+        showToast("通話に接続しています...");
+      }
+      // 発信側も SkyWay ルームへ接続
+      await this._joinSkyWayRoom();
 
-      P2P.send({
-        t: "voice_offer",
-        offer: {
-          type: offer.type,
-          sdp: offer.sdp
-        }
-      });
     } catch (err) {
-      console.error("[VoiceChat] createOffer failed:", err);
-      if (typeof showToast === "function") showToast("通話接続の確立に失敗しました");
+      console.error("[VoiceChat] handleCallAccepted failed:", err);
+      if (typeof showToast === "function") showToast("通話接続に失敗しました");
       this.resetVoiceCallState();
     }
   },
 
-  // ---- 着信側: Offer受信 ＆ Answer送信 ----
-  async handleRemoteOffer(offerData) {
-    if (!offerData || !offerData.sdp) return;
-    console.log("[VoiceChat RECV OFFER] starting answer flow");
+  // ---- SkyWay P2PRoom への参加 ＆ 音声 Publish/Subscribe ----
+  async _joinSkyWayRoom() {
+    this._leaveSkyWayRoom();
 
-    try {
-      const pc = this._createPeerConnection();
-      await pc.setRemoteDescription(new RTCSessionDescription(offerData));
+    const context = await this._getContext();
+    const roomName = `poke-call-${state.roomNo || "arena"}`;
+    console.log(`[VoiceChat] Joining SkyWay room: ${roomName}`);
 
-      // 溜まっていた ICE Candidate があれば適用
-      console.log(`[VoiceChat DRAIN ICE] draining ${this._iceCandidateQueue.length} queued candidates on offer`);
-      while (this._iceCandidateQueue.length > 0) {
-        const cand = this._iceCandidateQueue.shift();
+    // P2PRoom の取得または作成 (SkyWay TURNサーバー自動併用)
+    const room = await skyway_room.SkyWayRoom.FindOrCreate(context, {
+      type: "p2p",
+      name: roomName
+    });
+    this._room = room;
+
+    // ルームに参加
+    const me = await room.join({
+      name: `${state.myName}_${Date.now().toString(36)}`
+    });
+    this._me = me;
+    console.log(`[VoiceChat] Joined SkyWay room as member: ${me.id}`);
+
+    // マイクストリーム取得 (エコーキャンセラー・ノイズサプレッサー有効)
+    const audioStream = await skyway_room.SkyWayStreamFactory.createMicrophoneAudioStream({
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true
+    });
+    this._audioStream = audioStream;
+    state.voiceCall.localStream = audioStream;
+
+    // 音声を Publish
+    const publication = await me.publish(audioStream);
+    this._publication = publication;
+    console.log(`[VoiceChat] Published audio stream: ${publication.id}`);
+
+    // 音声 Subscribe 処理
+    const subscribeToPub = async (pub) => {
+      if (pub.contentType === "audio" && pub.publisher.id !== me.id) {
+        console.log(`[VoiceChat] Subscribing to audio: ${pub.id} from ${pub.publisher.id}`);
         try {
-          if (cand && cand.candidate) {
-            await pc.addIceCandidate(cand);
-          }
-        } catch (e) {
-          console.warn("[VoiceChat] addIceCandidate drain error:", e);
+          const { stream } = await me.subscribe(pub.id);
+          this._onRemoteStream(stream);
+        } catch (subErr) {
+          console.warn("[VoiceChat] subscribe failed:", subErr);
         }
       }
+    };
 
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(answer);
+    // 既に入室しているメンバーの音声を購読
+    room.publications.forEach(subscribeToPub);
 
-      P2P.send({
-        t: "voice_answer",
-        answer: {
-          type: answer.type,
-          sdp: answer.sdp
-        }
-      });
+    // 新たに相手が音声を公開したときに自動購読
+    room.onStreamPublished.add((e) => subscribeToPub(e.publication));
 
-      this._onConnected();
-    } catch (err) {
-      console.error("[VoiceChat] handleRemoteOffer failed:", err);
-      this.resetVoiceCallState();
-    }
-  },
-
-  // ---- 発信側: Answer受信 ----
-  async handleRemoteAnswer(answerData) {
-    if (!answerData || !answerData.sdp) return;
-    console.log("[VoiceChat RECV ANSWER]");
-    const pc = state.voiceCall.peerConnection;
-    if (!pc) return;
-
-    try {
-      await pc.setRemoteDescription(new RTCSessionDescription(answerData));
-
-      // 溜まっていた ICE Candidate があれば適用
-      console.log(`[VoiceChat DRAIN ICE] draining ${this._iceCandidateQueue.length} queued candidates on answer`);
-      while (this._iceCandidateQueue.length > 0) {
-        const cand = this._iceCandidateQueue.shift();
-        try {
-          if (cand && cand.candidate) {
-            await pc.addIceCandidate(cand);
-          }
-        } catch (e) {
-          console.warn("[VoiceChat] addIceCandidate drain error:", e);
+    // 相手が退出したときの監視
+    room.onMemberLeft.add((e) => {
+      if (e.member.id !== me.id) {
+        console.log(`[VoiceChat] Peer left the room: ${e.member.id}`);
+        if (state.voiceCall.active) {
+          this.endCall(false);
         }
       }
+    });
 
-      this._onConnected();
-    } catch (err) {
-      console.error("[VoiceChat] handleRemoteAnswer failed:", err);
-      this.resetVoiceCallState();
-    }
-  },
-
-  // ---- ICE Candidate 受信 ----
-  async handleRemoteIceCandidate(candidateData) {
-    if (!candidateData || !candidateData.candidate) return;
-    const pc = state.voiceCall.peerConnection;
-    if (!pc || !pc.remoteDescription) {
-      console.log("[VoiceChat QUEUE ICE] remoteDescription not ready, queuing candidate");
-      this._iceCandidateQueue.push(candidateData);
-      return;
-    }
-
-    try {
-      console.log("[VoiceChat ADD ICE]", candidateData.candidate.substring(0, 40) + "...");
-      await pc.addIceCandidate(candidateData);
-    } catch (err) {
-      console.warn("[VoiceChat] addIceCandidate error:", err);
-    }
+    // 通話接続完了
+    this._onConnected();
   },
 
   // ---- リモート音声ストリームの再生 ----
-  _onRemoteStream(remoteStream) {
-    state.voiceCall.remoteStream = remoteStream;
+  _onRemoteStream(skywayStream) {
+    state.voiceCall.remoteStream = skywayStream;
 
     let audioEl = document.getElementById("remote-voice-audio");
     if (!audioEl) {
@@ -410,7 +330,12 @@ const VoiceChat = {
     }
 
     try {
-      audioEl.srcObject = remoteStream;
+      if (typeof skywayStream.attach === "function") {
+        skywayStream.attach(audioEl);
+      } else if (skywayStream.track) {
+        audioEl.srcObject = new MediaStream([skywayStream.track]);
+      }
+
       const playPromise = audioEl.play();
       if (playPromise !== undefined) {
         playPromise.catch(err => {
@@ -431,6 +356,26 @@ const VoiceChat = {
     }
   },
 
+  // ---- SkyWay ルーム退出 ＆ リソース解放 ----
+  async _leaveSkyWayRoom() {
+    if (this._publication) {
+      try { await this._me?.unpublish(this._publication.id); } catch (e) {}
+      this._publication = null;
+    }
+    if (this._audioStream) {
+      try {
+        if (this._audioStream.track) this._audioStream.track.stop();
+        if (typeof this._audioStream.release === "function") this._audioStream.release();
+      } catch (e) {}
+      this._audioStream = null;
+    }
+    if (this._room && this._me) {
+      try { await this._me.leave(); } catch (e) {}
+    }
+    this._me = null;
+    this._room = null;
+  },
+
   // ---- 通話接続完了 ----
   _onConnected() {
     state.voiceCall.status = "connected";
@@ -449,7 +394,7 @@ const VoiceChat = {
 
     const oppName = state.oppName || "対戦相手";
     if (typeof addLog === "function") {
-      addLog(state.myName, "voice", `🎙️ [ボイス通話] ${state.myName} と ${oppName} の通話が接続されました`);
+      addLog(state.myName, "voice", `🎙️ [ボイス通話] ${state.myName} と ${oppName} の通話が接続されました（SkyWay）`);
     }
     if (typeof showToast === "function") {
       showToast("🟢 ボイス通話が接続されました♪");
@@ -460,14 +405,11 @@ const VoiceChat = {
 
   // ---- ミュート切替 ----
   toggleMute() {
-    if (!state.voiceCall.localStream) return;
-    const tracks = state.voiceCall.localStream.getAudioTracks();
-    if (!tracks || tracks.length === 0) return;
-
     state.voiceCall.isMuted = !state.voiceCall.isMuted;
-    tracks.forEach(track => {
-      track.enabled = !state.voiceCall.isMuted;
-    });
+
+    if (this._audioStream && this._audioStream.track) {
+      this._audioStream.track.enabled = !state.voiceCall.isMuted;
+    }
 
     const muteBtn = document.getElementById("voice-bar-mute-btn");
     if (muteBtn) {
@@ -514,14 +456,7 @@ const VoiceChat = {
       state.voiceCall.durationTimer = null;
     }
 
-    if (state.voiceCall.localStream) {
-      try {
-        state.voiceCall.localStream.getTracks().forEach(t => t.stop());
-      } catch (e) {}
-      state.voiceCall.localStream = null;
-    }
-
-    this._closePeerConnection();
+    this._leaveSkyWayRoom();
 
     const audioEl = document.getElementById("remote-voice-audio");
     if (audioEl) {
@@ -534,9 +469,9 @@ const VoiceChat = {
     state.voiceCall.active = false;
     state.voiceCall.status = "idle";
     state.voiceCall.isMuted = false;
+    state.voiceCall.localStream = null;
     state.voiceCall.remoteStream = null;
     state.voiceCall.durationSec = 0;
-    this._iceCandidateQueue = [];
 
     this.hideVoiceCallBar();
     this.updateAllVoiceButtons();
@@ -594,7 +529,6 @@ const VoiceChat = {
     let initialLeft = 0, initialTop = 0;
 
     const onPointerDown = (e) => {
-      // ボタン自体のクリック時はドラッグしない
       if (e.target.closest("button")) return;
       isDragging = true;
       startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;

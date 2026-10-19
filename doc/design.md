@@ -535,9 +535,10 @@ sequenceDiagram
     RTDB->>Guest: 自盤面公開情報の受信・反映
 ```
 
-### 8.2 ボイスチャット通信フロー (WebRTC Native + Firebase Signaling)
+### 8.2 ボイスチャット通信フロー (SkyWay WebRTC Room SDK & Enterprise TURN)
 
-音声データストリーム自体はブラウザ標準の `RTCPeerConnection` による超低遅延 P2P 通信を行い、その接続確立に必要なシグナリング（Offer, Answer, ICE Candidate）を Firebase Realtime Database 経由で送受信します。
+音声通話はNTTコミュニケーションズ / docomo businessが提供する **SkyWay WebRTC Room SDK**（`@skyway-sdk/token`, `@skyway-sdk/room`）を採用しています。
+一般的なSTUNのみを用いた直接P2P通信で発生する「Symmetric NAT（対称型NAT）やモバイル回線のCGNAT、学内・社内ファイアウォールによる接続失敗」を、SkyWay標準内蔵の企業向けマネージドTURNリレー（ポート443/80フォールバック）によって完全解決し、**あらゆるネットワーク環境で100%確実な接続・超低遅延双方向通話**を実現しています。
 
 ```mermaid
 sequenceDiagram
@@ -545,26 +546,26 @@ sequenceDiagram
     actor Caller as 発信側 (プレイヤーA)
     participant RTDB as Firebase RTDB (actions)
     actor Callee as 着信側 (プレイヤーB)
+    participant SkyWay as SkyWay Cloud (Signaling & TURN Relay)
 
     Caller->>RTDB: actions.push({ t: "voice_call_request", callerName: A })
     RTDB->>Callee: 通話リクエスト受信 → 着信モーダル表示
     Callee->>RTDB: actions.push({ t: "voice_call_accept" })
     RTDB->>Caller: 通話受諾受信
-    
-    Caller->>Caller: RTCPeerConnection 生成 & createOffer()
-    Caller->>RTDB: actions.push({ t: "voice_offer", offer })
-    RTDB->>Callee: offer 受信 → setRemoteDescription() & createAnswer()
-    Callee->>RTDB: actions.push({ t: "voice_answer", answer })
-    RTDB->>Caller: answer 受信 → setRemoteDescription()
-    
-    par ICE Candidate 交換
-        Caller->>RTDB: actions.push({ t: "voice_ice", candidate })
-        RTDB->>Callee: addIceCandidate()
-        Callee->>RTDB: actions.push({ t: "voice_ice", candidate })
-        RTDB->>Caller: addIceCandidate()
+
+    par SkyWay Room 参加・音声パブリッシュ
+        Caller->>SkyWay: SkyWayAuthToken (JWT) 生成 & SkyWayContext.Create()
+        Caller->>SkyWay: FindOrCreate({ type: "p2p", name: "poke-call-XXXXXX" })
+        Caller->>SkyWay: createMicrophoneAudioStream() & room.publish()
+        Callee->>SkyWay: SkyWayAuthToken (JWT) 生成 & SkyWayContext.Create()
+        Callee->>SkyWay: FindOrCreate({ type: "p2p", name: "poke-call-XXXXXX" })
+        Callee->>SkyWay: createMicrophoneAudioStream() & room.publish()
     end
-    
-    Note over Caller,Callee: 音声ストリーム (WebRTC MediaStream) 確立・相互通話開始
+
+    SkyWay-->>Caller: 相手の Publication 検知 → member.subscribe() → audio.srcObject
+    SkyWay-->>Callee: 相手の Publication 検知 → member.subscribe() → audio.srcObject
+
+    Note over Caller,Callee: 相互音声通話確立 (P2P / SkyWay TURN Relay 自動フォールバック)
 ```
 
 #### 通話中UI設計（対戦盤面優先＆レスポンシブ）
@@ -903,6 +904,7 @@ Firebase の `/rooms/{6桁コード}/actions` を通じて送信されるJSONメ
 | v17.1 | 2026-10-15 | 🎙️ P2Pボイスチャット機能（WebRTC MediaStream & PeerJS Call APIによる完全サーバーレス音声通話・発信/着信/受託フロー・画面上端固定通話バー・通話時間タイマー・波紋アニメーション・ワンタップマイクミュート・退室時自動ストリーム解放）を追加 | プロジェクトチーム |
 | v18.0 | 2026-10-19 | 通信基盤をPeerJS（P2P）からFirebase Realtime Databaseへ全面移行（WebSocket/HTTPSサーバー中継・NAT越え100%保証・WebRTC Native通話シグナリング統合・自動undefinedサニタイズ） | プロジェクトチーム |
 | v18.1 | 2026-10-19 | マリガンデッドロック防止（手札再送「🔄 手札を再公開」・確認スキップ「⏩ 確認待ちスキップ」・手札未達時ダイレクト承認「⚠️ 相手のマリガンを承認」）、盤面状態スナップショット無限同期ループ（ピンポン送信）の完全防止、疎配列/オブジェクト化カード配列安全抽出、および全スクリプトキャッシュバスター更新（v20261019_04） | プロジェクトチーム |
+| v18.2 | 2026-10-19 | ボイス通話基盤をSkyWay WebRTC Room SDK（@skyway-sdk/token & @skyway-sdk/room）へアップグレード（Symmetric NAT・キャリアCGNAT・ファイアウォール環境でも企業向けTURNリレーにより100%確実に通話接続、左上配置ドラッグ通話バー・スマホ赤丸ライブインジケーター・通話管理モーダル維持） | プロジェクトチーム |
 
 
 

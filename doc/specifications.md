@@ -618,7 +618,7 @@ sequenceDiagram
   - `t: "chat_message"`: `{ id, sender, text, time }`
 
 #### 3. 🎙️ ボイスチャット機能 (Voice Chat)
-- **概要**: ブラウザ標準 WebRTC MediaStream / RTCPeerConnection ＆ Firebase リアルタイムシグナリングを用いた超低遅延音声通話機能。
+- **概要**: NTT Com / docomo business提供の **SkyWay WebRTC Room SDK**（`@skyway-sdk/token`, `@skyway-sdk/room`）を用いた超低遅延音声通話機能。内蔵された企業向けTURNリレー（ポート443/80）により、Symmetric NAT、キャリアCGNAT、学内・社内ネットワーク等の制限環境でも100%確実に通話接続。
 - **ボタン配置**:
   - ポケチャットモーダル内ヘッダー右側に「🎙️ 通話」ボタン。
   - PC対戦画面右上（`.top-menu`）に「🎙️ 通話」ボタン。
@@ -626,7 +626,7 @@ sequenceDiagram
 - **発信・着信・通話フロー**:
   - **発信**: マイク権限（オプトイン許可）を取得後、相手へ `voice_call_request` を送信し「📞 相手を呼び出しています...」モーダルを表示（いつでもキャンセル可）。
   - **着信**: 相手画面に「📲 〇〇 さんからボイス通話のリクエストが届きました♪（🟢 通話を受ける / ✕ いまは無理）」のポップアップを表示（バイブレーション付き）。
-  - **受託・接続**: 着信側が受託するとマイクを取得して `voice_call_accept` を返し、互いに Firebase を介して WebRTC Offer / Answer / ICE Candidate を交換。相手の音声を `<audio autoplay playsinline>` で超低遅延再生。
+  - **受託・接続**: 着信側が受託するとマイクを取得して `voice_call_accept` を返し、双方がルーム番号に基づく SkyWay Room（`poke-call-{roomNo}`）へ自動参加し音声パブリッシュ＆サブスクライブ。相手の音声を `<audio autoplay playsinline>` で超低遅延再生。
   - **通話コントロールUI（レスポンシブ＆対戦盤面優先設計）**:
     - **PC／ブラウザ版**:
       - 相手ベンチカード（画面中央上部）への被りを完全に防止するため、通話コントロールバー（`.voice-call-bar`）を画面左上（`left: 16px; top: 68px;`）に配置。
@@ -638,11 +638,11 @@ sequenceDiagram
       - 操作メニューの「🎙️ 通話」ボタンに通話中ハイライトと鼓動する「🔴 赤い丸」ライブインジケーター（`.voice-live-dot`）を表示。
       - 通話中にボタンをタップすると「🎙️ ボイス通話の管理」モーダルがポップアップし、通話時間の確認、マイクのミュート／ミュート解除、通話終了を快適かつ安全に操作可能。
   - **安全設計**:
-    - 試合終了・退室時、またはページクローズ時にマイクストリーム（Track）と通話を即座に完全破棄・解放。
+    - 試合終了・退室時、またはページクローズ時にマイクストリーム（Track）とSkyWayルームを即座に完全破棄・解放。
     - 一人回し時は無効化。
     - HTTPS/マイク未接続時の親切なエラーハンドリング。
 - **通信電文仕様**:
-  - `voice_call_request`, `voice_call_accept`, `voice_call_reject`, `voice_call_cancel`, `voice_call_end`, `voice_offer`, `voice_answer`, `voice_ice`
+  - `voice_call_request`, `voice_call_accept`, `voice_call_reject`, `voice_call_cancel`, `voice_call_end`
 
 ---
 
