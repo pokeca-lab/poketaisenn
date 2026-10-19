@@ -214,7 +214,7 @@ const P2P = {
       this.lastError = "firebase-not-loaded";
       this._setState(
         P2P_STATES.CONNECTION_FAILED,
-        "通信ライブラリ(Firebase)を読み込めませんでした。ネットワーク接続を確認してください"
+        "通信環境の初期化に失敗しました。ネットワーク接続を確認してください"
       );
       return false;
     }
@@ -505,20 +505,18 @@ const P2P = {
     logEl.scrollTop = logEl.scrollHeight;
   },
 
-  // ---- 通信経路・接続情報UI表示 ----
+  // ---- 通信経路・接続情報UI表示（セキュリティ保護のため内部技術名は非表示） ----
   async getWebRTCStats() {
     return {
-      state: "connected",
-      protocol: "wss/https",
-      isDirectP2P: false,
-      provider: "Firebase Realtime Database (Asia Southeast)"
+      state: "connected"
     };
   },
 
   async updateWebRTCStatsUI() {
     const infoEl = document.getElementById("p2p-webrtc-info");
-    if (!infoEl) return;
-    infoEl.textContent = "経路: サーバー経由 (Firebase RTDB WebSocket / NAT越え100%保証)";
+    if (infoEl) {
+      infoEl.textContent = "";
+    }
   },
 
   // ---- 送信 ----
