@@ -251,7 +251,8 @@ const VoiceChat = {
     this._leaveSkyWayRoom();
 
     const context = await this._getContext();
-    const roomName = `poke-call-${state.roomNo || "arena"}`;
+    const cleanRoomNo = String(state.roomNo || "arena").replace(/[^a-zA-Z0-9\-_]/g, "");
+    const roomName = `poke-call-${cleanRoomNo || "default"}`.slice(0, 128);
     console.log(`[VoiceChat] Joining SkyWay room: ${roomName}`);
 
     // P2PRoom の取得または作成 (SkyWay TURNサーバー自動併用)
@@ -261,10 +262,8 @@ const VoiceChat = {
     });
     this._room = room;
 
-    // ルームに参加
-    const me = await room.join({
-      name: `${state.myName}_${Date.now().toString(36)}`
-    });
+    // ルームに参加 (nameを省略することでSkyWayがUUIDを自動採番。全角日本語など不正文字によるinvalidRequestParameterエラーを防止)
+    const me = await room.join();
     this._me = me;
     console.log(`[VoiceChat] Joined SkyWay room as member: ${me.id}`);
 
