@@ -393,7 +393,7 @@ const VoiceChat = {
 
     const oppName = state.oppName || "対戦相手";
     if (typeof addLog === "function") {
-      addLog(state.myName, "voice", `🎙️ [ボイス通話] ${state.myName} と ${oppName} の通話が接続されました（SkyWay）`);
+      addLog(`🎙️ [ボイス通話] ${state.myName} と ${oppName} の通話が接続されました（SkyWay）`, { category: "voice", suppressSync: true, skipLocalPopup: true });
     }
     if (typeof showToast === "function") {
       showToast("🟢 ボイス通話が接続されました♪");
@@ -436,7 +436,7 @@ const VoiceChat = {
 
     if (state.voiceCall.active) {
       if (typeof addLog === "function") {
-        addLog(state.myName, "voice", `🎙️ [ボイス通話] 通話が終了しました（通話時間: ${this.formatDuration(state.voiceCall.durationSec)}）`);
+        addLog(`🎙️ [ボイス通話] 通話が終了しました（通話時間: ${this.formatDuration(state.voiceCall.durationSec)}）`, { category: "voice", suppressSync: true, skipLocalPopup: true });
       }
       if (typeof showToast === "function") {
         showToast("📞 ボイス通話を終了しました");

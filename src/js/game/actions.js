@@ -4671,7 +4671,8 @@ function executeAttackDeclaration(playerName, pokemonName, attackName) {
     ? `⚔️ ${playerName} の【${pokemonName}】が『${attackName}』を宣言！`
     : `⚔️ ${playerName} の【${pokemonName}】が技を宣言！`;
 
-  addLog(playerName, "attack", logText);
+  // 技宣言ログ（カットイン演出が別途表示されるため、二重の行動ポップアップはスキップ）
+  addLog(logText, { category: "attack", suppressSync: true, skipLocalPopup: true });
 
   // カットイン演出を画面に表示
   showAttackCutin(playerName, pokemonName, attackName);
@@ -4854,8 +4855,8 @@ function sendChatMessage(text) {
   state.chatMessages.push(msgObj);
   renderChatMessages();
 
-  // 対戦ログにも軽く記録
-  addLog(state.myName, "chat", `💬 [チャット] ${state.myName}: ${text}`);
+  // 対戦ログにも記録（チャットはカードプレイではないため、画面ポップアップ・相手への行動通知は行わない）
+  addLog(`💬 [チャット] ${state.myName}: ${text}`, { category: "chat", suppressSync: true, skipLocalPopup: true });
 
   // P2P送信
   if (typeof P2P !== "undefined" && P2P.connected && !state.isSoloMode) {
@@ -4894,8 +4895,8 @@ function handleIncomingChatMessage(msg) {
     showChatBubbleToast(msgObj.sender, msgObj.text);
   }
 
-  // ログにも追加
-  addLog(msgObj.sender, "chat", `💬 [チャット] ${msgObj.sender}: ${msgObj.text}`);
+  // ログにも追加（プレイ行動ポップアップはスキップ）
+  addLog(`💬 [チャット] ${msgObj.sender}: ${msgObj.text}`, { category: "chat", isRemote: true, suppressSync: true, skipLocalPopup: true });
 
   // 軽い通知バイブ
   if (navigator.vibrate) {

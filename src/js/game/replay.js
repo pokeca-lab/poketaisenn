@@ -91,6 +91,14 @@ function recordMatchStep(meta = {}) {
 }
 
 function addLog(text, meta = {}) {
+  // 3引数で呼ばれた場合の互換性対応: addLog(player, category, text)
+  if (arguments.length >= 3 && typeof arguments[2] === "string") {
+    text = arguments[2];
+    meta = { category: arguments[1], player: arguments[0] };
+  } else if (typeof meta === "string") {
+    meta = { category: meta };
+  }
+
   const time = new Date().toLocaleTimeString();
   state.logs.push(`[${time}] ${text}`);
   if (!replayState.isActive) {
@@ -100,8 +108,15 @@ function addLog(text, meta = {}) {
     });
   }
 
-  // リモート受信ログ・同期抑制指定・リプレイ再生中は送信/ポップアップしない
-  if (meta.isRemote || meta.suppressSync || replayState.isActive) {
+  // チャットやボイス通話、システム通知などの非カードプレイ行動はポップアップ・同期通知を抑制
+  const isNonPlay = meta.category === "chat" ||
+                    meta.category === "voice" ||
+                    meta.category === "system" ||
+                    meta.noPopup === true ||
+                    meta.badge === false;
+
+  // リモート受信ログ・同期抑制指定・非プレイ行動・リプレイ再生中は送信/ポップアップしない
+  if (meta.isRemote || meta.suppressSync || isNonPlay || replayState.isActive) {
     return;
   }
 
