@@ -2708,6 +2708,10 @@ body.menu-open .sp-sheet {
 }
 
 /* カードダブルクリック拡大スタイル */
+#card-zoom-modal {
+  z-index: 500 !important;
+}
+
 .zoom-card-container {
   display: flex;
   flex-direction: column;

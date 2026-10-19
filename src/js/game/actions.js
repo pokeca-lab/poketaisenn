@@ -1282,6 +1282,12 @@ function findCardByUid(uid) {
   if (tempFound) return tempFound;
   const trashFound = state.myTrash.find(c => c.uid === uid);
   if (trashFound) return trashFound;
+  const deckFound = state.myDeck.find(c => c.uid === uid);
+  if (deckFound) return deckFound;
+  const lostFound = state.myLost.find(c => c.uid === uid);
+  if (lostFound) return lostFound;
+  const oppTrashFound = state.oppTrash ? state.oppTrash.find(c => c.uid === uid) : null;
+  if (oppTrashFound) return oppTrashFound;
   if (state.stadium && state.stadium.uid === uid) return state.stadium;
   return null;
 }
