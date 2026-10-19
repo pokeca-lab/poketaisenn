@@ -44,15 +44,21 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 2px solid #bfdbfe;
   box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1);
-  padding: 12px 24px;
+  padding: 10px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.manual-navbar-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .manual-nav-brand {
@@ -61,38 +67,48 @@ body {
   gap: 12px;
   text-decoration: none;
   color: var(--text-dark);
+  flex-shrink: 0;
 }
 
 .manual-nav-logo {
-  height: 42px;
+  height: 38px;
   width: auto;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: block;
 }
 
 .manual-nav-title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   color: var(--primary-blue);
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .manual-nav-links {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
+  flex-shrink: 0;
+}
+
+.sp-lobby-btn {
+  display: none !important;
 }
 
 .nav-btn {
-  font-size: 13px;
-  padding: 8px 16px;
+  font-size: 12.5px;
+  padding: 7px 15px;
   border-radius: 20px;
   text-decoration: none;
   font-weight: bold;
   transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-btn-outline {
@@ -599,21 +615,84 @@ body {
   background: var(--primary-cyan);
 }
 
-@media (max-width: 768px) {
-  .manual-container {
-    padding: 20px 14px 60px;
-  }
-  .manual-chapter {
-    padding: 24px 18px;
-  }
-  .chapter-title {
-    font-size: 20px;
-  }
+/* 中画面・細めのPCウィンドウ (769px 〜 992px) */
+@media (max-width: 992px) and (min-width: 769px) {
   .manual-navbar {
-    padding: 10px 14px;
+    padding: 8px 16px;
   }
   .manual-nav-title {
-    font-size: 14px;
+    display: none; /* ロゴで充分認識できるためタイトルを非表示にして1行を死守 */
+  }
+  .manual-nav-logo {
+    height: 34px;
+  }
+  .nav-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+    gap: 4px;
+  }
+}
+
+/* スマホ・長細い画面 (768px 以下) */
+@media (max-width: 768px) {
+  .manual-navbar {
+    padding: 8px 12px 6px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    border-bottom-width: 1.5px;
+  }
+  .manual-navbar-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  .manual-nav-brand {
+    gap: 8px;
+  }
+  .manual-nav-logo {
+    height: 30px;
+  }
+  .manual-nav-title {
+    display: none; /* スマホでは長細い縦崩れを完全に防ぐため非表示 */
+  }
+  .sp-lobby-btn {
+    display: inline-flex !important;
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 9999px;
+  }
+  .pc-lobby-btn {
+    display: none !important;
+  }
+  .manual-nav-links {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .manual-nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-btn {
+    font-size: 11.5px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+  }
+  .manual-container {
+    padding: 16px 12px 60px;
+  }
+  .manual-chapter {
+    padding: 22px 16px;
+  }
+  .chapter-title {
+    font-size: 19px;
   }
 }
 
