@@ -6,23 +6,38 @@
 const RTC_CONFIG = {
   iceServers: [
     { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" }
-  ]
+    { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun.cloudflare.com:3478" },
+    { urls: "stun:openrelay.metered.ca:80" },
+    {
+      urls: [
+        "turn:openrelay.metered.ca:80",
+        "turn:openrelay.metered.ca:443",
+        "turn:openrelay.metered.ca:443?transport=tcp"
+      ],
+      username: "openrelay",
+      credential: "openrelay"
+    }
+  ],
+  iceCandidatePoolSize: 10
 };
 
 const VoiceChat = {
   _iceCandidateQueue: [],
+  _hasRetriedIce: false,
 
   // ---- RTCPeerConnection 生成 & イベントバインド ----
   _createPeerConnection() {
     this._closePeerConnection();
+    this._hasRetriedIce = false;
 
     const pc = new RTCPeerConnection(RTC_CONFIG);
     state.voiceCall.peerConnection = pc;
 
     // ICE Candidate 探索イベント
     pc.onicecandidate = (event) => {
-      if (event.candidate && P2P.connected) {
+      if (event.candidate && event.candidate.candidate && P2P.connected) {
         P2P.send({
           t: "voice_ice",
           candidate: event.candidate.toJSON ? event.candidate.toJSON() : event.candidate
@@ -32,15 +47,34 @@ const VoiceChat = {
 
     // リモート音声ストリーム受信イベント
     pc.ontrack = (event) => {
-      if (event.streams && event.streams[0]) {
-        this._onRemoteStream(event.streams[0]);
-      }
+      console.log("[VoiceChat] Remote track received:", event.track.kind);
+      const stream = (event.streams && event.streams[0])
+        ? event.streams[0]
+        : new MediaStream([event.track]);
+      this._onRemoteStream(stream);
     };
 
     // 接続状態監視
     pc.onconnectionstatechange = () => {
       console.log("[VoiceChat ConnectionState]", pc.connectionState);
-      if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
+      if (pc.connectionState === "connected") {
+        console.log("[VoiceChat] P2P/TURN Audio connection fully established!");
+      } else if (pc.connectionState === "failed") {
+        if (!this._hasRetriedIce && typeof pc.restartIce === "function") {
+          console.warn("[VoiceChat] Connection failed, attempting restartIce()...");
+          this._hasRetriedIce = true;
+          try {
+            pc.restartIce();
+            return;
+          } catch (e) {}
+        }
+        if (state.voiceCall.active) {
+          if (typeof showToast === "function") {
+            showToast("⚠️ ネットワーク環境（NAT/回線制限）により通話接続が維持できませんでした");
+          }
+          this.endCall(false);
+        }
+      } else if (pc.connectionState === "disconnected" || pc.connectionState === "closed") {
         if (state.voiceCall.active) {
           this.endCall(false);
         }
@@ -285,7 +319,11 @@ const VoiceChat = {
       // 溜まっていた ICE Candidate があれば適用
       while (this._iceCandidateQueue.length > 0) {
         const cand = this._iceCandidateQueue.shift();
-        try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
+        try {
+          if (cand && cand.candidate) {
+            await pc.addIceCandidate(cand);
+          }
+        } catch (e) {}
       }
 
       const answer = await pc.createAnswer();
@@ -318,7 +356,11 @@ const VoiceChat = {
       // 溜まっていた ICE Candidate があれば適用
       while (this._iceCandidateQueue.length > 0) {
         const cand = this._iceCandidateQueue.shift();
-        try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
+        try {
+          if (cand && cand.candidate) {
+            await pc.addIceCandidate(cand);
+          }
+        } catch (e) {}
       }
 
       this._onConnected();
@@ -330,7 +372,7 @@ const VoiceChat = {
 
   // ---- ICE Candidate 受信 ----
   async handleRemoteIceCandidate(candidateData) {
-    if (!candidateData) return;
+    if (!candidateData || !candidateData.candidate) return;
     const pc = state.voiceCall.peerConnection;
     if (!pc || !pc.remoteDescription) {
       // remoteDescription 未設定時はキューに保存
@@ -339,7 +381,7 @@ const VoiceChat = {
     }
 
     try {
-      await pc.addIceCandidate(new RTCIceCandidate(candidateData));
+      await pc.addIceCandidate(candidateData);
     } catch (err) {
       console.warn("[VoiceChat] addIceCandidate error:", err);
     }
@@ -365,6 +407,15 @@ const VoiceChat = {
       if (playPromise !== undefined) {
         playPromise.catch(err => {
           console.log("[VoiceChat] autoplay blocked, will play on user interaction:", err);
+          const resumeAudio = () => {
+            if (audioEl && state.voiceCall.active) {
+              audioEl.play().catch(() => {});
+            }
+            window.removeEventListener("pointerdown", resumeAudio);
+            window.removeEventListener("keydown", resumeAudio);
+          };
+          window.addEventListener("pointerdown", resumeAudio);
+          window.addEventListener("keydown", resumeAudio);
         });
       }
     } catch (err) {
