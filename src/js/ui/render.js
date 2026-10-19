@@ -1009,15 +1009,22 @@ function getPokemonByLocation(loc) {
 
 function findPokemonByCardUid(uid) {
   if (!uid) return null;
-  if (state.myActive && state.myActive.card.uid === uid) return { pokemon: state.myActive, loc: "active" };
+  const matchesSlot = (slot) => {
+    if (!slot || !slot.card) return false;
+    if (slot.card.uid === uid) return true;
+    if (Array.isArray(slot.previousStages) && slot.previousStages.some(c => c && c.uid === uid)) return true;
+    return false;
+  };
+
+  if (matchesSlot(state.myActive)) return { pokemon: state.myActive, loc: "active" };
   for (let i = 0; i < state.myBench.length; i++) {
     const b = state.myBench[i];
-    if (b && b.card.uid === uid) return { pokemon: b, loc: `bench_${i}` };
+    if (matchesSlot(b)) return { pokemon: b, loc: `bench_${i}` };
   }
-  if (state.oppActive && state.oppActive.card.uid === uid) return { pokemon: state.oppActive, loc: "opp-active" };
+  if (matchesSlot(state.oppActive)) return { pokemon: state.oppActive, loc: "opp-active" };
   for (let i = 0; i < state.oppBench.length; i++) {
     const b = state.oppBench[i];
-    if (b && b.card.uid === uid) return { pokemon: b, loc: `opp-bench_${i}` };
+    if (matchesSlot(b)) return { pokemon: b, loc: `opp-bench_${i}` };
   }
   return null;
 }

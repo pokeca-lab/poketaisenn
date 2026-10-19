@@ -1172,6 +1172,21 @@ function openCardZoom(card) {
             <div class="zoom-empty">（エネルギーはついていません）</div>
           `}
         </div>
+
+        <!-- 進化元カード -->
+        ${pokemon.previousStages && pokemon.previousStages.length > 0 ? `
+          <div class="zoom-section">
+            <div class="zoom-section-title">✨ 進化元カード (${pokemon.previousStages.length} 枚)</div>
+            <div style="display:flex; flex-direction:column; gap:6px; padding:4px 0;">
+              ${pokemon.previousStages.map((prevCard, pIdx) => `
+                <div class="zoom-tool-row">
+                  <span class="zoom-tool-name">🪙 [${pIdx + 1}段目] ${escapeHtml(prevCard.name)}</span>
+                  <button class="btn blue" style="font-size:10px; padding:2px 8px;" onclick="openCardZoomByUid('${prevCard.uid}')">拡大</button>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
   }
@@ -1827,24 +1842,41 @@ function swapActiveBench(benchIndex) {
   }
 }
 
+/**
+ * ポケモンスロットから本体カードおよびすべての進化元カードの配列を取得
+ * @param {Object} slot { card, previousStages, tool, energies }
+ * @returns {Array<Object>} [card, ...previousStages]
+ */
+function getPokemonCardsList(slot) {
+  if (!slot || !slot.card) return [];
+  const list = [slot.card];
+  if (Array.isArray(slot.previousStages)) {
+    list.push(...slot.previousStages);
+  }
+  return list;
+}
+
 function removePokemonToTrash(location, index) {
   hideCtx();
   const target = location === "active" ? state.myActive : state.myBench[index];
   if (!target) return;
 
   pushHistorySnapshot("ポケモンをトラッシュへ");
-  state.myTrash.push(target.card);
+  const pokeCards = getPokemonCardsList(target);
+  pokeCards.forEach(c => state.myTrash.push(c));
   if (target.tool) state.myTrash.push(target.tool);
   if (target.energies) target.energies.forEach(e => state.myTrash.push(e));
 
   if (location === "active") state.myActive = null;
   else state.myBench[index] = null;
 
-  addLog(`「${target.card.name}」（および付随カード）をトラッシュへ送りました`, {
-    cards: [target.card],
+  const prevCount = Array.isArray(target.previousStages) ? target.previousStages.length : 0;
+  const extraNote = prevCount > 0 ? `（進化元${prevCount}枚含む計${pokeCards.length}枚）` : "";
+  addLog(`「${target.card.name}」${extraNote}（および付随カード）をトラッシュへ送りました`, {
+    cards: pokeCards,
     badge: "🗑️ ポケモンをトラッシュ"
   });
-  showToast(`「${target.card.name}」をトラッシュへ送りました`);
+  showToast(`「${target.card.name}」${extraNote}をトラッシュへ送りました`);
   renderAll();
 }
 
@@ -1854,21 +1886,24 @@ function removePokemonToHand(location, index) {
   if (!target) return;
 
   pushHistorySnapshot("ポケモンを手札に戻す");
-  state.myHand.push(target.card);
+  const pokeCards = getPokemonCardsList(target);
+  pokeCards.forEach(c => state.myHand.push(c));
   if (target.tool) state.myTrash.push(target.tool);
   if (target.energies) target.energies.forEach(e => state.myTrash.push(e));
 
   if (location === "active") state.myActive = null;
   else state.myBench[index] = null;
 
-  addLog(`「${target.card.name}」を手札に戻しました（どうぐ・エネルギーは破棄）`, {
+  const prevCount = Array.isArray(target.previousStages) ? target.previousStages.length : 0;
+  const extraNote = prevCount > 0 ? `（進化元${prevCount}枚含む計${pokeCards.length}枚）` : "";
+  addLog(`「${target.card.name}」${extraNote}を手札に戻しました（どうぐ・エネルギーは破棄）`, {
     oppText: state.isSetupPhase
       ? `配置していたポケモンを手札に戻しました`
-      : `「${target.card.name}」を手札に戻しました（どうぐ・エネルギーは破棄）`,
-    cards: state.isSetupPhase ? [] : [target.card],
+      : `「${target.card.name}」${extraNote}を手札に戻しました（どうぐ・エネルギーは破棄）`,
+    cards: state.isSetupPhase ? [] : pokeCards,
     badge: "🖐️ ポケモンを手札へ"
   });
-  showToast(`「${target.card.name}」を手札に戻しました`);
+  showToast(`「${target.card.name}」${extraNote}を手札に戻しました`);
   renderAll();
 }
 
@@ -1885,7 +1920,7 @@ function returnPokemonToDeck(location, index, mode = "shuffle") {
 
   pushHistorySnapshot(mode === "shuffle" ? "ポケモンを山札へ戻しシャッフル" : "ポケモンを山札の下へ送る");
 
-  const cardsToDeck = [target.card];
+  const cardsToDeck = getPokemonCardsList(target);
   if (target.tool) cardsToDeck.push(target.tool);
   if (target.energies && Array.isArray(target.energies)) {
     target.energies.forEach(e => cardsToDeck.push(e));
@@ -1953,16 +1988,19 @@ function knockoutPokemon(location, index) {
 
   if (typeof SoundEffects !== "undefined") SoundEffects.playKnockout();
 
-  state.myTrash.push(target.card);
+  const pokeCards = getPokemonCardsList(target);
+  pokeCards.forEach(c => state.myTrash.push(c));
   if (target.tool) state.myTrash.push(target.tool);
   if (target.energies) target.energies.forEach(e => state.myTrash.push(e));
 
   if (location === "active") state.myActive = null;
   else state.myBench[index] = null;
 
-  addLog(`【気絶】「${pokemonName}」が気絶しました！（相手がサイドを取得します）`, {
-    oppText: `【気絶】相手の「${pokemonName}」が気絶しました！（サイドを取得してください）`,
-    cards: [target.card],
+  const prevCount = Array.isArray(target.previousStages) ? target.previousStages.length : 0;
+  const extraNote = prevCount > 0 ? `（進化元${prevCount}枚含む計${pokeCards.length}枚トラッシュ）` : "";
+  addLog(`【気絶】「${pokemonName}」${extraNote}が気絶しました！（相手がサイドを取得します）`, {
+    oppText: `【気絶】相手の「${pokemonName}」${extraNote}が気絶しました！（サイドを取得してください）`,
+    cards: pokeCards,
     badge: "💀 ポケモン気絶"
   });
   showToast(`💀 「${pokemonName}」が気絶しました`);
@@ -1997,16 +2035,19 @@ function knockoutOpponentPokemon(location, index) {
 
   if (typeof SoundEffects !== "undefined") SoundEffects.playKnockout();
 
-  state.oppTrash.push(target.card);
+  const pokeCards = getPokemonCardsList(target);
+  pokeCards.forEach(c => state.oppTrash.push(c));
   if (target.tool) state.oppTrash.push(target.tool);
   if (target.energies) target.energies.forEach(e => state.oppTrash.push(e));
 
   if (location === "opp-active") state.oppActive = null;
   else state.oppBench[index] = null;
 
-  addLog(`【気絶】相手の「${pokemonName}」が気絶しました！（サイドを取得してください）`, {
-    oppText: `【気絶】あなたの「${pokemonName}」が気絶しました！（相手がサイドを取得中）`,
-    cards: [target.card],
+  const prevCount = Array.isArray(target.previousStages) ? target.previousStages.length : 0;
+  const extraNote = prevCount > 0 ? `（進化元${prevCount}枚含む計${pokeCards.length}枚トラッシュ）` : "";
+  addLog(`【気絶】相手の「${pokemonName}」${extraNote}が気絶しました！（サイドを取得してください）`, {
+    oppText: `【気絶】あなたの「${pokemonName}」${extraNote}が気絶しました！（相手がサイドを取得中）`,
+    cards: pokeCards,
     badge: "💀 ポケモン気絶"
   });
   showToast(`💀 相手の「${pokemonName}」が気絶しました`);
@@ -3892,8 +3933,9 @@ function showBenchShrinkTrashModal(benchCards, needTrashCount) {
       const p = state.myBench[idx];
       if (p) {
         trashedNames.push(p.card.name);
-        trashedCards.push(p.card);
-        state.myTrash.push(p.card);
+        const pokeCards = getPokemonCardsList(p);
+        trashedCards.push(...pokeCards);
+        pokeCards.forEach(c => state.myTrash.push(c));
         if (p.tool) state.myTrash.push(p.tool);
         if (p.energies) p.energies.forEach(e => state.myTrash.push(e));
         state.myBench[idx] = null;
@@ -4316,16 +4358,19 @@ function removeOpponentPokemonToTrash(location, index) {
   const target = location === "opp-active" ? state.oppActive : state.oppBench[index];
   if (!target) return;
 
-  state.oppTrash.push(target.card);
+  const pokeCards = getPokemonCardsList(target);
+  pokeCards.forEach(c => state.oppTrash.push(c));
   if (target.tool) state.oppTrash.push(target.tool);
   if (target.energies) target.energies.forEach(e => state.oppTrash.push(e));
 
   if (location === "opp-active") state.oppActive = null;
   else state.oppBench[index] = null;
 
-  addLog(`相手の「${target.card.name}」をトラッシュへ送りました`, {
-    oppText: `あなたの「${target.card.name}」がトラッシュへ送られました`,
-    cards: [target.card],
+  const prevCount = Array.isArray(target.previousStages) ? target.previousStages.length : 0;
+  const extraNote = prevCount > 0 ? `（進化元${prevCount}枚含む計${pokeCards.length}枚）` : "";
+  addLog(`相手の「${target.card.name}」${extraNote}をトラッシュへ送りました`, {
+    oppText: `あなたの「${target.card.name}」${extraNote}がトラッシュへ送られました`,
+    cards: pokeCards,
     badge: "🗑️ 相手ポケモン破棄"
   });
   renderAll();
@@ -4346,17 +4391,20 @@ function removeOpponentPokemonToHand(location, index) {
   const target = location === "opp-active" ? state.oppActive : state.oppBench[index];
   if (!target) return;
 
+  const pokeCards = getPokemonCardsList(target);
   if (target.tool) state.oppTrash.push(target.tool);
   if (target.energies) target.energies.forEach(e => state.oppTrash.push(e));
 
   if (location === "opp-active") state.oppActive = null;
   else state.oppBench[index] = null;
 
-  state.oppHandCount = (state.oppHandCount || 0) + 1;
+  state.oppHandCount = (state.oppHandCount || 0) + pokeCards.length;
 
-  addLog(`相手の「${target.card.name}」を手札へ戻しました`, {
-    oppText: `あなたの「${target.card.name}」が手札へ戻されました`,
-    cards: [target.card],
+  const prevCount = Array.isArray(target.previousStages) ? target.previousStages.length : 0;
+  const extraNote = prevCount > 0 ? `（進化元${prevCount}枚含む計${pokeCards.length}枚）` : "";
+  addLog(`相手の「${target.card.name}」${extraNote}を手札へ戻しました`, {
+    oppText: `あなたの「${target.card.name}」${extraNote}が手札へ戻されました`,
+    cards: pokeCards,
     badge: "🖐️ 相手ポケモン手札へ"
   });
   renderAll();
@@ -4474,7 +4522,8 @@ function handleOpponentRemoteAction(msg) {
   } else if (msg.action === "remove_to_trash") {
     const target = msg.location === "active" ? state.myActive : state.myBench[msg.index];
     if (target) {
-      state.myTrash.push(target.card);
+      const pokeCards = getPokemonCardsList(target);
+      pokeCards.forEach(c => state.myTrash.push(c));
       if (target.tool) state.myTrash.push(target.tool);
       if (target.energies) target.energies.forEach(e => state.myTrash.push(e));
       if (msg.location === "active") state.myActive = null;
@@ -4486,7 +4535,8 @@ function handleOpponentRemoteAction(msg) {
   } else if (msg.action === "remove_to_hand") {
     const target = msg.location === "active" ? state.myActive : state.myBench[msg.index];
     if (target) {
-      state.myHand.push(target.card);
+      const pokeCards = getPokemonCardsList(target);
+      pokeCards.forEach(c => state.myHand.push(c));
       if (target.tool) state.myTrash.push(target.tool);
       if (target.energies) target.energies.forEach(e => state.myTrash.push(e));
       if (msg.location === "active") state.myActive = null;
@@ -4498,7 +4548,7 @@ function handleOpponentRemoteAction(msg) {
   } else if (msg.action === "remove_to_deck") {
     const target = msg.location === "active" ? state.myActive : state.myBench[msg.index];
     if (target) {
-      const cardsToDeck = [target.card];
+      const cardsToDeck = getPokemonCardsList(target);
       if (target.tool) cardsToDeck.push(target.tool);
       if (target.energies) target.energies.forEach(e => cardsToDeck.push(e));
       if (msg.location === "active") state.myActive = null;
@@ -4519,13 +4569,14 @@ function handleOpponentRemoteAction(msg) {
     if (typeof SoundEffects !== "undefined") SoundEffects.playKnockout();
     const target = msg.location === "active" ? state.myActive : state.myBench[msg.index];
     if (target) {
-      state.myTrash.push(target.card);
+      const pokeCards = getPokemonCardsList(target);
+      pokeCards.forEach(c => state.myTrash.push(c));
       if (target.tool) state.myTrash.push(target.tool);
       if (target.energies) target.energies.forEach(e => state.myTrash.push(e));
       if (msg.location === "active") state.myActive = null;
       else state.myBench[msg.index] = null;
       addLog(`【気絶】「${target.card.name}」が気絶しました！（相手がサイドを取得中）`, {
-        cards: [target.card],
+        cards: pokeCards,
         badge: "💀 ポケモン気絶"
       });
       showToast(`💀 「${target.card.name}」が気絶しました`);
@@ -4536,13 +4587,14 @@ function handleOpponentRemoteAction(msg) {
     if (typeof SoundEffects !== "undefined") SoundEffects.playKnockout();
     const target = msg.location === "active" ? state.oppActive : state.oppBench[msg.index];
     if (target) {
-      state.oppTrash.push(target.card);
+      const pokeCards = getPokemonCardsList(target);
+      pokeCards.forEach(c => state.oppTrash.push(c));
       if (target.tool) state.oppTrash.push(target.tool);
       if (target.energies) target.energies.forEach(e => state.oppTrash.push(e));
       if (msg.location === "active") state.oppActive = null;
       else state.oppBench[msg.index] = null;
       addLog(`【気絶】相手が「${target.card.name}」を気絶させました！（サイドを取得してください）`, {
-        cards: [target.card],
+        cards: pokeCards,
         badge: "💀 ポケモン気絶"
       });
       showToast(`💀 相手の「${target.card.name}」が気絶しました`);
@@ -4999,6 +5051,7 @@ function hideChatBubbleToast() {
   }
 }
 
+window.getPokemonCardsList = getPokemonCardsList;
 window.openAttackModal = openAttackModal;
 window.submitAttackDeclaration = submitAttackDeclaration;
 window.executeAttackDeclaration = executeAttackDeclaration;

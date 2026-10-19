@@ -401,6 +401,9 @@ window.applyTrashCardToPokemon = function(listType, cardIdx, location) {
     const prevName = dst.card.name;
     const curedNames = (typeof getPokemonConditionNames === "function") ? getPokemonConditionNames(dst) : [];
     if (typeof clearPokemonConditions === "function") clearPokemonConditions(dst);
+    // 進化前カードを進化スタックへ保存
+    dst.previousStages = Array.isArray(dst.previousStages) ? dst.previousStages : [];
+    dst.previousStages.push(dst.card);
     dst.card = card;
     dst.abilityUsed = false;
     const cureSuffix = curedNames.length > 0 ? `（特殊状態【${curedNames.join("・")}】が回復）` : "";

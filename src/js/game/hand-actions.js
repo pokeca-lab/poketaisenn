@@ -247,6 +247,9 @@ function attachHandCardToPokemon(handIdx, location) {
     if (typeof clearPokemonConditions === "function") {
       clearPokemonConditions(dst);
     }
+    // 進化前カードを進化スタックへ保存
+    dst.previousStages = Array.isArray(dst.previousStages) ? dst.previousStages : [];
+    dst.previousStages.push(dst.card);
     dst.card = card;
     dst.abilityUsed = false;
     state.myHand.splice(handIdx, 1);
