@@ -524,13 +524,16 @@ const P2P = {
     if (this.connected && this._actionsRef) {
       console.log("[Firebase SEND]", msg?.t);
       try {
+        // Firebase RTDB はプロパティ値に undefined が含まれるとエラーを投げるため、
+        // JSON.stringify / JSON.parse を通して undefined を安全に除去して送信
+        const cleanData = JSON.parse(JSON.stringify(msg));
         this._actionsRef.push({
           sender: this.role,
-          data: msg,
+          data: cleanData,
           ts: Date.now()
         });
       } catch (err) {
-        console.warn("[Firebase SEND Error]", err);
+        console.error("[Firebase SEND Error]", err);
       }
     }
   },
