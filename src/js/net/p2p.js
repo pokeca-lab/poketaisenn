@@ -1109,7 +1109,8 @@ const P2P = {
     state.oppLostCount = s.lostCount | 0;
     state.oppActive = prePk(s.active);
     state.oppBenchLimit = s.benchLimit || 5;
-    state.oppBench = [0, 1, 2, 3, 4, 5, 6, 7].map(i => prePk((s.bench || [])[i] || null));
+    const rawBench = s.bench || {};
+    state.oppBench = [0, 1, 2, 3, 4, 5, 6, 7].map(i => prePk(rawBench[i] || null));
     state.oppPlayCard = s.playCard ? pre(s.playCard) : null;
 
     if ((s.stadiumTs | 0) > (state.stadiumTs | 0)) {
