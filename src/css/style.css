@@ -2956,7 +2956,7 @@ body.menu-open .sp-sheet {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  z-index: 150;
+  z-index: 250;
   min-width: 140px;
   max-width: 95vw;
   max-height: calc(100vh - 24px);

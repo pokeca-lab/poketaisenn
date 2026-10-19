@@ -19,7 +19,7 @@ function renderDeckModalContent() {
   const title = `山札を見る (残り ${state.myDeck.length} 枚)${selCount > 0 ? ` — <span style="color:#ffd84a;">${selCount}枚選択中</span>` : ''}`;
   let bodyHtml = `
     <div style="font-size:11px; color:#94a3b8; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
-      <span>※カードをクリック（タップ）して選択し、下部のボタンで操作してください（ダブルクリックまたは🔍で拡大）</span>
+      <span>※カードをクリックして下部ボタンで操作、または右クリックで直接操作（🔍/ダブルクリックで拡大）</span>
       ${selCount > 0 ? `<button class="btn" style="padding:2px 8px; font-size:10px;" onclick="clearDeckModalSelection()">選択解除</button>` : ''}
     </div>
     <div class="card-grid deck-select-grid">
@@ -33,8 +33,9 @@ function renderDeckModalContent() {
       <div class="card ${c.color} ${hasImg ? 'has-img' : ''} ${isSel ? 'selected' : ''}" 
            ${imgStyle}
            onclick="toggleDeckModalCard(event, ${idx})"
+           oncontextmenu="showDeckCardContextMenu(event, ${idx})"
            ondblclick="event.stopPropagation(); window.openCardZoomByUid('${c.uid}')" 
-           title="クリックで選択 / ダブルクリックで拡大">
+           title="クリックで選択 / 右クリックでメニュー / ダブルクリックで拡大">
         <div class="card-top">
           <span class="name">${c.name}</span>
           <button class="deck-zoom-icon" onclick="event.stopPropagation(); window.openCardZoomByUid('${c.uid}')" title="カードを拡大表示">🔍</button>
@@ -81,6 +82,66 @@ window.toggleDeckModalCard = function(e, idx) {
     deckModalSelected.add(idx);
   }
   renderDeckModalContent();
+};
+
+window.showDeckCardContextMenu = function(e, idx) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
+
+  const card = state.myDeck[idx];
+  if (!card) return;
+
+  // 既に複数枚選択されていて、その中のカードを右クリックした場合は選択状態を維持。
+  // 未選択のカードを右クリックした場合はそのカード1枚のみを選択状態にして即操作可能にする。
+  if (!deckModalSelected.has(idx)) {
+    deckModalSelected.clear();
+    deckModalSelected.add(idx);
+    renderDeckModalContent();
+  }
+
+  const ctx = document.getElementById("ctx");
+  if (!ctx) return;
+  ctx.classList.add("ctx-wide");
+
+  const selCount = deckModalSelected.size;
+  const targetLabel = selCount > 1 ? `選択中のカード (${selCount}枚)` : escapeHtml(card.name);
+
+  // ベンチに出せるか判定（選択された全カードがポケモンカードか）
+  const selectedCards = Array.from(deckModalSelected).map(i => state.myDeck[i]).filter(Boolean);
+  const canBench = selectedCards.length > 0 && selectedCards.every(c => c.type === "pokemon");
+
+  ctx.innerHTML = `
+    <div class="ctx-header-row">
+      <span class="ctx-title-text">${targetLabel} <small>(${escapeHtml(card.category || card.sub || '')})</small></span>
+      <button class="ctx-zoom-btn" onclick="hideCtx(); openCardZoomByUid('${card.uid}')">🔍 拡大</button>
+    </div>
+    <div class="divider"></div>
+    <div class="ctx-grid-2col">
+      <button class="ctx-span-2" style="background:#16a34a; color:#fff; font-weight:bold; font-size:12px; padding:7px 10px;" onclick="hideCtx(); pickSelectedFromDeck('hand_reveal');">📢 相手に見せて手札に加える</button>
+      <button class="ctx-span-2" style="background:#2563eb; color:#fff; font-weight:bold; font-size:12px; padding:7px 10px;" onclick="hideCtx(); pickSelectedFromDeck('hand_secret');">🤫 相手に見せずに手札に加える</button>
+      ${canBench ? `<button class="ctx-span-2" style="background:#d97706; color:#fff; font-weight:bold; font-size:12px; padding:7px 10px;" onclick="hideCtx(); pickSelectedFromDeck('bench_reveal');">🪑 相手に見せてベンチに出す</button>` : ''}
+      <button class="ctx-span-2" style="background:#b91c1c; color:#fff; font-weight:bold; font-size:12px; padding:7px 10px;" onclick="hideCtx(); pickSelectedFromDeck('trash');">🗑️ トラッシュへ送る</button>
+    </div>
+  `;
+
+  // 位置調整（画面端見切れ対策・下端オーバー時は上方向に反転展開）
+  ctx.style.visibility = "hidden";
+  ctx.classList.remove("hidden");
+  const menuW = ctx.offsetWidth || 280;
+  const menuH = ctx.offsetHeight || 220;
+  let posX = (e && e.clientX !== undefined) ? e.clientX + 10 : window.innerWidth / 2 - 140;
+  let posY = (e && e.clientY !== undefined) ? e.clientY + 10 : window.innerHeight / 2 - 110;
+
+  if (posX + menuW > window.innerWidth - 10) {
+    posX = Math.max(10, window.innerWidth - menuW - 10);
+  }
+  if (posY + menuH > window.innerHeight - 10) {
+    posY = Math.max(10, e.clientY - menuH - 8);
+  }
+  if (posY < 10) posY = 10;
+  ctx.style.left = `${posX}px`;
+  ctx.style.top = `${posY}px`;
+  ctx.style.visibility = "visible";
 };
 
 window.pickSelectedFromDeck = function(destination) {
@@ -202,13 +263,15 @@ function showCardListModal(titleText, cardList) {
     registerCard(c);
     const hasImg = !!c.imageUrl;
     const imgStyle = hasImg ? `style="background-image: url('${c.imageUrl}');"` : '';
+    const safeTitle = titleText.replace(/'/g, "\\'");
     bodyHtml += `
       <div class="card ${c.color} ${hasImg ? 'has-img' : ''}" 
            id="modal-card-${idx}"
            ${imgStyle}
            onclick="${!isOpponentList ? `toggleModalCardSelection(${idx})` : ''}"
+           oncontextmenu="${!isOpponentList ? `showTrashCardContextMenu(event, ${idx}, '${safeTitle}')` : ''}"
            ondblclick="event.stopPropagation(); window.openCardZoomByUid('${c.uid}')" 
-           title="タップで選択 / ダブルクリックで拡大">
+           title="タップで選択 / 右クリックでメニュー / ダブルクリックで拡大">
         <div class="card-top"><span class="name">${escapeHtml(c.name)}</span></div>
         <div class="card-btm"><span>${escapeHtml(c.sub || c.category || '')}</span></div>
       </div>
@@ -261,6 +324,83 @@ window.toggleModalCardSelection = function(idx) {
     const count = window._modalSelectedIndices.size;
     statusEl.textContent = count > 0 ? `選択中: ${count}枚` : "カードをタップして選択";
   }
+};
+
+window.showTrashCardContextMenu = function(e, idx, listType) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
+
+  let list = listType.includes("ロスト") ? state.myLost : state.myTrash;
+  const card = list[idx];
+  if (!card) return;
+
+  // 既に複数枚選択されていて、その中のカードを右クリックした場合は選択状態を維持。
+  // 未選択のカードを右クリックした場合はそのカード1枚のみを選択状態にして即操作可能にする。
+  if (!window._modalSelectedIndices.has(idx)) {
+    window._modalSelectedIndices.clear();
+    const grid = document.getElementById("modal-card-grid");
+    if (grid) {
+      grid.querySelectorAll(".card").forEach(el => el.classList.remove("selected"));
+    }
+    window._modalSelectedIndices.add(idx);
+    const targetCardEl = document.getElementById(`modal-card-${idx}`);
+    if (targetCardEl) targetCardEl.classList.add("selected");
+
+    const statusEl = document.getElementById("modal-sel-status");
+    if (statusEl) statusEl.textContent = `選択中: 1枚`;
+  }
+
+  const ctx = document.getElementById("ctx");
+  if (!ctx) return;
+  ctx.classList.add("ctx-wide");
+
+  const selCount = window._modalSelectedIndices.size;
+  const targetLabel = selCount > 1 ? `選択中のカード (${selCount}枚)` : escapeHtml(card.name);
+  const isTrash = listType.includes("トラッシュ");
+
+  let actionsHtml = "";
+  if (isTrash) {
+    actionsHtml = `
+      <button class="ctx-span-2" style="background:#16a34a; color:#fff; font-weight:bold; font-size:12px; padding:7px 10px;" onclick="hideCtx(); executeTrashSelectedToHand('${listType}');">🖐️ 手札に戻す</button>
+      <button class="ctx-span-2" style="background:#2563eb; color:#fff; font-weight:bold; font-size:12px; padding:7px 10px;" onclick="hideCtx(); executeTrashSelectedToDeck('${listType}');">🔀 山札に戻す（シャッフル）</button>
+      <button class="ctx-span-2" style="background:#d97706; color:#fff; font-weight:bold; font-size:12px; padding:7px 10px;" onclick="hideCtx(); executeTrashSelectedAttach('${listType}');">⚡/🎒 ポケモンにつける</button>
+    `;
+  } else {
+    // ロストゾーン等の場合
+    actionsHtml = `
+      <button class="ctx-span-2" style="background:#16a34a; color:#fff; font-weight:bold; font-size:12px; padding:7px 10px;" onclick="hideCtx(); executeTrashSelectedToHand('${listType}');">🖐️ 手札に戻す</button>
+    `;
+  }
+
+  ctx.innerHTML = `
+    <div class="ctx-header-row">
+      <span class="ctx-title-text">${targetLabel} <small>(${escapeHtml(card.category || card.sub || '')})</small></span>
+      <button class="ctx-zoom-btn" onclick="hideCtx(); openCardZoomByUid('${card.uid}')">🔍 拡大</button>
+    </div>
+    <div class="divider"></div>
+    <div class="ctx-grid-2col">
+      ${actionsHtml}
+    </div>
+  `;
+
+  // 位置調整（画面端見切れ対策・下端オーバー時は上方向に反転展開）
+  ctx.style.visibility = "hidden";
+  ctx.classList.remove("hidden");
+  const menuW = ctx.offsetWidth || 280;
+  const menuH = ctx.offsetHeight || 200;
+  let posX = (e && e.clientX !== undefined) ? e.clientX + 10 : window.innerWidth / 2 - 140;
+  let posY = (e && e.clientY !== undefined) ? e.clientY + 10 : window.innerHeight / 2 - 100;
+
+  if (posX + menuW > window.innerWidth - 10) {
+    posX = Math.max(10, window.innerWidth - menuW - 10);
+  }
+  if (posY + menuH > window.innerHeight - 10) {
+    posY = Math.max(10, e.clientY - menuH - 8);
+  }
+  if (posY < 10) posY = 10;
+  ctx.style.left = `${posX}px`;
+  ctx.style.top = `${posY}px`;
+  ctx.style.visibility = "visible";
 };
 
 window.executeTrashSelectedToHand = function(listType) {
@@ -470,6 +610,7 @@ function showModal(title, body, foot, options = {}) {
 }
 
 function closeModal() {
+  if (typeof hideCtx === "function") hideCtx();
   const modalEl = document.getElementById("modal");
   delete modalEl.dataset.noBackdropClose;
   modalEl.classList.add("hidden");
