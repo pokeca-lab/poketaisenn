@@ -162,7 +162,24 @@ function renderSetupBanner() {
     const btnReopenMulligan = document.getElementById("btn-reopen-mulligan");
     if (btnReopenMulligan) {
       const hasPendingMulligan = Array.isArray(state.pendingOppMulliganQueue) && state.pendingOppMulliganQueue.length > 0;
-      btnReopenMulligan.classList.toggle("hidden", !hasPendingMulligan);
+      const needsApproval = hasPendingMulligan || (state.oppMulliganDeclared && state.mySetupReady);
+      btnReopenMulligan.classList.toggle("hidden", !needsApproval);
+      if (needsApproval) {
+        if (hasPendingMulligan) {
+          btnReopenMulligan.textContent = "⚠️ 相手のマリガン確認待ち (開く)";
+          btnReopenMulligan.onclick = () => showNextOpponentMulliganModal();
+        } else {
+          btnReopenMulligan.textContent = "⚠️ 相手のマリガンを承認 (許可)";
+          btnReopenMulligan.onclick = () => {
+            if (typeof P2P !== "undefined" && P2P.connected) {
+              P2P.send({ t: "mulligan_ack", name: state.myName });
+            }
+            state.oppMulliganDeclared = false;
+            showToast("相手のマリガン（引き直し）を承認しました");
+            renderAll();
+          };
+        }
+      }
     }
 
     if (btnCoin) {
@@ -223,9 +240,9 @@ function renderSetupBanner() {
         btnMulligan.textContent = "⏳ 相手の準備完了待ち...";
         btnMulligan.title = "相手が準備完了するとあなたの手札7枚が公開されます";
       } else if (state.myMulliganStep === "waiting_opp_ack") {
-        btnMulligan.disabled = true;
-        btnMulligan.textContent = "🔍 相手の手札確認待ち...";
-        btnMulligan.title = "相手が手札を確認してOKを押すと7枚引き直されます";
+        btnMulligan.disabled = false;
+        btnMulligan.textContent = "🔄 手札を再公開 (再送)";
+        btnMulligan.title = "相手に確認画面が表示されていない場合、クリックして手札7枚を再送信します";
       } else if (state.myActive || hasBench || state.mySetupReady) {
         btnMulligan.disabled = true;
         btnMulligan.textContent = "🔄 たねなし引き直し (マリガン)";
@@ -268,6 +285,12 @@ function renderSetupBanner() {
           btnReady.textContent = "相手の準備待ち...";
           btnReady.classList.remove("green");
           btnReady.classList.add("gold");
+        } else if (state.myMulliganStep === "waiting_opp_ack") {
+          btnReady.disabled = false;
+          btnReady.textContent = "⏩ 確認待ちスキップ (引き直し)";
+          btnReady.classList.remove("green");
+          btnReady.classList.add("gold");
+          btnReady.title = "相手の確認画面が開かない場合、確認待ちをスキップして手札を引き直します";
         } else if (state.myMulliganStep) {
           btnReady.disabled = true;
           btnReady.textContent = "マリガン処理中...";

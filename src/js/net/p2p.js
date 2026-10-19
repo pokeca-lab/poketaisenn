@@ -205,6 +205,8 @@ const P2P = {
     this.peer = null;
     this.connected = false;
     this._closingIntentionally = false;
+    this._lastSentSnapshotJson = null;
+    this._isApplyingSnapshot = false;
   },
 
   available() {
@@ -585,16 +587,23 @@ const P2P = {
     };
   },
 
+  _isApplyingSnapshot: false,
+  _lastSentSnapshotJson: null,
+
   /** 描画のたびに呼ばれる（連続呼び出しは間引く） */
   syncSoon() {
-    if (!this._canSync()) return;
+    if (!this._canSync() || this._isApplyingSnapshot) return;
     clearTimeout(this._timer);
     this._timer = setTimeout(() => this.syncNow(), 60);
   },
 
   syncNow() {
-    if (!this._canSync()) return;
-    this.send(this.publicSnapshot());
+    if (!this._canSync() || this._isApplyingSnapshot) return;
+    const snap = this.publicSnapshot();
+    const snapJson = JSON.stringify(snap);
+    if (snapJson === this._lastSentSnapshotJson) return;
+    this._lastSentSnapshotJson = snapJson;
+    this.send(snap);
   },
 
   // ---- 受信 ----
@@ -967,11 +976,15 @@ const P2P = {
       state.oppMulliganDeclared = false;
       state.oppMulliganCount = msg.count || (state.oppMulliganCount + 1);
       addLog(`【対戦準備】相手（${msg.name || state.oppName}）がマリガン確認のため手札7枚を公開しました（${state.oppMulliganCount}回目）`, { isRemote: true });
+      const rawHand = msg.hand;
+      const handCards = Array.isArray(rawHand)
+        ? rawHand.filter(Boolean)
+        : Object.values(rawHand || {}).filter(Boolean);
       if (typeof enqueueOpponentMulliganReveal === "function") {
         enqueueOpponentMulliganReveal({
           count: state.oppMulliganCount,
           name: msg.name || state.oppName,
-          hand: Array.isArray(msg.hand) ? msg.hand : []
+          hand: handCards
         });
       }
       renderAll();
@@ -1088,66 +1101,71 @@ const P2P = {
   },
 
   _applySnapshot(s) {
-    this._lastSnap = s;
-    const pre = (c) => c ? { ...c, uid: "opp:" + String(c.uid).replace(/^(opp:)+/, "") } : c;
-    const prePk = (p) => p ? {
-      ...p,
-      card: pre(p.card),
-      energies: (p.energies || []).map(pre),
-      tool: pre(p.tool)
-    } : null;
+    this._isApplyingSnapshot = true;
+    try {
+      this._lastSnap = s;
+      const pre = (c) => c ? { ...c, uid: "opp:" + String(c.uid).replace(/^(opp:)+/, "") } : c;
+      const prePk = (p) => p ? {
+        ...p,
+        card: pre(p.card),
+        energies: (p.energies || []).map(pre),
+        tool: pre(p.tool)
+      } : null;
 
-    state.oppName = s.name || state.oppName;
-    state.oppMatId = s.matId || state.oppMatId;
-    if (s.sleeveId) state.oppSleeveId = s.sleeveId;
-    if ("sleeveDataUrl" in s) state.oppSleeveDataUrl = s.sleeveDataUrl || null;
-    if (typeof renderSleeves === "function") renderSleeves();
-    state.oppHandCount = s.handCount | 0;
-    state.oppDeckCount = s.deckCount | 0;
-    state.oppPrizes = s.prizes | 0;
-    state.oppTrash = (s.trash || []).map(pre);
-    state.oppLostCount = s.lostCount | 0;
-    state.oppActive = prePk(s.active);
-    state.oppBenchLimit = s.benchLimit || 5;
-    const rawBench = s.bench || {};
-    state.oppBench = [0, 1, 2, 3, 4, 5, 6, 7].map(i => prePk(rawBench[i] || null));
-    state.oppPlayCard = s.playCard ? pre(s.playCard) : null;
+      state.oppName = s.name || state.oppName;
+      state.oppMatId = s.matId || state.oppMatId;
+      if (s.sleeveId) state.oppSleeveId = s.sleeveId;
+      if ("sleeveDataUrl" in s) state.oppSleeveDataUrl = s.sleeveDataUrl || null;
+      if (typeof renderSleeves === "function") renderSleeves();
+      state.oppHandCount = s.handCount | 0;
+      state.oppDeckCount = s.deckCount | 0;
+      state.oppPrizes = s.prizes | 0;
+      state.oppTrash = (s.trash || []).map(pre);
+      state.oppLostCount = s.lostCount | 0;
+      state.oppActive = prePk(s.active);
+      state.oppBenchLimit = s.benchLimit || 5;
+      const rawBench = s.bench || {};
+      state.oppBench = [0, 1, 2, 3, 4, 5, 6, 7].map(i => prePk(rawBench[i] || null));
+      state.oppPlayCard = s.playCard ? pre(s.playCard) : null;
 
-    if ((s.stadiumTs | 0) > (state.stadiumTs | 0)) {
-      if (state.stadium) {
-        const old = state.stadium;
-        const oldIsMine = (!old.owner || old.owner === "me") && (!old.uid || !String(old.uid).startsWith("opp:"));
-        if (oldIsMine) {
-          state.myTrash.push(old);
-          addLog(`相手がスタジアムを出したため、自分のスタジアム「${old.name}」がトラッシュされました`, {
-            cards: [old],
-            badge: "🗑️ スタジアム破棄"
-          });
-          if (typeof SoundEffects !== "undefined") SoundEffects.playTrash();
+      if ((s.stadiumTs | 0) > (state.stadiumTs | 0)) {
+        if (state.stadium) {
+          const old = state.stadium;
+          const oldIsMine = (!old.owner || old.owner === "me") && (!old.uid || !String(old.uid).startsWith("opp:"));
+          if (oldIsMine) {
+            state.myTrash.push(old);
+            addLog(`相手がスタジアムを出したため、自分のスタジアム「${old.name}」がトラッシュされました`, {
+              cards: [old],
+              badge: "🗑️ スタジアム破棄"
+            });
+            if (typeof SoundEffects !== "undefined") SoundEffects.playTrash();
+          }
+        }
+        state.stadium = s.stadium ? { ...pre(s.stadium), owner: "opp" } : null;
+        state.stadiumTs = s.stadiumTs;
+        this._lastStadiumUid = state.stadium ? state.stadium.uid : null;
+      }
+      if ((s.turnStep | 0) > (state.turnStep | 0)) {
+        state.turnStep = s.turnStep | 0;
+        state.turn = Math.floor(((state.turnStep | 0) + 1) / 2);
+      } else if ((s.turn | 0) > state.turn) {
+        state.turn = s.turn | 0;
+      }
+
+      const game = document.getElementById("game");
+      if (game && !game.classList.contains("hidden")) {
+        if (typeof renderAll === "function") {
+          renderAll();
+        } else {
+          document.getElementById("g-opp-name").textContent = state.oppName;
+          renderOpponent();
+          renderPlayArea();
+          renderStadium();
+          renderPlaymats();
         }
       }
-      state.stadium = s.stadium ? { ...pre(s.stadium), owner: "opp" } : null;
-      state.stadiumTs = s.stadiumTs;
-      this._lastStadiumUid = state.stadium ? state.stadium.uid : null;
-    }
-    if ((s.turnStep | 0) > (state.turnStep | 0)) {
-      state.turnStep = s.turnStep | 0;
-      state.turn = Math.floor(((state.turnStep | 0) + 1) / 2);
-    } else if ((s.turn | 0) > state.turn) {
-      state.turn = s.turn | 0;
-    }
-
-    const game = document.getElementById("game");
-    if (game && !game.classList.contains("hidden")) {
-      if (typeof renderAll === "function") {
-        renderAll();
-      } else {
-        document.getElementById("g-opp-name").textContent = state.oppName;
-        renderOpponent();
-        renderPlayArea();
-        renderStadium();
-        renderPlaymats();
-      }
+    } finally {
+      this._isApplyingSnapshot = false;
     }
   },
 

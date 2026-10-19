@@ -151,6 +151,11 @@ function executeMulligan() {
     alert("バトル場やベンチにポケモンを配置した後や、準備完了後は引き直し（マリガン）できません。");
     return;
   }
+  // すでに相手の確認待ちの場合は手札の再公開（再送）を行う
+  if (state.myMulliganStep === "waiting_opp_ack") {
+    sendMulliganRevealToOpponent(true);
+    return;
+  }
   if (state.myMulliganStep) {
     return;
   }
@@ -159,7 +164,7 @@ function executeMulligan() {
   if (typeof P2P !== "undefined" && P2P.connected) {
     // すでに相手が準備完了している場合、または相手も「たねなし宣言」をしている場合は直ちに手札を公開
     if (state.oppSetupReady || state.oppMulliganDeclared) {
-      sendMulliganRevealToOpponent();
+      sendMulliganRevealToOpponent(false);
     } else {
       // 手順1: まず「たねポケモンなし」だけを宣言し、相手がバトル場・サイドを置いて準備完了するのを待つ
       state.myMulliganStep = "waiting_opp_ready";
@@ -177,9 +182,11 @@ function executeMulligan() {
 }
 
 /** 手順3: 相手の準備完了後（または双方たねなし宣言時）に自分の手札7枚を相手へ公開送信 */
-function sendMulliganRevealToOpponent() {
+function sendMulliganRevealToOpponent(isResend = false) {
   if (!state.isSetupPhase) return;
-  state.mulliganCount++;
+  if (!isResend) {
+    state.mulliganCount++;
+  }
   state.myMulliganStep = "waiting_opp_ack";
 
   if (typeof P2P !== "undefined" && P2P.connected) {
@@ -191,8 +198,11 @@ function sendMulliganRevealToOpponent() {
     });
   }
 
-  addLog(`相手（${state.oppName}）にマリガン確認のため手札7枚を公開しました（マリガン ${state.mulliganCount}回目・相手の確認待ち...）`, { suppressSync: true });
-  showToast(`手札7枚を相手に公開中... 相手の「確認OK」を待っています`);
+  const logText = isResend
+    ? `相手（${state.oppName}）にマリガン確認手札を再送信しました（相手の確認待ち...）`
+    : `相手（${state.oppName}）にマリガン確認のため手札7枚を公開しました（マリガン ${state.mulliganCount}回目・相手の確認待ち...）`;
+  addLog(logText, { suppressSync: true });
+  showToast(isResend ? `手札7枚を相手に再送信しました！` : `手札7枚を相手に公開中... 相手の「確認OK」を待っています`);
   renderAll();
 }
 
@@ -384,6 +394,13 @@ function confirmSetupReady() {
     return;
   }
 
+  if (state.myMulliganStep === "waiting_opp_ack") {
+    const ok = confirm("相手側の確認画面が開かない場合や通信が途切れた場合、確認をスキップして手札を引き直しますか？");
+    if (ok) {
+      performMulliganRedraw();
+    }
+    return;
+  }
   if (state.myMulliganStep) {
     alert("現在マリガン処理中です。引き直しが完了してから準備完了を押してください。");
     return;
