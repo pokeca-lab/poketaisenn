@@ -396,7 +396,7 @@ const VoiceChat = {
       showToast("🟢 ボイス通話が接続されました♪");
     }
 
-    this.updateChatVoiceButton();
+    this.updateAllVoiceButtons();
   },
 
   // ---- ミュート切替 ----
@@ -421,6 +421,8 @@ const VoiceChat = {
       }
     }
 
+    this.updateCallControlModal();
+
     if (typeof showToast === "function") {
       showToast(state.voiceCall.isMuted ? "🔇 マイクをミュートしました" : "🎙️ マイクのミュートを解除しました");
     }
@@ -443,7 +445,7 @@ const VoiceChat = {
 
     this.hideVoiceCallBar();
     this.resetVoiceCallState();
-    this.updateChatVoiceButton();
+    this.updateAllVoiceButtons();
   },
 
   // ---- 状態リセット＆トラック解放 ----
@@ -477,7 +479,7 @@ const VoiceChat = {
     state.voiceCall.durationSec = 0;
 
     this.hideVoiceCallBar();
-    this.updateChatVoiceButton();
+    this.updateAllVoiceButtons();
   },
 
   // ---- 画面上端の通話バー表示 ----
@@ -488,6 +490,7 @@ const VoiceChat = {
       bar.id = "voice-call-bar";
       bar.className = "voice-call-bar";
       document.body.appendChild(bar);
+      this._makeBarDraggable(bar);
     }
 
     const oppName = state.oppName || "対戦相手";
@@ -500,13 +503,13 @@ const VoiceChat = {
         </div>
         <div class="voice-info">
           <div class="voice-peer-name">${escapeHtml(oppName)} と通話中</div>
-          <div class="voice-timer" id="voice-bar-timer">00:00</div>
+          <div class="voice-timer" id="voice-bar-timer">${this.formatDuration(state.voiceCall.durationSec || 0)}</div>
         </div>
       </div>
       <div class="voice-bar-actions">
         <button class="voice-btn voice-mute-btn" id="voice-bar-mute-btn" onclick="VoiceChat.toggleMute()" title="マイクの消音切替">
-          <span>🎙️</span>
-          <span>ミュート</span>
+          <span>${state.voiceCall.isMuted ? "🔇" : "🎙️"}</span>
+          <span>${state.voiceCall.isMuted ? "ミュート中" : "ミュート"}</span>
         </button>
         <button class="voice-btn voice-end-btn" onclick="VoiceChat.endCall(true)" title="通話を終了">
           <span>🔴</span>
@@ -515,8 +518,71 @@ const VoiceChat = {
       </div>
     `;
 
+    if (state.voiceCall.isMuted) {
+      const muteBtn = bar.querySelector("#voice-bar-mute-btn");
+      if (muteBtn) muteBtn.classList.add("muted");
+    }
+
     bar.classList.remove("hidden");
     bar.classList.add("show");
+  },
+
+  // ---- 通話バーのドラッグ移動機能 ----
+  _makeBarDraggable(bar) {
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let initialLeft = 0, initialTop = 0;
+
+    const onPointerDown = (e) => {
+      // ボタン自体のクリック時はドラッグしない
+      if (e.target.closest("button")) return;
+      isDragging = true;
+      startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+      const rect = bar.getBoundingClientRect();
+      initialLeft = rect.left;
+      initialTop = rect.top;
+
+      bar.style.transition = "none";
+      bar.style.cursor = "grabbing";
+
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", onPointerUp);
+    };
+
+    const onPointerMove = (e) => {
+      if (!isDragging) return;
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+
+      const dx = clientX - startX;
+      const dy = clientY - startY;
+
+      let newLeft = initialLeft + dx;
+      let newTop = initialTop + dy;
+
+      const maxLeft = window.innerWidth - bar.offsetWidth - 8;
+      const maxTop = window.innerHeight - bar.offsetHeight - 8;
+
+      newLeft = Math.max(8, Math.min(newLeft, maxLeft));
+      newTop = Math.max(8, Math.min(newTop, maxTop));
+
+      bar.style.left = `${newLeft}px`;
+      bar.style.top = `${newTop}px`;
+      bar.style.transform = "none";
+    };
+
+    const onPointerUp = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      bar.style.cursor = "grab";
+      bar.style.transition = "";
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+
+    bar.addEventListener("pointerdown", onPointerDown);
   },
 
   hideVoiceCallBar() {
@@ -528,10 +594,18 @@ const VoiceChat = {
   },
 
   _updateDurationUI() {
+    const formatted = this.formatDuration(state.voiceCall.durationSec);
     const timerEl = document.getElementById("voice-bar-timer");
     if (timerEl) {
-      timerEl.textContent = this.formatDuration(state.voiceCall.durationSec);
+      timerEl.textContent = formatted;
     }
+
+    const modalTimer = document.getElementById("voice-modal-timer");
+    if (modalTimer) {
+      modalTimer.textContent = formatted;
+    }
+
+    this.updateAllVoiceButtons();
   },
 
   formatDuration(sec) {
@@ -540,16 +614,112 @@ const VoiceChat = {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   },
 
+  // ---- 通話ボタン押下時の振り分け ----
+  handleVoiceButtonClick() {
+    if (state.voiceCall && state.voiceCall.active) {
+      this.showCallControlModal();
+    } else {
+      this.startCall();
+    }
+  },
+
+  // ---- 通話管理モーダル（スマホ版など通話バーがない時・ボタン押下時用） ----
+  showCallControlModal() {
+    const oppName = state.oppName || "対戦相手";
+    const durStr = this.formatDuration(state.voiceCall.durationSec || 0);
+    const isMuted = !!state.voiceCall.isMuted;
+
+    const bodyHtml = `
+      <div style="text-align:center; padding:16px 10px; color:#f8fafc;">
+        <div style="font-size:42px; margin-bottom:8px; animation: voiceLivePulse 1.2s infinite ease-in-out;">🎙️</div>
+        <div style="font-size:16px; font-weight:800; color:#4ade80; margin-bottom:4px;">
+          ${escapeHtml(oppName)} さんと通話中
+        </div>
+        <div id="voice-modal-timer" style="font-size:22px; font-weight:900; font-family:monospace; color:#38bdf8; margin-bottom:18px;">
+          ${durStr}
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px; max-width:260px; margin:0 auto;">
+          <button id="modal-voice-mute-btn" class="btn ${isMuted ? 'gold' : ''}" style="padding:10px; font-size:14px; font-weight:700;" onclick="VoiceChat.toggleMute(); VoiceChat.updateCallControlModal();">
+            ${isMuted ? '🔇 マイクをミュート中 (タップで解除)' : '🎙️ マイクをミュートする'}
+          </button>
+          <button class="btn red" style="padding:10px; font-size:14px; font-weight:700;" onclick="closeModal(); VoiceChat.endCall(true);">
+            🔴 通話を終了する
+          </button>
+        </div>
+      </div>
+    `;
+
+    const footHtml = `
+      <div style="display:flex; justify-content:center; width:100%;">
+        <button class="btn" style="min-width:100px;" onclick="closeModal()">閉じる</button>
+      </div>
+    `;
+
+    if (typeof showModal === "function") {
+      showModal("🎙️ ボイス通話の管理", bodyHtml, footHtml);
+    }
+  },
+
+  updateCallControlModal() {
+    const muteBtn = document.getElementById("modal-voice-mute-btn");
+    if (!muteBtn) return;
+    const isMuted = !!state.voiceCall.isMuted;
+    if (isMuted) {
+      muteBtn.className = "btn gold";
+      muteBtn.innerHTML = "🔇 マイクをミュート中 (タップで解除)";
+    } else {
+      muteBtn.className = "btn";
+      muteBtn.innerHTML = "🎙️ マイクをミュートする";
+    }
+  },
+
+  // ---- 全通話ボタンの表示更新（赤い丸インジケーター & 通話状態） ----
+  updateAllVoiceButtons() {
+    const isInCall = !!(state.voiceCall && state.voiceCall.active);
+    const durStr = isInCall ? this.formatDuration(state.voiceCall.durationSec || 0) : "";
+
+    // 1. PC上部ヘッダー通話ボタン
+    const topBtn = document.getElementById("btn-top-voice");
+    if (topBtn) {
+      if (isInCall) {
+        topBtn.classList.add("in-call");
+        topBtn.innerHTML = `🎙️ 通話中 (${durStr})<span class="voice-live-dot"></span>`;
+        topBtn.title = "通話中（クリックで通話管理メニューを開く）";
+      } else {
+        topBtn.classList.remove("in-call");
+        topBtn.innerHTML = `🎙️ 通話`;
+        topBtn.title = "P2Pボイス通話を開始";
+      }
+    }
+
+    // 2. スマホメニュー内通話ボタン
+    const spBtn = document.getElementById("btn-sp-voice");
+    if (spBtn) {
+      if (isInCall) {
+        spBtn.classList.add("in-call");
+        spBtn.innerHTML = `🎙️ 通話中<span class="voice-live-dot"></span>`;
+        spBtn.title = "通話中（タップで通話管理メニューを開く）";
+      } else {
+        spBtn.classList.remove("in-call");
+        spBtn.innerHTML = `🎙️ 通話`;
+        spBtn.title = "P2Pボイス通話を開始";
+      }
+    }
+
+    // 3. ポケチャットモーダル内通話ボタン
+    this.updateChatVoiceButton();
+  },
+
   // ---- ポケチャットモーダル内の通話ボタン表示更新 ----
   updateChatVoiceButton() {
     const btn = document.getElementById("cute-chat-voice-btn");
     if (!btn) return;
 
     if (state.voiceCall && state.voiceCall.active) {
-      btn.innerHTML = `<span>🔴 通話中</span>`;
-      btn.className = "cute-chat-voice-btn active";
-      btn.onclick = () => VoiceChat.endCall(true);
-      btn.title = "ボイス通話を終了";
+      btn.innerHTML = `<span>🔴 通話中</span><span class="voice-live-dot"></span>`;
+      btn.className = "cute-chat-voice-btn active in-call";
+      btn.onclick = () => VoiceChat.handleVoiceButtonClick();
+      btn.title = "ボイス通話を管理";
     } else {
       btn.innerHTML = `<span>🎙️ 通話</span>`;
       btn.className = "cute-chat-voice-btn";

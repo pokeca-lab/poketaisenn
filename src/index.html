@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ポケカ オンライン対戦ツール</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=20261019_05">
 </head>
 <body>
 
@@ -370,7 +370,7 @@
       <div class="top-menu">
         <span class="room">ROOM <b id="g-room"></b></span>
         <span id="g-conn-badge" class="conn-badge offline">⚪ オフライン</span>
-        <button class="btn green" id="btn-top-voice" onclick="VoiceChat.startCall()" title="P2Pボイス通話を開始">🎙️ 通話</button>
+        <button class="btn green" id="btn-top-voice" onclick="VoiceChat.handleVoiceButtonClick()" title="P2Pボイス通話を開始">🎙️ 通話</button>
         <button class="btn blue btn-chat-trigger" id="btn-top-chat" onclick="openChatModal()" title="対戦チャットを開く" style="position:relative;">💬 チャット <span id="chat-badge" class="badge-unread hidden">0</span></button>
         <button class="btn btn-sound-toggle" id="btn-top-sound" onclick="openSoundSettingsModal()" title="効果音の音量設定"><span class="sound-icon" id="top-sound-icon">🔊</span> <span class="sound-vol-label" id="top-sound-vol-label" style="font-size:11px;">80%</span></button>
         <button class="btn" id="btn-undo" data-action="undo" title="直前の操作を1手順巻き戻します">↩️ 戻す</button>
@@ -590,7 +590,7 @@
     <button class="btn red" onclick="closeMenu(); openAttackModal();">⚔️ 技宣言</button>
     <button class="btn gold" data-action="endTurn" data-close="1">ターン終了</button>
     <button class="btn blue" onclick="closeMenu(); openChatModal();" style="position:relative;">💬 チャット <span id="sp-chat-badge" class="badge-unread hidden">0</span></button>
-    <button class="btn green" onclick="closeMenu(); VoiceChat.startCall();">🎙️ 通話</button>
+    <button class="btn green" id="btn-sp-voice" onclick="closeMenu(); VoiceChat.handleVoiceButtonClick();">🎙️ 通話</button>
     <button class="btn btn-sound-toggle" onclick="closeMenu(); openSoundSettingsModal();" title="効果音の音量設定"><span id="sp-sound-icon">🔊</span> 音量 (<span id="sp-sound-vol-label">80%</span>)</button>
     <button class="btn" data-action="coin" data-close="1">🪙 コイン</button>
     <button class="btn" id="btn-sp-undo" data-action="undo" data-close="1">↩️ 1手順戻す</button>
@@ -917,29 +917,29 @@
 <!-- Firebase SDK (Realtime Database for reliable online battle & signaling) -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-<script src="js/data/cards.js?v=20261019_04"></script>
-<script src="js/data/deck-parser.js?v=20261019_04"></script>
-<script src="js/util.js?v=20261019_04"></script>
-<script src="js/data/playmats-default.js?v=20261019_04"></script>
-<script src="js/data/sleeves-default.js?v=20261019_04"></script>
-<script src="js/sound/sound.js?v=20261019_04"></script>
-<script src="js/state.js?v=20261019_04"></script>
-<script src="js/game/hand-actions.js?v=20261019_04"></script>
-<script src="js/game/actions.js?v=20261019_04"></script>
-<script src="js/game/setup.js?v=20261019_04"></script>
-<script src="js/game/replay.js?v=20261019_04"></script>
-<script src="js/ui/marquee.js?v=20261019_04"></script>
-<script src="js/ui/touch-dnd.js?v=20261019_04"></script>
-<script src="js/ui/render.js?v=20261019_04"></script>
-<script src="js/ui/modals.js?v=20261019_04"></script>
-<script src="js/ui/tts-settings.js?v=20261019_04"></script>
-<script src="js/ui/sound-settings.js?v=20261019_04"></script>
-<script src="js/ui/lobby.js?v=20261019_04"></script>
-<script src="js/ui/playmat.js?v=20261019_04"></script>
-<script src="js/ui/sleeve.js?v=20261019_04"></script>
-<script src="js/net/firebase-config.js?v=20261019_04"></script>
-<script src="js/net/p2p.js?v=20261019_04"></script>
-<script src="js/net/voice.js?v=20261019_04"></script>
-<script src="js/main.js?v=20261019_04"></script>
+<script src="js/data/cards.js?v=20261019_05"></script>
+<script src="js/data/deck-parser.js?v=20261019_05"></script>
+<script src="js/util.js?v=20261019_05"></script>
+<script src="js/data/playmats-default.js?v=20261019_05"></script>
+<script src="js/data/sleeves-default.js?v=20261019_05"></script>
+<script src="js/sound/sound.js?v=20261019_05"></script>
+<script src="js/state.js?v=20261019_05"></script>
+<script src="js/game/hand-actions.js?v=20261019_05"></script>
+<script src="js/game/actions.js?v=20261019_05"></script>
+<script src="js/game/setup.js?v=20261019_05"></script>
+<script src="js/game/replay.js?v=20261019_05"></script>
+<script src="js/ui/marquee.js?v=20261019_05"></script>
+<script src="js/ui/touch-dnd.js?v=20261019_05"></script>
+<script src="js/ui/render.js?v=20261019_05"></script>
+<script src="js/ui/modals.js?v=20261019_05"></script>
+<script src="js/ui/tts-settings.js?v=20261019_05"></script>
+<script src="js/ui/sound-settings.js?v=20261019_05"></script>
+<script src="js/ui/lobby.js?v=20261019_05"></script>
+<script src="js/ui/playmat.js?v=20261019_05"></script>
+<script src="js/ui/sleeve.js?v=20261019_05"></script>
+<script src="js/net/firebase-config.js?v=20261019_05"></script>
+<script src="js/net/p2p.js?v=20261019_05"></script>
+<script src="js/net/voice.js?v=20261019_05"></script>
+<script src="js/main.js?v=20261019_05"></script>
 </body>
 </html>
