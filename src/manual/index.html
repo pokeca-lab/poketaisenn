@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ポケカラボアリーナ (ポケアリ) 公式操作マニュアル</title>
-  <link rel="stylesheet" href="css/manual.css?v=20261019_06">
+  <link rel="stylesheet" href="css/manual.css?v=20261020_01">
 </head>
 <body>
 
@@ -18,6 +18,7 @@
       <a href="../index.html" class="nav-btn nav-btn-primary sp-lobby-btn">🎮 ロビーへ</a>
     </div>
     <div class="manual-nav-links">
+      <a href="#cheatsheet" class="nav-btn nav-btn-outline" style="border-color:#3b82f6; color:#1d4ed8; font-weight:bold;">📋 操作一覧表</a>
       <a href="#flow" class="nav-btn nav-btn-outline">🔄 対戦の流れ</a>
       <a href="#sec-07" class="nav-btn nav-btn-outline">💬 通話・チャット</a>
       <a href="#sec-10" class="nav-btn nav-btn-outline">📝 更新履歴</a>
@@ -96,32 +97,239 @@
           <p class="flow-step-desc">手札使用枠（5秒後自動トラッシュ）、ポケモン進化、どうぐ・エネ装着（D&D・メニュー両対応！）</p>
         </a>
 
-        <a href="#sec-04" class="flow-step-card">
-          <span class="flow-step-badge">STEP 4</span>
+        <a href="#sec-deck-trash" class="flow-step-card" style="border-left: 4px solid #8b5cf6;">
+          <span class="flow-step-badge" style="background:#8b5cf6;">STEP 4</span>
           <div class="flow-step-title">
-            <span>④ 気絶 ＆ サイドめくり</span>
+            <span>④ 山札・トラッシュ・スタジアム</span>
+            <span class="flow-step-arrow">→</span>
+          </div>
+          <p class="flow-step-desc">山札確認＆シャッフル、トラッシュ回収（右クリック・選択実行）、スタジアム配置</p>
+        </a>
+
+        <a href="#sec-04" class="flow-step-card">
+          <span class="flow-step-badge">STEP 5</span>
+          <div class="flow-step-title">
+            <span>⑤ 気絶 ＆ サイドめくり</span>
             <span class="flow-step-arrow">→</span>
           </div>
           <p class="flow-step-desc">HP 0で気絶処理、サイド取得モーダルで3Dカードをめくって手札へ</p>
         </a>
 
         <a href="#sec-05" class="flow-step-card">
-          <span class="flow-step-badge">STEP 5</span>
+          <span class="flow-step-badge">STEP 6</span>
           <div class="flow-step-title">
-            <span>⑤ トラッシュ・巻き戻し</span>
+            <span>⑥ 巻き戻し（Undo）</span>
             <span class="flow-step-arrow">→</span>
           </div>
-          <p class="flow-step-desc">トラッシュからの回収、1手順巻き戻し（Undo）機能</p>
+          <p class="flow-step-desc">操作を誤った時の1手順巻き戻し（Undo）機能、ロストゾーン管理</p>
         </a>
 
         <a href="#sec-07" class="flow-step-card">
           <span class="flow-step-badge loop">COMMUNICATION</span>
           <div class="flow-step-title">
-            <span>⑥ 技宣言・チャット・通話</span>
+            <span>⑦ 技宣言・チャット・通話</span>
             <span class="flow-step-arrow">→</span>
           </div>
           <p class="flow-step-desc">⚔️技宣言カットイン、💬かわいい対戦チャット、🎙️通話アプリ不要の無料ボイス通話</p>
         </a>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         操作チートシート（全操作一覧表）
+         ===================================================== -->
+    <section class="cheat-section" id="cheatsheet">
+      <div class="section-head">
+        <h2 class="section-title">📋 操作チートシート（全操作一覧表）</h2>
+        <span style="font-size:12px; color:var(--text-muted); font-weight:bold;">※ 初めての方もこれを見ればすべての操作がすぐに分かります</span>
+      </div>
+      <p style="margin: 0 0 12px; font-size: 13.5px; color: #475569;">
+        ポケカラボアリーナのすべての操作を分かりやすく整理しました。PCのマウス操作とスマートフォンのタッチ操作の両方に対応しています。
+      </p>
+
+      <div class="cheat-table-wrap">
+        <table class="cheat-table">
+          <thead>
+            <tr>
+              <th style="width:130px;">エリア・対象</th>
+              <th style="width:170px;">やりたい操作</th>
+              <th>🖥️ PC（マウス操作）</th>
+              <th>📱 スマホ（タッチ操作）</th>
+              <th style="width:230px;">ポイント・補足</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 手札エリア -->
+            <tr class="cheat-cat-row">
+              <td colspan="5">🎴 手札の操作（カードを使う・出す・つける）</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">たねポケモン</td>
+              <td><b>場（バトル場／ベンチ）に出す</b></td>
+              <td><span class="op-badge op-badge-pc">🖱️ ドラッグ</span> 出したい枠へドロップ<br><span class="op-badge op-badge-pc">🖱️ 右クリック</span> 「バトル場に出す」または「ベンチに出す」</td>
+              <td><span class="op-badge op-badge-sp">👆 長押し</span> 「バトル場に出す」または「ベンチに出す」をタップ</td>
+              <td>空いている枠に直接置けます。右クリック／長押しなら誤操作なく確実です。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">進化ポケモン</td>
+              <td><b>進化させる</b></td>
+              <td><span class="op-badge op-badge-pc">🖱️ ドラッグ</span> 進化元ポケモンの上へ重ねる<br><span class="op-badge op-badge-pc">🖱️ 右クリック</span> 進化先ポケモン名を選択</td>
+              <td><span class="op-badge op-badge-sp">👆 長押し</span> 進化先ポケモン名をタップ</td>
+              <td>進化元のカードは下敷きとして安全に保持されます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">グッズ・サポート</td>
+              <td><b>カードを使う</b></td>
+              <td><span class="op-badge op-badge-pc">🖱️ ドラッグ</span> 中央の「カード使用枠」へドロップ<br><span class="op-badge op-badge-pc">🖱️ 右クリック</span> 「使用する」</td>
+              <td><span class="op-badge op-badge-sp">👆 長押し</span> 「使用する」をタップ</td>
+              <td>使用枠に置かれると相手画面にも表示され、5秒後に自動でトラッシュへ移動します。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">エネルギー・どうぐ</td>
+              <td><b>ポケモンにつける</b></td>
+              <td><span class="op-badge op-badge-pc">🖱️ ドラッグ</span> つけたいポケモンの上へドロップ<br><span class="op-badge op-badge-pc">🖱️ 右クリック</span> つけたいポケモン名を選択</td>
+              <td><span class="op-badge op-badge-sp">👆 長押し</span> つけたいポケモン名をタップ</td>
+              <td>つけたエネルギーやどうぐは、ポケモンのカード枠内にバッジ表示されます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">スタジアム</td>
+              <td><b>スタジアムを場に出す</b></td>
+              <td><span class="op-badge op-badge-pc">🖱️ ドラッグ</span> 中央の「スタジアム枠」へドロップ<br><span class="op-badge op-badge-pc">🖱️ 右クリック</span> 「🏟️ スタジアムとして場に出す」</td>
+              <td><span class="op-badge op-badge-sp">👆 長押し</span> 「🏟️ スタジアムとして場に出す」をタップ</td>
+              <td>すでに出ていた古いスタジアムは、自動で持ち主のトラッシュへ送られます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">手札の複数カード</td>
+              <td><b>山札に戻す／トラッシュする</b></td>
+              <td><span class="op-badge op-badge-pc">🖱️ クリック</span> カードを選んでから下部ボタン<br>（未選択で押すと全戻し／全トラッシュ確認）</td>
+              <td><span class="op-badge op-badge-sp">👆 タップ</span> カードを選んで下部シートのボタン<br>（未選択時は全戻し確認ダイアログ表示）</td>
+              <td>博士の研究やナンジャモなどの手札流しに便利です。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">手札のカード</td>
+              <td><b>大きく拡大して見る</b></td>
+              <td><span class="op-badge op-badge-pc">🖱️ ダブルクリック</span> カードを拡大表示</td>
+              <td><span class="op-badge op-badge-sp">👆 タップ</span> 下部シート内の「カード拡大表示」</td>
+              <td>カードの効果テキストや技のダメージを大画面で確認できます。</td>
+            </tr>
+
+            <!-- 場のポケモンエリア -->
+            <tr class="cheat-cat-row">
+              <td colspan="5">⚔️ 場のポケモンの操作（バトル場・ベンチ）</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">自分／相手のポケモン</td>
+              <td><b>ダメカンを乗せる・減らす</b></td>
+              <td colspan="2"><span class="op-badge op-badge-pc">🖱️ クリック</span> または <span class="op-badge op-badge-sp">👆 タップ</span><br>開いたメニューで「+10」「+50」「+100」「-10」などのボタンを押す</td>
+              <td><b>相手のポケモンも自分で直接操作可能</b>です。技ダメージを手動で乗せてください。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">自分／相手のポケモン</td>
+              <td><b>特殊状態をつける・治す</b></td>
+              <td colspan="2"><span class="op-badge op-badge-pc">🖱️ クリック</span> または <span class="op-badge op-badge-sp">👆 タップ</span><br>メニューから「どく」「やけど」「まひ」「ねむり」「こんらん」「回復」を選択</td>
+              <td>状態異常のエフェクトがカード上に反映されます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">自分のポケモン</td>
+              <td><b>位置を入れ替える（にげる等）</b></td>
+              <td><span class="op-badge op-badge-pc">🖱️ ドラッグ</span> バトル場からベンチ、またはベンチからバトル場へドラッグ</td>
+              <td><span class="op-badge op-badge-sp">👆 スワイプ</span> カードを目的の枠へスワイプ移動</td>
+              <td>ポケモン同士の位置がスムーズに入れ替わります。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">相手のポケモン</td>
+              <td><b>相手ベンチを呼ぶ（ボスの指令等）</b></td>
+              <td colspan="2"><span class="op-badge op-badge-pc">🖱️ ドラッグ</span> または <span class="op-badge op-badge-sp">👆 スワイプ</span><br><b>相手のベンチポケモンを掴み、相手のバトル場へ直接ドラッグ＆ドロップ！</b></td>
+              <td>相手に依頼することなく、自分の手で直接呼び出せます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">自分／相手のポケモン</td>
+              <td><b>気絶させる</b></td>
+              <td colspan="2"><span class="op-badge op-badge-pc">🖱️ クリック</span> または <span class="op-badge op-badge-sp">👆 タップ</span><br>メニューから「気絶させる」を選択</td>
+              <td>ついていたエネルギー・どうぐ・進化前のカードもまとめてトラッシュへ送られます。</td>
+            </tr>
+
+            <!-- 山札・トラッシュ・スタジアム -->
+            <tr class="cheat-cat-row">
+              <td colspan="5">📚 山札・トラッシュ・スタジアムの操作</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">山札</td>
+              <td><b>1枚引く（ドロー）</b></td>
+              <td colspan="2"><span class="op-badge op-badge-pc">⚡ 自動</span> <b>自分のターン開始時に山札から自動で1枚引かれます</b>（引く操作は不要）。<br>効果で追加ドローしたい場合はメニューの「1枚引く」を押します。</td>
+              <td>最初のターン開始時も自動で引かれます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">山札</td>
+              <td><b>中身を見る・カードを探す</b></td>
+              <td colspan="2"><span class="op-badge op-badge-pc">🖱️ クリック</span> または <span class="op-badge op-badge-sp">👆 タップ</span> で山札一覧を開く<br>
+              ① カード選択 ＋ 下部ボタン（手札／ベンチ／トラッシュ）<br>
+              ② <b>カードを右クリック（スマホ長押し）して直接操作</b></td>
+              <td>相手に見せる・見せないをボタンで選択可能。カード右上の🔍で拡大できます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">山札</td>
+              <td><b>シャッフルして戻す</b></td>
+              <td colspan="2">山札画面右下の「シャッフルして閉じる」ボタンを押す</td>
+              <td>ランダムにシャッフルされて山札が閉じます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">トラッシュ</td>
+              <td><b>中身を見る・回収する</b></td>
+              <td colspan="2"><span class="op-badge op-badge-pc">🖱️ クリック</span> または <span class="op-badge op-badge-sp">👆 タップ</span> でトラッシュ一覧を開く<br>
+              ① カード選択 ＋ 下部ボタン（手札に戻す／山札に戻す／場につける）<br>
+              ② <b>カードを右クリック（スマホ長押し）して直接操作</b></td>
+              <td>「夜のタンカ」「すごいつりざお」等で使用。相手のトラッシュも同様に閲覧可能です。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">スタジアム</td>
+              <td><b>効果確認・トラッシュ</b></td>
+              <td colspan="2"><span class="op-badge op-badge-pc">🖱️ クリック</span> または <span class="op-badge op-badge-sp">👆 タップ</span><br>スタジアムの拡大表示、トラッシュ／ロストへの移動メニューが開きます</td>
+              <td>効果テキストの確認や、効果による破棄を手動で行えます。</td>
+            </tr>
+
+            <!-- サイド・対戦進行 -->
+            <tr class="cheat-cat-row">
+              <td colspan="5">🏆 サイド・対戦進行・コミュニケーション</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">サイドカード</td>
+              <td><b>サイドを取る</b></td>
+              <td colspan="2">相手ポケモンを気絶させるとサイド画面が自動起動。<br><b>取りたいカードをクリック（タップ）すると、めくって手札に加わります。</b></td>
+              <td>相手の画面には「相手がサイド取得中...」が表示されます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">技宣言</td>
+              <td><b>ワザを宣言する</b></td>
+              <td colspan="2">バトル場横の<b>「⚔️ 技宣言」</b>ボタンを押す（スマホは操作メニュー内）。<br>技名を入力（省略・EnterのみもOK）して決定！</td>
+              <td>相手画面に大迫力のカットインが表示されます。ダメージは手動で乗せてください。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">ターン終了</td>
+              <td><b>手番を相手に渡す</b></td>
+              <td colspan="2">画面右下の<b>「ターン終了」</b>ボタンを押す（スマホは操作メニュー内）。</td>
+              <td>相手のターンへ移行し、相手の山札から自動ドローされます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">巻き戻し</td>
+              <td><b>1手順前に戻す (Undo)</b></td>
+              <td colspan="2">画面上部またはメニューの<b>「↩️ 1手順巻き戻す」</b>ボタンを押す</td>
+              <td>カードの引き間違いや誤配置を直前の状態へ安全に戻せます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">対戦チャット</td>
+              <td><b>メッセージを送る</b></td>
+              <td colspan="2">画面右上の<b>「💬」</b>アイコンを押す → 定型文ボタンまたは自由入力で送信</td>
+              <td>可愛いマカロン風チップで挨拶や連絡をワンタップ送信できます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">ボイス通話</td>
+              <td><b>相手と通話する</b></td>
+              <td colspan="2"><b>「🎙️ 通話」</b>ボタンを押して相手を呼び出し、相手が受託すると通話開始</td>
+              <td>通話アプリ不要・完全無料。通話バーはドラッグで好きな位置へ移動できます。</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -243,21 +451,12 @@
           </div>
         </div>
 
-        <!-- 💡 Notice: 通信サーバー強化と接続のヒント -->
-        <div class="callout callout-important" style="margin-top:18px; border-left-color:#059669; background:#f0fdf4;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <span style="font-size:18px;">✨</span>
-            <b style="font-size:15px; color:#15803d;">通信サーバー強化：あらゆるネットワーク環境で接続可能になりました！</b>
-          </div>
-          <p style="font-size:13px; line-height:1.75; margin:0 0 8px 0; color:#166534;">
-            Google Firebase リアルタイム通信基盤を導入したことで、従来のP2P通信で失敗しやすかった学校・オフィスの保護Wi-Fiや、スマートフォンのモバイル回線（4G/5G）でも、Web標準ポートを通じて<b>確実に相手とルーム同期・オンライン対戦</b>ができるようになりました。
-          </p>
-          <div style="background:#ffffff; border:1.5px solid #86efac; border-radius:8px; padding:10px 14px; font-size:13px; color:#15803d; line-height:1.7;">
-            <b>💡 接続待ちが進まない場合の確認ポイント</b><br>
-            ・ホストとゲストで入力した「6桁のルーム番号」が一致しているかご確認ください。<br>
-            ・画面右上の「接続状態」が🟢（オンライン接続確立）になると自動で対戦開始ボタンが有効化されます。<br>
-            ・万が一回線が瞬断した場合でも、同じルーム番号で再接続が可能です。
-          </div>
+        <!-- 💡 接続のヒント -->
+        <div class="callout callout-note" style="margin-top:18px;">
+          <b>💡 接続がうまくいかない場合のチェックポイント</b><br>
+          ・ホストとゲストで入力した「4桁のルーム番号」が完全に一致しているかご確認ください。<br>
+          ・画面右上の「接続状態」が 🟢（接続中）になると、自動的に「対戦を開始する」ボタンが押せるようになります。<br>
+          ・万が一通信が途切れてしまった場合でも、同じ4桁のルーム番号を入力すればすぐに元の対戦に復帰できます。
         </div>
       </div>
 
@@ -300,7 +499,7 @@
 
           <div class="callout callout-note" style="margin-top:14px; background:#ffffff;">
             <b>💾 ブラウザ自動保存（再登録の手間なし）</b><br>
-            登録したオリジナル画像はお使いのブラウザ内（LocalStorage）に自動保存されます。一度登録しておけば、ページを閉じたり次回以降アクセスした際も登録一覧に残り続けるため、クリックして選ぶだけでいつでも使えます！
+            登録したオリジナル画像はお使いのブラウザに自動保存されます。一度登録しておけば、ページを閉じたり次回以降アクセスした際も登録一覧に残り続けるため、クリックして選ぶだけでいつでも使えます！
           </div>
         </div>
       </div>
@@ -563,10 +762,157 @@
     </article>
 
     <!-- =====================================================
-         第4章：ポケモンの気絶と勝利
+         第4章：山札・トラッシュ・スタジアムの操作
+         ===================================================== -->
+    <article class="manual-chapter" id="sec-deck-trash">
+      <div class="chapter-number">CHAPTER 04</div>
+      <h2 class="chapter-title">📚 山札・トラッシュ・スタジアムの操作（確認・回収・場への配置）</h2>
+
+      <p>
+        ポケカの対戦において最も頻度の高い「山札からカードを探す」「トラッシュからカードを回収する」「スタジアムを場に出す」操作について解説します。<br>
+        本ツールでは、直感的な操作に加え、<b>「カード選択 ＋ 下部ボタン実行」</b>および<b>「右クリック／長押しコンテキストメニュー」</b>によるクイック操作に完全対応しています。
+      </p>
+
+      <!-- 1. 山札を見る・探す -->
+      <div class="subsection">
+        <h3 class="subsection-title">1. 🔍 山札を見る・カードを探す（ボール系グッズ・サーチ特性）</h3>
+        <p>
+          自陣の山札をクリック（スマホはタップ）すると、<b>山札の中身を一覧表示するモーダル画面</b>が開きます（残り枚数もタイトルに表示されます）。
+        </p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin:14px 0;">
+          <div style="background:var(--bg-card-sub); border:1.5px solid var(--border-card); border-radius:var(--radius-sm); padding:14px;">
+            <div style="font-weight:bold; color:var(--primary-blue); font-size:14px; margin-bottom:6px;">🖱️ 操作方法①：カード選択 ＋ 下部ボタンで実行</div>
+            <p style="font-size:13px; line-height:1.6; margin:0 0 8px 0;">
+              手札に加えたいカードをクリックして選択（金色の枠が点灯、複数枚選択も可能）し、画面下部の目的のアクションボタンを押します。
+            </p>
+            <ul style="margin:0; padding-left:18px; font-size:12px; color:#475569; line-height:1.7;">
+              <li><b>「📢 相手に見せて手札に加える」</b>：ネストボールやハイパーボールなど、手札に加えるカードを相手に見せる場合</li>
+              <li><b>「🤫 相手に見せずに手札に加える」</b>：非公開で手札に加える場合</li>
+              <li><b>「🪑 相手に見せてベンチに出す」</b>：山札から直接ベンチへ配置する場合</li>
+              <li><b>「🗑️ トラッシュ」</b>：山札から直接トラッシュへ送る場合</li>
+            </ul>
+          </div>
+
+          <div style="background:var(--bg-card-sub); border:1.5px solid #8b5cf6; border-radius:var(--radius-sm); padding:14px;">
+            <div style="font-weight:bold; color:#7c3aed; font-size:14px; margin-bottom:6px;">⚡ 操作方法②：右クリック／長押しコンテキストメニュー（★超便利！）</div>
+            <p style="font-size:13px; line-height:1.6; margin:0 0 8px 0;">
+              山札内のカードを<b>PCなら右クリック</b>、<b>スマホなら長押し</b>すると、そのカード専用の操作メニューがその場にポップアップします！
+            </p>
+            <ul style="margin:0; padding-left:18px; font-size:12px; color:#475569; line-height:1.7;">
+              <li>事前に選択していなくても、そのカードを<b>1クリックで「手札に加える」「ベンチに出す」「トラッシュ」</b>できます。</li>
+              <li>複数枚選択している場合は、選択したすべてのカードを一括で移動できます。</li>
+              <li>手札の右クリック操作と同じ感覚で、迷わずスピーディーにプレイできます。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-note" style="margin-top:10px;">
+          <b>🔍 カードの拡大表示 ＆ シャッフルして閉じる</b><br>
+          ・カード右上の<b>「🔍」アイコン</b>を押すか、カードを<b>ダブルクリック</b>（または右クリックメニューの「拡大」）すると、最前面に大きく拡大表示して効果テキストや技を確認できます。「閉じる」を押せば山札画面を維持したまま戻れます。<br>
+          ・カードを探し終わったら、下部右側の<b>「シャッフルして閉じる」ボタン</b>を押すことで、山札を綺麗に混ぜて閉じることができます。
+        </div>
+      </div>
+
+      <!-- 2. トラッシュの確認・回収 -->
+      <div class="subsection">
+        <h3 class="subsection-title">2. ♻️ トラッシュの確認・回収（夜のタンカ・すごいつりざお等）</h3>
+        <p>
+          自陣のトラッシュ枠をクリック（タップ）すると、<b>現在トラッシュにあるカードの一覧画面</b>が開きます。
+        </p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin:14px 0;">
+          <div style="background:var(--bg-card-sub); border:1.5px solid var(--border-card); border-radius:var(--radius-sm); padding:14px;">
+            <div style="font-weight:bold; color:var(--primary-blue); font-size:14px; margin-bottom:6px;">🖱️ 操作方法①：カード選択 ＋ 下部ボタン</div>
+            <p style="font-size:13px; line-height:1.6; margin:0 0 8px 0;">
+              戻したいカードをクリックして選択し、下部ボタンで実行します。
+            </p>
+            <ul style="margin:0; padding-left:18px; font-size:12px; color:#475569; line-height:1.7;">
+              <li><b>「✋ 手札に戻す」</b>：「夜のタンカ」「ともだちてちょう」などで手札へ回収</li>
+              <li><b>「🔄 山札に戻す」</b>：「すごいつりざお」などで山札へ戻す</li>
+              <li><b>「⚡ 場のポケモンにつける」</b>：「ダークパッチ」などでトラッシュのエネルギーを直接場へ装着</li>
+              <li><b>「🌌 ロストゾーンへ送る」</b>：ロストゾーンへ移動</li>
+            </ul>
+          </div>
+
+          <div style="background:var(--bg-card-sub); border:1.5px solid #8b5cf6; border-radius:var(--radius-sm); padding:14px;">
+            <div style="font-weight:bold; color:#7c3aed; font-size:14px; margin-bottom:6px;">⚡ 操作方法②：右クリック／長押しコンテキストメニュー</div>
+            <p style="font-size:13px; line-height:1.6; margin:0 0 8px 0;">
+              トラッシュ内のカードを<b>右クリック（スマホは長押し）</b>すると、メニューがポップアップします。
+            </p>
+            <ul style="margin:0; padding-left:18px; font-size:12px; color:#475569; line-height:1.7;">
+              <li>目的のカードを直接「手札に戻す」「山札に戻す」「場のポケモンにつける」「拡大」できます。</li>
+              <li>ダブルクリックやメニューの「拡大」を押せば、いつでもカードを最前面で大きく確認可能です。</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="callout callout-important" style="margin-top:10px;">
+          <b>✨ 【安心仕様】進化元ポケモンも確実に回収できます</b><br>
+          進化ポケモン（ドロンチやドラパルトexなど）がトラッシュされた際、進化元のたねポケモン（ドラメシヤなど）もトラッシュにきちんと保持されます。「夜のタンカ」等で進化元のたねポケモンだけを手札へ回収したい場合も、トラッシュ一覧から確実に選んで回収できます。
+        </div>
+
+        <div class="callout callout-note" style="margin-top:10px;">
+          <b>💡 相手のトラッシュも確認可能</b><br>
+          相手陣地のトラッシュ枠をクリックすると、相手が使用・トラッシュしたカードの一覧をいつでも確認できます。相手の残りのボスの指令やエネルギーの枚数を確認する際にとても便利です。
+        </div>
+
+        <!-- 実画面操作動画⑧：トラッシュからの回収・装着 -->
+        <div class="demo-video-box" style="margin-top:20px;">
+          <div class="demo-header">
+            <div class="demo-title"><span>🎬 実画面操作動画⑧：トラッシュからの回収・手札戻し</span></div>
+            <span style="font-size:11px; color:#38bdf8; font-weight:bold;">● 本ツールの実際の画面録画</span>
+          </div>
+          <div class="actual-video-container">
+            <video class="actual-demo-video" src="video/demo8.webm" autoplay loop muted playsinline controls></video>
+          </div>
+          <div class="demo-caption-bar"><span class="demo-step-num">実画面操作</span><span class="demo-step-text">トラッシュ枠をクリックして一覧を開き、ドラメシヤを選択して「手札に戻す」で手札へ収める一連の操作！</span></div>
+        </div>
+
+        <!-- 実際のトラッシュモーダル写真 -->
+        <figure class="screen-figure" style="max-width:640px; margin:20px auto;">
+          <img src="img/actual_trash_modal.png" alt="実際のトラッシュ操作モーダル画面（本ツール）" class="screen-img">
+          <figcaption class="screen-caption">▲ 実際のトラッシュ操作画面（指定デッキ1のトラッシュ一覧、カード選択と下部アクションバー）</figcaption>
+        </figure>
+      </div>
+
+      <!-- 3. スタジアムの出し方と使い方 -->
+      <div class="subsection">
+        <h3 class="subsection-title">3. 🏟️ スタジアムの出し方と使い方</h3>
+        <p>
+          スタジアムカード（「ボウルタウン」「大空洞」「ジャミングタワー」など）は、場全体に効果をもたらす重要なカードです。<br>
+          本ツールでは、以下の<b>2つの方法</b>で簡単かつ確実に場へ出すことができます。
+        </p>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin:14px 0;">
+          <div style="background:var(--bg-card-sub); border:1.5px solid var(--border-card); border-radius:var(--radius-sm); padding:14px;">
+            <div style="font-weight:bold; color:var(--primary-blue); font-size:14px; margin-bottom:6px;">🖱️ 方法①：ドラッグ＆ドロップ（直感操作）</div>
+            <p style="font-size:13px; line-height:1.6; margin:0;">
+              手札にあるスタジアムカードをマウスや指で掴み、バトル場とベンチの間（画面中央）にある<b>「スタジアム枠」</b>へ直接ドラッグ＆ドロップします。
+            </p>
+          </div>
+
+          <div style="background:var(--bg-card-sub); border:1.5px solid #38bdf8; border-radius:var(--radius-sm); padding:14px;">
+            <div style="font-weight:bold; color:#0284c7; font-size:14px; margin-bottom:6px;">📋 方法②：右クリック／長押しメニュー操作（確実・スマホ推奨）</div>
+            <p style="font-size:13px; line-height:1.6; margin:0;">
+              手札のスタジアムカードを<b>右クリック（スマホは長押し）</b>すると、メニューに<b>「🏟️ スタジアムとして場に出す」</b>が表示されます。クリックするだけで瞬時に配置完了します！
+            </p>
+          </div>
+        </div>
+
+        <div class="callout callout-note" style="margin-top:10px;">
+          <b>🔄 スタジアムの張替え（旧スタジアムの自動トラッシュ）</b><br>
+          すでに場にスタジアムが出ている状態で新しいスタジアムを場に出した場合、<b>以前に出ていた古いスタジアムは自動的に持ち主のトラッシュへ送られます</b>。手動で片付ける必要はありません。<br>
+          また、場に出ているスタジアムをクリックすると、効果テキストの拡大確認や、手動でのトラッシュ・ロストゾーンへの移動が可能です。
+        </div>
+      </div>
+    </article>
+
+    <!-- =====================================================
+         第5章：ポケモンの気絶と勝利
          ===================================================== -->
     <article class="manual-chapter" id="sec-04">
-      <div class="chapter-number">CHAPTER 04</div>
+      <div class="chapter-number">CHAPTER 05</div>
       <h2 class="chapter-title">🏆 ポケモンの気絶とサイド取得・勝利条件</h2>
 
       <p>
@@ -621,75 +967,43 @@
     </article>
 
     <!-- =====================================================
-         第5章：トラッシュ・ロスト・巻き戻し
+         第6章：巻き戻し（Undo）・ロストゾーン
          ===================================================== -->
     <article class="manual-chapter" id="sec-05">
-      <div class="chapter-number">CHAPTER 05</div>
-      <h2 class="chapter-title">♻️ トラッシュ・ロストゾーン・巻き戻し（Undo）</h2>
+      <div class="chapter-number">CHAPTER 06</div>
+      <h2 class="chapter-title">↩️ 1手順巻き戻し（Undo）・ロストゾーン</h2>
+
+      <p>
+        操作を誤ってしまった場合の巻き戻し機能や、ロストゾーンへの送り方について解説します。<br>
+        <span style="font-size:12.5px; color:#64748b;">※山札・トラッシュの詳しい操作方法（夜のタンカやすごいつりざお等の回収）は <a href="#sec-deck-trash" style="color:var(--primary-blue); font-weight:bold;">第4章</a> をご覧ください。</span>
+      </p>
 
       <div class="subsection">
-        <h3 class="subsection-title">1. トラッシュへの送り方 ＆ カードの回収・再利用</h3>
+        <h3 class="subsection-title">1. ↩️ 1手順巻き戻す（Undo機能）</h3>
         <p>
-          本ツールでは、カードをトラッシュへ送る操作も、トラッシュからカードを回収・再利用する操作も、すべて直感的に行えます。
+          「誤ってカードを引いてしまった」「出すポケモンや手札を間違えた」「ダメカンの数を間違えた」場合、画面上部またはメニューの<b>「↩️ 1手順巻き戻す」ボタン</b>を押すことで、直前の状態へ安全に巻き戻せます。
         </p>
-
-        <h4 style="color:#38bdf8; font-size:15px; margin:16px 0 8px;">【カードをトラッシュへ送る方法】</h4>
         <ul style="margin-left:20px; line-height:1.7;">
-          <li><b>ドラッグ＆ドロップ</b>：手札や場のカードを、自分のトラッシュ枠へそのままドラッグ＆ドロップします。</li>
-          <li><b>メニューから選択</b>：手札のカードを右クリック（スマホは長押し）し、メニューから<b>「トラッシュへ送る」</b>を選びます。</li>
-          <li><b>ポケモンの気絶</b>：ポケモンを「気絶させる」と、そのポケモンについていたエネルギーやどうぐも自動でまとめてトラッシュされます。</li>
+          <li>対戦相手との同期も自動で巻き戻されるため、手軽にプレイミスを修正できます。</li>
+          <li>連続して押すことで複数手前まで遡ることも可能です。</li>
         </ul>
-
-        <h4 style="color:#38bdf8; font-size:15px; margin:20px 0 8px;">【トラッシュから回収・再利用する手順（すごいつりざお・夜のタンカ等）】</h4>
-        <ol style="margin-left:20px; line-height:1.8;">
-          <li><b>トラッシュ枠をクリック</b>：自陣のトラッシュ枠をクリック（タップ）すると、現在トラッシュにあるカードの一覧画面（ポップアップ）が開きます。</li>
-          <li><b>カードを選択</b>：戻したいカードをクリックして選択します（金色の枠が点灯。複数枚を同時に選択することも可能です）。</li>
-          <li><b>下部ボタンで実行</b>：画面下部に表示されるアクションボタンから目的の操作を選びます。
-            <ul style="margin:6px 0 6px 16px;">
-              <li><b>「✋ 手札に戻す」</b>：選択したカードを手札へ回収します（夜のタンカなど）。</li>
-              <li><b>「🔄 山札に戻す」</b>：選択したカードを山札へ戻します（すごいつりざおなど）。</li>
-              <li><b>「⚡ 場のポケモンにつける」</b>：選択したエネルギーを直接バトル場やベンチポケモンへ装着します（ダークパッチなど）。</li>
-            </ul>
-          </li>
-        </ol>
-
-        <div class="callout callout-note" style="margin-top:14px;">
-          <b>💡 相手のトラッシュも確認可能</b><br>
-          相手陣地のトラッシュ枠をクリックすると、相手が使用・トラッシュしたカードの一覧をいつでも確認できます。相手の残りのボスの指令やエネルギーの枚数を確認する際にとても便利です。
-        </div>
-
-        <!-- 実画面操作動画⑧：トラッシュからの回収・装着 -->
-        <div class="demo-video-box" style="margin-top:20px;">
-          <div class="demo-header">
-            <div class="demo-title"><span>🎬 実画面操作動画⑧：トラッシュからの回収・手札戻し</span></div>
-            <span style="font-size:11px; color:#38bdf8; font-weight:bold;">● 本ツールの実際の画面録画（高画質 30fps）</span>
-          </div>
-          <div class="actual-video-container">
-            <video class="actual-demo-video" src="video/demo8.webm" autoplay loop muted playsinline controls></video>
-          </div>
-          <div class="demo-caption-bar"><span class="demo-step-num">実画面操作</span><span class="demo-step-text">トラッシュ枠をクリックして一覧を開き、ドラメシヤを選択して「手札に戻す」で手札へ収める一連の操作！</span></div>
-        </div>
       </div>
 
-      <!-- 実際のトラッシュモーダル写真 -->
-      <figure class="screen-figure" style="max-width:640px; margin:20px auto;">
-        <img src="img/actual_trash_modal.png" alt="実際のトラッシュ操作モーダル画面（本ツール）" class="screen-img">
-        <figcaption class="screen-caption">▲ 実際のトラッシュ操作画面（指定デッキ1のトラッシュ一覧、カード選択と下部アクションバー）</figcaption>
-      </figure>
-
       <div class="subsection">
-        <h3 class="subsection-title">2. ↩️ 1手順巻き戻す（Undo機能）</h3>
+        <h3 class="subsection-title">2. 🌌 ロストゾーンの使い方</h3>
         <p>
-          「誤ってカードを引いてしまった」「出すポケモンを間違えた」場合、画面上部またはメニューの<b>「↩️ 1手順巻き戻す」</b>を押すことで、直前の状態へ安全に巻き戻せます。
+          ロストゾーンに送られたカードはトラッシュとは異なり、原則として対戦中再利用できません。<br>
+          手札や場のカードメニュー、またはトラッシュ一覧画面から<b>「ロストゾーンへ送る」</b>を選択することで、カードをロストゾーンへ安全に隔離できます。<br>
+          自陣のロストゾーン枠をクリックすると、ロストされているカードの枚数と一覧をいつでも確認できます。
         </p>
       </div>
     </article>
 
     <!-- =====================================================
-         第6章：スマホでの操作ガイド
+         第7章：スマホでの操作ガイド
          ===================================================== -->
     <article class="manual-chapter" id="sec-06">
-      <div class="chapter-number">CHAPTER 06</div>
+      <div class="chapter-number">CHAPTER 07</div>
       <h2 class="chapter-title">📱 スマホでのタッチ操作ガイド</h2>
 
       <p>
@@ -737,10 +1051,10 @@
     </article>
 
     <!-- =====================================================
-         第7章：コミュニケーション機能（技宣言・チャット・通話）
+         第8章：コミュニケーション機能（技宣言・チャット・通話）
          ===================================================== -->
     <article class="manual-chapter" id="sec-07">
-      <div class="chapter-number">CHAPTER 07</div>
+      <div class="chapter-number">CHAPTER 08</div>
       <h2 class="chapter-title">💬 コミュニケーション機能（技宣言・チャット・ボイス通話）</h2>
 
       <p>
@@ -804,10 +1118,10 @@
     </article>
 
     <!-- =====================================================
-         第8章：一人回しツールの使い方
+         第9章：一人回しツールの使い方
          ===================================================== -->
     <article class="manual-chapter" id="sec-08">
-      <div class="chapter-number">CHAPTER 08</div>
+      <div class="chapter-number">CHAPTER 09</div>
       <h2 class="chapter-title">🃏 一人回しツールの使い方（研究・デッキテスト）</h2>
 
       <p>
@@ -836,15 +1150,15 @@
     </article>
 
     <!-- =====================================================
-         第9章：正確なよくある質問（FAQ）
+         第10章：正確なよくある質問（FAQ）
          ===================================================== -->
     <article class="manual-chapter" id="sec-09">
-      <div class="chapter-number">CHAPTER 09</div>
+      <div class="chapter-number">CHAPTER 10</div>
       <h2 class="chapter-title">❓ よくある質問（FAQ）</h2>
 
       <div class="callout callout-note">
         <b>Q. 相手の画面に自分のカードの動きが反映されません。</b><br>
-        A. 画面左上の接続ランプが「🟢」になっているかご確認ください。もし「⚪ オフライン」や「🔴 切断」になっている場合は、ルーム番号を再確認して再度ロビーから接続し直してください。本ツールは Firebase リアルタイム通信基盤を採用しているため、一般的なWebアクセスができる環境（学校・職場・モバイル回線含む）であれば確実に同期されます。
+        A. 画面左上の接続ランプが「🟢」になっているかご確認ください。もし「⚪ オフライン」や「🔴 切断」になっている場合は、ルーム番号を再確認して再度ロビーから接続し直してください。一般的なインターネット接続環境（Wi-Fiやスマートフォンの回線など）があれば問題なく自動で同期されます。
       </div>
 
       <div class="callout callout-note">
@@ -875,10 +1189,10 @@
     </article>
 
     <!-- =====================================================
-         第10章：更新履歴（Version History）
+         第11章：更新履歴（Version History）
          ===================================================== -->
     <article class="manual-chapter" id="sec-10">
-      <div class="chapter-number">CHAPTER 10</div>
+      <div class="chapter-number">CHAPTER 11</div>
       <h2 class="chapter-title">📝 更新履歴（Version History）</h2>
 
       <p>ポケカラボアリーナのこれまでの進化と機能追加の歴史です。</p>
@@ -894,6 +1208,11 @@
           </thead>
           <tbody>
             <tr>
+              <td><span class="version-badge" style="background:#8b5cf6;">Ver 1.3</span></td>
+              <td class="version-date">2026-10-20</td>
+              <td><b>📚 山札・トラッシュの右クリック操作＆スタジアム配置マニュアル・全操作チートシート追加</b>（山札・トラッシュ内の右クリック/長押しコンテキストメニュー操作、スタジアムの出し方、全操作一覧チートシートの拡充、および内部技術記述の完全排除）。</td>
+            </tr>
+            <tr>
               <td><span class="version-badge" style="background:#0ea5e9;">Ver 1.2</span></td>
               <td class="version-date">2026-10-19</td>
               <td><b>🎙️ ボイス通話UIの大幅改善</b>（通話中のコントロールバーを画面中央上部から画面左側へ再配置し、相手ベンチカードへの被りを完全解消。PC版での通話バードラッグ移動機能に対応。スマートフォン版では盤面を遮らないよう通話バーを非表示にし、ボタン横の🔴赤丸インジケーター表示＆通話管理モーダルによる安全なマイクミュート・終了操作を実現）。</td>
@@ -901,7 +1220,7 @@
             <tr>
               <td><span class="version-badge" style="background:#059669;">Ver 1.1</span></td>
               <td class="version-date">2026-10-19</td>
-              <td><b>🚀 クラウドリアルタイム通信サーバー導入</b>（従来のP2P直接通信から Google Firebase Realtime Database へ移行。学校・オフィスの保護Wi-Fiやスマートフォンのキャリア通信環境でも、接続失敗を完全解消し100%確実に同期できるインフラに大幅強化。ボイスチャットもWebRTC Nativeシグナリングに対応）。</td>
+              <td><b>🚀 通信安定性の向上</b>（学校やオフィスのWi-Fi、スマートフォンの回線など、さまざまなネットワーク環境でより途切れにくく快適に対戦・通話ができるよう通信品質を大幅に向上）。</td>
             </tr>
             <tr>
               <td><span class="version-badge">Ver 1.0</span></td>

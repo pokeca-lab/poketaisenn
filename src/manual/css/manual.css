@@ -581,6 +581,92 @@ body {
   white-space: nowrap;
 }
 
+/* 操作チートシート（操作一覧表）専用スタイル */
+.cheat-section {
+  margin: 32px 0 40px;
+}
+.cheat-table-wrap {
+  overflow-x: auto;
+  margin: 16px 0 24px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid #93c5fd;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.08);
+  background: #ffffff;
+}
+.cheat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.cheat-table th {
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
+  color: #ffffff;
+  font-weight: 800;
+  padding: 12px 14px;
+  border: none;
+  white-space: nowrap;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+.cheat-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  color: var(--text-body);
+  vertical-align: middle;
+}
+.cheat-table tr:last-child td {
+  border-bottom: none;
+}
+.cheat-table tr:hover td {
+  background: #f0f7ff;
+}
+.cheat-cat-row td {
+  background: #eff6ff !important;
+  color: #1e40af;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 10px 14px;
+  border-top: 2px solid #bfdbfe;
+  border-bottom: 1.5px solid #bfdbfe;
+}
+.cheat-target-cell {
+  font-weight: 700;
+  color: var(--text-dark);
+  white-space: nowrap;
+}
+.op-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+.op-badge-pc {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+.op-badge-sp {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+.op-point-tag {
+  display: inline-block;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-right: 4px;
+}
+
 /* フッター */
 .manual-footer {
   text-align: center;
