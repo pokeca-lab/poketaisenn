@@ -625,6 +625,11 @@ function finishSetupPhaseAndStartBattle() {
 
   renderAll();
 
+  // 対戦タイマー自動スタート
+  if (typeof BattleTimer !== "undefined") {
+    BattleTimer.start();
+  }
+
   // ★ ３）バトル開始時のバナー演出 ＆ ４）先攻プレイヤーの強制トップドロー
   if (typeof playTurnChangeBanner === "function") {
     playTurnChangeBanner(initialTurnInfo, () => {

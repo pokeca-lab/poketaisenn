@@ -163,48 +163,187 @@ const SoundEffects = (() => {
 
   /**
    * 6. 💥 ダメカンを置く重撃パンチ打撃音（「ドシッ！ビシッ！」）
+   * ダメージ量（10, 50, 100以上）に応じて迫力・低音・振動感がダイナミックに変化
    */
-  function playDamagePunch() {
+  function playDamagePunch(delta = 10) {
     if (isMuted) return;
     const ctx = getAudioContext();
     if (!ctx) return;
 
     const now = ctx.currentTime;
+    const isHeavy = delta >= 100;
+    const isMedium = delta >= 50 && delta < 100;
 
     // 低音インパクトキック
     const subOsc = ctx.createOscillator();
     const subGain = ctx.createGain();
-    subOsc.type = "sine";
-    subOsc.frequency.setValueAtTime(140, now);
-    subOsc.frequency.exponentialRampToValueAtTime(32, now + 0.12);
+    subOsc.type = isHeavy ? "triangle" : "sine";
+    const startFreq = isHeavy ? 220 : (isMedium ? 160 : 130);
+    const endFreq = isHeavy ? 20 : 32;
+    const duration = isHeavy ? 0.32 : (isMedium ? 0.18 : 0.12);
 
-    subGain.gain.setValueAtTime(0.7, now);
-    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+    subOsc.frequency.setValueAtTime(startFreq, now);
+    subOsc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+
+    const subVol = isHeavy ? 0.95 : (isMedium ? 0.78 : 0.6);
+    subGain.gain.setValueAtTime(subVol, now);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + duration + 0.03);
 
     subOsc.connect(subGain);
     subGain.connect(getMasterGain(ctx));
     subOsc.start(now);
-    subOsc.stop(now + 0.14);
+    subOsc.stop(now + duration + 0.05);
 
     // バンドパスクラッシュノイズ（ビシッ！）
     const noise = ctx.createBufferSource();
-    noise.buffer = createNoiseBuffer(ctx, 0.15);
+    noise.buffer = createNoiseBuffer(ctx, isHeavy ? 0.28 : 0.15);
 
     const filter = ctx.createBiquadFilter();
-    filter.type = "bandpass";
-    filter.frequency.setValueAtTime(1600, now);
-    filter.frequency.exponentialRampToValueAtTime(500, now + 0.08);
-    filter.Q.setValueAtTime(3.2, now);
+    filter.type = isHeavy ? "lowpass" : "bandpass";
+    filter.frequency.setValueAtTime(isHeavy ? 2400 : 1600, now);
+    filter.frequency.exponentialRampToValueAtTime(isHeavy ? 180 : 500, now + (isHeavy ? 0.22 : 0.08));
+    if (!isHeavy) filter.Q.setValueAtTime(3.2, now);
 
     const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.65, now);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+    noiseGain.gain.setValueAtTime(isHeavy ? 0.8 : 0.65, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + (isHeavy ? 0.24 : 0.09));
 
     noise.connect(filter);
     filter.connect(noiseGain);
     noiseGain.connect(getMasterGain(ctx));
     noise.start(now);
-    noise.stop(now + 0.1);
+    noise.stop(now + (isHeavy ? 0.3 : 0.15));
+
+    // 大ダメージ（100以上）の場合の追加サブサブベース「ズォォン…」
+    if (isHeavy) {
+      const subSubOsc = ctx.createOscillator();
+      const subSubGain = ctx.createGain();
+      subSubOsc.type = "sine";
+      subSubOsc.frequency.setValueAtTime(65, now);
+      subSubOsc.frequency.exponentialRampToValueAtTime(18, now + 0.45);
+      subSubGain.gain.setValueAtTime(0.5, now);
+      subSubGain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+      subSubOsc.connect(subSubGain);
+      subSubGain.connect(getMasterGain(ctx));
+      subSubOsc.start(now);
+      subSubOsc.stop(now + 0.5);
+    }
+  }
+
+  /**
+   * ✨ 特性発動音（神秘的な知的光線・オーラハーモニクス）
+   */
+  function playAbilitySound() {
+    if (isMuted) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    // アルペジオ和音（サイバー・マジカル C6-E6-G6-B6-C7 チャイム）
+    const notes = [
+      { f: 1046.50, t: 0.00 }, // C6
+      { f: 1318.51, t: 0.05 }, // E6
+      { f: 1567.98, t: 0.10 }, // G6
+      { f: 1975.53, t: 0.15 }, // B6
+      { f: 2093.00, t: 0.20 }  // C7
+    ];
+    notes.forEach(n => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(n.f, now + n.t);
+
+      gain.gain.setValueAtTime(0.28, now + n.t);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + 0.35);
+
+      osc.connect(gain);
+      gain.connect(getMasterGain(ctx));
+      osc.start(now + n.t);
+      osc.stop(now + n.t + 0.38);
+    });
+
+    // 背景のウォームなパッドオーラ音
+    const padOsc = ctx.createOscillator();
+    const padGain = ctx.createGain();
+    padOsc.type = "triangle";
+    padOsc.frequency.setValueAtTime(523.25, now); // C5
+    padOsc.frequency.exponentialRampToValueAtTime(659.25, now + 0.3); // E5
+
+    padGain.gain.setValueAtTime(0.2, now);
+    padGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+    padOsc.connect(padGain);
+    padGain.connect(getMasterGain(ctx));
+    padOsc.start(now);
+    padOsc.stop(now + 0.48);
+  }
+
+  /**
+   * 🌟 ポケモン進化音（光の収束フラッシュ＆グリッサンド）
+   */
+  function playEvolveSound() {
+    if (isMuted) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    // 急上昇グリッサンド（エネルギー収束「シュイーン！」）
+    const sweepOsc = ctx.createOscillator();
+    const sweepGain = ctx.createGain();
+    sweepOsc.type = "sine";
+    sweepOsc.frequency.setValueAtTime(350, now);
+    sweepOsc.frequency.exponentialRampToValueAtTime(1760, now + 0.28); // A6へ急上昇
+
+    sweepGain.gain.setValueAtTime(0.25, now);
+    sweepGain.gain.linearRampToValueAtTime(0.5, now + 0.22);
+    sweepGain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+
+    sweepOsc.connect(sweepGain);
+    sweepGain.connect(getMasterGain(ctx));
+    sweepOsc.start(now);
+    sweepOsc.stop(now + 0.34);
+
+    // ピカーン！と弾ける黄金のファンファーレ和音 (A5 - C#6 - E6 - A6)
+    const burstTime = now + 0.25;
+    [880, 1108.73, 1318.51, 1760, 2637].forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, burstTime);
+
+      gain.gain.setValueAtTime(0.35, burstTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, burstTime + 0.55 + idx * 0.05);
+
+      osc.connect(gain);
+      gain.connect(getMasterGain(ctx));
+      osc.start(burstTime);
+      osc.stop(burstTime + 0.65 + idx * 0.05);
+    });
+  }
+
+  /**
+   * ⏱️ タイマータイムアップ通知音（ピピッ！ピピッ！ピピッ！）
+   */
+  function playTimerAlert() {
+    if (isMuted) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    [0, 0.12, 0.28, 0.40, 0.56, 0.68].forEach((offset, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(idx % 2 === 0 ? 1760 : 2200, now + offset);
+
+      gain.gain.setValueAtTime(0.3, now + offset);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.09);
+
+      osc.connect(gain);
+      gain.connect(getMasterGain(ctx));
+      osc.start(now + offset);
+      osc.stop(now + offset + 0.1);
+    });
   }
 
   /**
@@ -1144,6 +1283,9 @@ const SoundEffects = (() => {
     playAttach,
     playButtonClick,
     playDamagePunch,
+    playAbilitySound,
+    playEvolveSound,
+    playTimerAlert,
     playKnockout,
     playCondition,
     playTrash,

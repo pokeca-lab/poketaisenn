@@ -1787,9 +1787,6 @@ function modifyDamage(location, index, delta, keepMenu = false) {
     badge: "💥 ダメカン変更"
   });
   renderAll();
-  if (actualDelta > 0 && window.SoundEffects) {
-    SoundEffects.playDamagePunch();
-  }
   if (actualDelta !== 0 && typeof triggerBoardEffect === "function") {
     triggerBoardEffect({
       fxType: "damage",
@@ -1992,7 +1989,13 @@ function knockoutPokemon(location, index) {
   pushHistorySnapshot("ポケモンを気絶させる");
   const pokemonName = target.card.name;
 
-  if (typeof SoundEffects !== "undefined") SoundEffects.playKnockout();
+  const locId = location === "active" ? "active" : `bench_${index}`;
+  if (typeof triggerBoardEffect === "function") {
+    triggerBoardEffect({
+      fxType: "knockout",
+      location: locId
+    });
+  }
 
   const pokeCards = getPokemonCardsList(target);
   pokeCards.forEach(c => state.myTrash.push(c));
@@ -2039,7 +2042,13 @@ function knockoutOpponentPokemon(location, index) {
 
   const pokemonName = target.card.name;
 
-  if (typeof SoundEffects !== "undefined") SoundEffects.playKnockout();
+  const locId = location === "opp-active" ? "opp-active" : `opp-bench_${index}`;
+  if (typeof triggerBoardEffect === "function") {
+    triggerBoardEffect({
+      fxType: "knockout",
+      location: locId
+    });
+  }
 
   const pokeCards = getPokemonCardsList(target);
   pokeCards.forEach(c => state.oppTrash.push(c));
@@ -3236,6 +3245,10 @@ function playLocalBoardEffect(opts = {}, isOpponent = false) {
     setTimeout(() => {
       playDamageEffect(opts.location, opts.delta || 0);
     }, isOpponent ? 80 : 10);
+  } else if (fxType === "knockout") {
+    setTimeout(() => {
+      playKnockoutDissolveEffect(opts.location);
+    }, isOpponent ? 80 : 10);
   } else if (fxType === "shuffle") {
     playDeckShuffleEffect(isOpponent);
   } else if (fxType === "draw") {
@@ -3392,13 +3405,26 @@ function playCoinTossEffect(isHeads, playerName = "", onComplete = null) {
   }, 1900);
 }
 
-/** 2. ⚡🎒✨ ポケモンへのエネルギー・どうぐ付与＆進化エフェクト */
+/** 2. ⚡🎒✨ ポケモンへのエネルギー・どうぐ付与＆進化＆特性宣言エフェクト */
 function playAttachmentEffect(location, attachType = "energy", colorType = "special", icon = "⚡", label = "") {
   const targetEl = findLocationElement(location);
   if (!targetEl) return;
 
   const rect = targetEl.getBoundingClientRect();
   if (rect.width === 0 && rect.height === 0) return;
+
+  // 特性・進化の専用効果音再生
+  if (attachType === "ability") {
+    if (window.SoundEffects && typeof SoundEffects.playAbilitySound === "function") {
+      SoundEffects.playAbilitySound();
+    }
+    targetEl.classList.add("fx-card-ability-glow");
+  } else if (attachType === "evolve") {
+    if (window.SoundEffects && typeof SoundEffects.playEvolveSound === "function") {
+      SoundEffects.playEvolveSound();
+    }
+    targetEl.classList.add("fx-card-evolve-glow");
+  }
 
   const layer = ensureFxLayer();
   const fxEl = document.createElement("div");
@@ -3414,7 +3440,15 @@ function playAttachmentEffect(location, attachType = "energy", colorType = "spec
       ? `✨ 特性宣言！`
       : (attachType === "tool" ? `🎒 ${escapeHtml(label || "どうぐ装備")}` : `${escapeHtml(icon || "⚡")} ${escapeHtml(label || "エネルギー付与")}`));
 
+  // 特性時のサイバー魔方陣オーラ、進化時の光の収束フレア
+  const extraDecor = attachType === "ability"
+    ? `<div class="fx-magic-circle"></div><div class="fx-magic-aura"></div>`
+    : (attachType === "evolve"
+      ? `<div class="fx-evolve-sunburst"></div><div class="fx-evolve-flares"></div>`
+      : "");
+
   fxEl.innerHTML = `
+    ${extraDecor}
     <div class="fx-ring ring-1"></div>
     <div class="fx-ring ring-2"></div>
     <div class="fx-particles">
@@ -3430,7 +3464,7 @@ function playAttachmentEffect(location, attachType = "energy", colorType = "spec
   targetEl.classList.add("fx-card-pop");
 
   setTimeout(() => {
-    targetEl.classList.remove("fx-card-pop");
+    targetEl.classList.remove("fx-card-pop", "fx-card-ability-glow", "fx-card-evolve-glow");
     fxEl.remove();
   }, 1250);
 }
@@ -3595,7 +3629,39 @@ function playSwapEffect(benchIndex = 0, isOpponent = false) {
   }, 720);
 }
 
-/** 5. 💥 ダメカン増減（被ダメージ揺れ＆数値ポップアップ）エフェクト */
+/**
+ * 📳 ダメージ量連動スクリーンシェイク
+ * ダメージ量に応じて画面全体の振動幅と持続時間がスケール
+ * - +10〜40: 軽度の揺れ（.screen-shake-light, 200ms）
+ * - +50〜90: 中程度の揺れ（.screen-shake-medium, 340ms）
+ * - +100以上: 激しい重撃揺れ（.screen-shake-heavy, 500ms）
+ */
+function triggerScreenShake(delta = 10) {
+  const boardEl = document.querySelector(".board") || document.body;
+  if (!boardEl) return;
+
+  const absDelta = Math.abs(delta);
+  let shakeClass = "screen-shake-light";
+  let duration = 200;
+
+  if (absDelta >= 100) {
+    shakeClass = "screen-shake-heavy";
+    duration = 500;
+  } else if (absDelta >= 50) {
+    shakeClass = "screen-shake-medium";
+    duration = 340;
+  }
+
+  boardEl.classList.remove("screen-shake-light", "screen-shake-medium", "screen-shake-heavy");
+  void boardEl.offsetWidth; // 強制リフロー
+  boardEl.classList.add(shakeClass);
+
+  setTimeout(() => {
+    boardEl.classList.remove(shakeClass);
+  }, duration);
+}
+
+/** 5. 💥 ダメカン増減（被ダメージ揺れ＆数値ポップアップ＆画面シェイク）エフェクト */
 function playDamageEffect(location, delta = 10) {
   const targetEl = findLocationElement(location);
   if (!targetEl) return;
@@ -3613,6 +3679,10 @@ function playDamageEffect(location, delta = 10) {
 
   if (!isHeal) {
     targetEl.classList.add("fx-hit-shake");
+    triggerScreenShake(delta);
+    if (window.SoundEffects && typeof SoundEffects.playDamagePunch === "function") {
+      SoundEffects.playDamagePunch(delta);
+    }
   } else {
     targetEl.classList.add("fx-heal-glow");
   }
@@ -3621,6 +3691,45 @@ function playDamageEffect(location, delta = 10) {
     targetEl.classList.remove("fx-hit-shake", "fx-heal-glow");
     pop.remove();
   }, 850);
+}
+
+/** 5.5 💀 ポケモン気絶・ノックアウト消滅エフェクト */
+function playKnockoutDissolveEffect(location) {
+  const targetEl = findLocationElement(location);
+  if (!targetEl) return;
+
+  const rect = targetEl.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) return;
+
+  if (window.SoundEffects && typeof SoundEffects.playKnockout === "function") {
+    SoundEffects.playKnockout();
+  }
+
+  const layer = ensureFxLayer();
+  const fxEl = document.createElement("div");
+  fxEl.className = "fx-knockout-container";
+  fxEl.style.left = `${rect.left + rect.width / 2}px`;
+  fxEl.style.top = `${rect.top + rect.height / 2}px`;
+  fxEl.style.width = `${Math.max(rect.width, 80)}px`;
+  fxEl.style.height = `${Math.max(rect.height, 110)}px`;
+
+  fxEl.innerHTML = `
+    <div class="fx-knockout-shockwave"></div>
+    <div class="fx-knockout-dark-pulse"></div>
+    <div class="fx-knockout-particles">
+      <span class="fx-kp kp1">💀</span>
+      <span class="fx-kp kp2">💥</span>
+      <span class="fx-kp kp3">💨</span>
+      <span class="fx-kp kp4">✨</span>
+    </div>
+    <div class="fx-knockout-badge">💀 KNOCK OUT!</div>
+  `;
+
+  layer.appendChild(fxEl);
+
+  setTimeout(() => {
+    fxEl.remove();
+  }, 950);
 }
 
 /** 6. 🔀 ド派手な山札シャッフルエフェクト（大げさな空中3Dリッフル＆フラッシュ演出） */
@@ -4173,10 +4282,6 @@ function modifyOpponentDamage(location, index, delta, keepMenu = false) {
   });
 
   renderAll();
-
-  if (actualDelta > 0 && window.SoundEffects) {
-    SoundEffects.playDamagePunch();
-  }
 
   if (actualDelta !== 0 && typeof triggerBoardEffect === "function") {
     triggerBoardEffect({

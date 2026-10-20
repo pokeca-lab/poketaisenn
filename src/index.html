@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ポケカ オンライン対戦ツール</title>
-<link rel="stylesheet" href="css/style.css?v=20261020_03">
+<link rel="stylesheet" href="css/style.css?v=20261020_04">
 </head>
 <body>
 
@@ -369,6 +369,13 @@
       <div class="top-menu">
         <span class="room">ROOM <b id="g-room"></b></span>
         <span id="g-conn-badge" class="conn-badge offline">⚪ オフライン</span>
+        <div class="top-timer-widget is-paused" id="battle-timer-widget" title="クリックで一時停止 / 再開">
+          <button type="button" class="timer-main-btn" onclick="BattleTimer.toggle()" title="一時停止 / 再開">
+            <span class="timer-icon">⏱️</span>
+            <span class="timer-display" id="battle-timer-display">00:00</span>
+          </button>
+          <button type="button" class="timer-gear-btn" onclick="BattleTimer.openSettings()" title="タイマー設定（カウントダウン切替など）">⚙️</button>
+        </div>
         <button class="btn green" id="btn-top-voice" onclick="VoiceChat.handleVoiceButtonClick()" title="P2Pボイス通話を開始">🎙️ 通話</button>
         <button class="btn blue btn-chat-trigger" id="btn-top-chat" onclick="openChatModal()" title="対戦チャットを開く" style="position:relative;">💬 チャット <span id="chat-badge" class="badge-unread hidden">0</span></button>
         <button class="btn btn-sound-toggle" id="btn-top-sound" onclick="openSoundSettingsModal()" title="効果音の音量設定"><span class="sound-icon" id="top-sound-icon">🔊</span> <span class="sound-vol-label" id="top-sound-vol-label" style="font-size:11px;">80%</span></button>
@@ -422,6 +429,9 @@
       <button class="btn red btn-declare-attack" id="btn-declare-attack" onclick="openAttackModal()" title="バトル場のポケモンの技を宣言">⚔️ 技宣言</button>
 
       <div class="stadium" id="stadium"></div>
+
+      <!-- スタジアム展開中環境エフェクトレイヤー -->
+      <div id="stadium-ambient-layer" class="stadium-ambient-layer hidden"></div>
 
       <!-- 使用カードエリア（バトル場左寄り・常時表示・相手とも共有表示） -->
       <div id="play-area" class="play-area empty">
@@ -820,6 +830,68 @@
   </div>
 </div>
 
+<!-- 対戦タイマー設定モーダル -->
+<div id="timer-settings-modal" class="modal hidden">
+  <div class="modal-panel timer-settings-panel" style="max-width: 420px;">
+    <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-weight:bold; font-size:16px;">⏱️ 対戦タイマー設定</span>
+      <button type="button" class="btn-close-modal" onclick="BattleTimer.closeSettings()" aria-label="閉じる">✕</button>
+    </div>
+    <div class="modal-body timer-settings-body" style="padding:16px; display:flex; flex-direction:column; gap:14px;">
+      
+      <!-- タイマーモード選択 -->
+      <div class="timer-mode-group">
+        <div style="font-weight:bold; margin-bottom:8px; font-size:13px; color:#94a3b8;">タイマー方式</div>
+        <div style="display:flex; gap:12px;">
+          <label style="flex:1; display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.06); padding:10px; border-radius:8px; cursor:pointer; border:1px solid rgba(255,255,255,0.1);">
+            <input type="radio" name="timer-mode-opt" id="timer-opt-countup" value="countup" checked onchange="document.getElementById('timer-countdown-options').style.display = 'none';">
+            <div>
+              <div style="font-weight:bold; font-size:13px;">📈 カウントアップ</div>
+              <div style="font-size:11px; color:#94a3b8;">00:00から経過時間を計測</div>
+            </div>
+          </label>
+          <label style="flex:1; display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.06); padding:10px; border-radius:8px; cursor:pointer; border:1px solid rgba(255,255,255,0.1);">
+            <input type="radio" name="timer-mode-opt" id="timer-opt-countdown" value="countdown" onchange="document.getElementById('timer-countdown-options').style.display = 'block';">
+            <div>
+              <div style="font-weight:bold; font-size:13px;">⏳ カウントダウン</div>
+              <div style="font-size:11px; color:#94a3b8;">制限時間から残り時間を計測</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- カウントダウン用詳細設定（プリセット選択） -->
+      <div id="timer-countdown-options" style="display:none; background:rgba(0,0,0,0.25); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
+        <label for="timer-preset-select" style="font-size:12px; color:#cbd5e1; display:block; margin-bottom:6px; font-weight:bold;">制限時間プリセット</label>
+        <select id="timer-preset-select" style="width:100%; padding:8px; border-radius:6px; background:#1e293b; color:#fff; border:1px solid #475569;" onchange="BattleTimer.updateCustomInputVisibility()">
+          <option value="25" selected>公式大会・スタンダード (25分)</option>
+          <option value="30">30分 (ゆったり戦)</option>
+          <option value="20">20分</option>
+          <option value="15">15分 (クイック戦)</option>
+          <option value="custom">カスタム設定...</option>
+        </select>
+
+        <div id="timer-custom-wrap" style="display:none; margin-top:10px;">
+          <label for="timer-custom-minutes" style="font-size:12px; color:#cbd5e1; display:block; margin-bottom:4px;">カスタム分数 (分)</label>
+          <input type="number" id="timer-custom-minutes" min="1" max="180" value="25" style="width:100%; padding:8px; border-radius:6px; background:#1e293b; color:#fff; border:1px solid #475569;">
+        </div>
+        <p style="font-size:11px; color:#94a3b8; margin:8px 0 0 0;">※残り5分で黄色警告、残り1分で赤色警告点滅、0秒でタイムアップ音が鳴ります。</p>
+      </div>
+
+      <!-- クイック操作ボタン -->
+      <div style="display:flex; gap:8px;">
+        <button type="button" class="btn wide" style="flex:1;" onclick="BattleTimer.toggle(); BattleTimer.closeSettings();">⏯️ 一時停止 / 再開</button>
+        <button type="button" class="btn red wide" style="flex:1;" onclick="BattleTimer.reset(); BattleTimer.closeSettings();">🔄 タイマーリセット</button>
+      </div>
+
+    </div>
+    <div class="modal-foot" style="display:flex; justify-content:space-between; gap:10px;">
+      <button type="button" class="btn" onclick="BattleTimer.closeSettings()">キャンセル</button>
+      <button type="button" class="btn green" onclick="BattleTimer.applySettings(true)">設定を適用してスタート</button>
+    </div>
+  </div>
+</div>
+
 <!-- 汎用モーダル（山札・トラッシュ・ロスト・ログ） -->
 <div id="modal" class="modal hidden">
   <div class="modal-panel">
@@ -921,15 +993,16 @@
 <script src="js/util.js?v=20261019_07"></script>
 <script src="js/data/playmats-default.js?v=20261019_07"></script>
 <script src="js/data/sleeves-default.js?v=20261019_07"></script>
-<script src="js/sound/sound.js?v=20261019_07"></script>
-<script src="js/state.js?v=20261019_07"></script>
-<script src="js/game/hand-actions.js?v=20261020_01"></script>
-<script src="js/game/actions.js?v=20261020_03"></script>
-<script src="js/game/setup.js?v=20261019_07"></script>
-<script src="js/game/replay.js?v=20261019_12"></script>
-<script src="js/ui/marquee.js?v=20261019_07"></script>
-<script src="js/ui/touch-dnd.js?v=20261019_07"></script>
-<script src="js/ui/render.js?v=20261020_01"></script>
+<script src="js/sound/sound.js?v=20261020_04"></script>
+<script src="js/state.js?v=20261020_04"></script>
+<script src="js/game/timer.js?v=20261020_04"></script>
+<script src="js/game/hand-actions.js?v=20261020_04"></script>
+<script src="js/game/actions.js?v=20261020_04"></script>
+<script src="js/game/setup.js?v=20261020_04"></script>
+<script src="js/game/replay.js?v=20261020_04"></script>
+<script src="js/ui/marquee.js?v=20261020_04"></script>
+<script src="js/ui/touch-dnd.js?v=20261020_04"></script>
+<script src="js/ui/render.js?v=20261020_04"></script>
 <script src="js/ui/modals.js?v=20261020_02"></script>
 <script src="js/ui/tts-settings.js?v=20261019_07"></script>
 <script src="js/ui/sound-settings.js?v=20261019_07"></script>

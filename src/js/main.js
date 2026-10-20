@@ -391,6 +391,9 @@ const actions = {
         P2P.disconnect();
       }
       state.oppExited = false;
+      if (typeof BattleTimer !== "undefined") {
+        BattleTimer.reset();
+      }
       document.getElementById("game").classList.add("hidden");
       document.getElementById("lobby").classList.remove("hidden");
       if (typeof checkSoloResumeBanner === "function") {

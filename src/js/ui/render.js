@@ -919,8 +919,47 @@ function renderTemp() {
   }
 }
 
+function updateStadiumAmbient(hasStadium) {
+  const layer = document.getElementById("stadium-ambient-layer");
+  const stadiumEl = document.getElementById("stadium");
+  if (stadiumEl) {
+    if (hasStadium) {
+      stadiumEl.classList.add("has-stadium-glow");
+    } else {
+      stadiumEl.classList.remove("has-stadium-glow");
+    }
+  }
+
+  if (!layer) return;
+
+  if (hasStadium) {
+    if (layer.classList.contains("hidden") || layer.children.length === 0) {
+      layer.classList.remove("hidden");
+      layer.innerHTML = "";
+      // 生成する環境パーティクル（星屑・クリスタル光粒子）14個
+      const count = 14;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement("div");
+        p.className = "stadium-ambient-particle";
+        p.style.left = `${Math.floor(Math.random() * 92) + 4}%`;
+        p.style.top = `${Math.floor(Math.random() * 85) + 8}%`;
+        p.style.animationDelay = `${(Math.random() * 3.5).toFixed(2)}s`;
+        p.style.animationDuration = `${(3.5 + Math.random() * 2.5).toFixed(2)}s`;
+        const size = Math.floor(Math.random() * 6) + 4;
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        layer.appendChild(p);
+      }
+    }
+  } else {
+    layer.classList.add("hidden");
+    layer.innerHTML = "";
+  }
+}
+
 function renderStadium() {
   const el = document.getElementById("stadium");
+  updateStadiumAmbient(!!state.stadium);
 
   // ドラッグ＆ドロップ受け入れ設定（手札カードおよび使用カードエリアからのドロップに対応）
   el.ondragover = (e) => {
