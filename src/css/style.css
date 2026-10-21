@@ -968,6 +968,7 @@ html, body {
 
 /* 公式画像付きカードスタイル */
 .card.has-img {
+  background-color: #ffffff; /* 画像未読み込み時でも透明化を防止 */
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
@@ -980,6 +981,10 @@ html, body {
 }
 
 .card.has-img .card-btm {
+  display: none !important;
+}
+
+.card.has-img .card-fallback-center {
   display: none !important;
 }
 
@@ -1001,6 +1006,100 @@ html, body {
   border-radius: 3px;
   font-size: 10px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* =============================================================================
+   白背景フォールバックカード（画像欠損・読込失敗時に白背景＋名前を確実に表示）
+   ============================================================================= */
+.card.card-fallback-white,
+.card.img-fallback {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border: 2px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35) !important;
+}
+
+.card.card-fallback-white .card-top,
+.card.img-fallback .card-top {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  background: transparent !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+}
+
+.card.card-fallback-white .card-top .name,
+.card.img-fallback .card-top .name {
+  display: block !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: calc(var(--fs) * 0.92) !important;
+  text-shadow: none !important;
+  word-break: break-all !important;
+  line-height: 1.25 !important;
+  max-width: 74% !important;
+  background: transparent !important;
+}
+
+.card.card-fallback-white .card-top .hp,
+.card.img-fallback .card-top .hp {
+  display: inline-block !important;
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fca5a5 !important;
+  font-weight: 900 !important;
+  padding: 1px 4px !important;
+  border-radius: 4px !important;
+  font-size: 10px !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.card-fallback-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 2px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.card.card-fallback-white .card-fallback-center,
+.card.img-fallback .card-fallback-center {
+  display: flex !important;
+}
+
+.card-fallback-center .fallback-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.card-fallback-center .fallback-type-label {
+  font-size: 9.5px;
+  font-weight: bold;
+  color: #475569;
+  background: #f1f5f9;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.card.card-fallback-white .card-btm,
+.card.img-fallback .card-btm {
+  display: flex !important;
+  justify-content: space-between !important;
+  color: #64748b !important;
+  font-size: calc(var(--fs) * 0.75) !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  border-top: 1px dashed #e2e8f0 !important;
+  padding-top: 2px !important;
 }
 
 .card .card-top {
@@ -5313,6 +5412,23 @@ body.menu-open .sp-sheet {
   padding: 1px 4px;
   border-radius: 4px;
   align-self: flex-start;
+}
+
+.prize-front.card-fallback-white {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 2px solid #cbd5e1 !important;
+}
+
+.prize-front.card-fallback-white .prize-front-name {
+  color: #0f172a !important;
+  background: transparent !important;
+  text-shadow: none !important;
+}
+
+.prize-front.card-fallback-white .prize-front-sub {
+  color: #64748b !important;
+  background: transparent !important;
 }
 
 .prize-card-inner.flipped .prize-front {

@@ -432,10 +432,15 @@ async function fetchOfficialDeckByCode(code) {
       const list = await res.json();
       if (Array.isArray(list) && list.length > 0) {
         return list.map((item, i) => {
-          const inferred = inferCardTypeAndCategory(item.name, "", item.url);
+          let imgUrl = (item.url && typeof item.url === "string") ? item.url.trim() : null;
+          if (imgUrl) {
+            if (imgUrl.startsWith("http://")) imgUrl = imgUrl.replace("http://", "https://");
+            else if (imgUrl.startsWith("//")) imgUrl = "https:" + imgUrl;
+          }
+          const inferred = inferCardTypeAndCategory(item.name, "", imgUrl);
           return {
             name: item.name,
-            imageUrl: item.url || null,
+            imageUrl: imgUrl || null,
             type: inferred.type,
             color: inferred.color,
             category: inferred.category,
@@ -493,7 +498,13 @@ function parseOfficialDeckHtml(html) {
     pictMatches.forEach(m => {
       const id = m[1];
       cardMap[id] = cardMap[id] || {};
-      cardMap[id].pict = m[2].startsWith("http") ? m[2] : `https://www.pokemon-card.com${m[2]}`;
+      let p = m[2];
+      if (p) {
+        if (p.startsWith("//")) p = "https:" + p;
+        else if (p.startsWith("http://")) p = p.replace("http://", "https://");
+        else if (!p.startsWith("http")) p = `https://www.pokemon-card.com${p}`;
+      }
+      cardMap[id].pict = p || null;
     });
 
     const categories = [

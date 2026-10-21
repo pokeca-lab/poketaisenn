@@ -17,3 +17,184 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 }
+
+// =============================================================================
+// カード画像フォールバック管理（画像欠損・読込失敗時に白背景カード＋名前を確実表示）
+// =============================================================================
+
+// 読込失敗が確認された画像URLのセット（次回以降の描画で即時フォールバック）
+window.brokenImageUrls = window.brokenImageUrls || new Set();
+
+/** カードが有効な画像を持っているか判定（破損確認済みURLは除外） */
+function isCardImageValid(card) {
+  if (!card || !card.imageUrl) return false;
+  const url = String(card.imageUrl).trim();
+  if (!url) return false;
+  if (window.brokenImageUrls && window.brokenImageUrls.has(url)) return false;
+  return true;
+}
+
+/** カード画像読込エラー時の即時フォールバック実行ハンドラー */
+window.onCardImageError = function(imgEl, url) {
+  if (url && window.brokenImageUrls) {
+    window.brokenImageUrls.add(url);
+  }
+  const cardEl = imgEl ? imgEl.closest(".card") : null;
+  if (cardEl) {
+    cardEl.classList.remove("has-img");
+    cardEl.classList.add("card-fallback-white");
+    cardEl.style.backgroundImage = "none";
+    const centerFallback = cardEl.querySelector(".card-fallback-center");
+    if (centerFallback) {
+      centerFallback.style.display = "flex";
+    }
+  }
+};
+
+/** カード属性・種別に応じたシンボル絵文字を取得 */
+function getCardTypeIcon(card) {
+  if (!card) return "🃏";
+  const type = card.type || "";
+  const color = card.color || "";
+  const name = card.name || "";
+
+  if (type === "energy" || name.includes("エネルギー")) {
+    if (color === "grass") return "🌿";
+    if (color === "fire") return "🔥";
+    if (color === "water") return "💧";
+    if (color === "lightning") return "⚡";
+    if (color === "psychic") return "🔮";
+    if (color === "fighting") return "👊";
+    if (color === "darkness") return "🌙";
+    if (color === "metal") return "⚙️";
+    return "⚡";
+  }
+
+  if (type === "trainer" || card.category === "トレーナーズ") {
+    if (card.sub === "グッズ" || name.includes("ボール") || name.includes("いれかえ") || name.includes("アメ")) return "🎒";
+    if (card.sub === "サポート" || card.category === "サポート") return "👤";
+    if (card.sub === "スタジアム" || type === "stadium" || card.category === "スタジアム") return "🏟️";
+    if (card.sub === "ポケモンのどうぐ") return "🧰";
+    return "📜";
+  }
+
+  // ポケモン
+  if (color === "grass") return "🌿";
+  if (color === "fire") return "🔥";
+  if (color === "water") return "💧";
+  if (color === "lightning") return "⚡";
+  if (color === "psychic") return "🔮";
+  if (color === "fighting") return "👊";
+  if (color === "darkness") return "🌙";
+  if (color === "metal") return "⚙️";
+  if (color === "dragon") return "🐉";
+  return "⚡";
+}
+
+/** カード内部のHTML構造（上部名前/HP、中央アイコン、下部カテゴリ、画像プローブ）を生成 */
+function buildCardInnerHtml(card, extraTopHtml = "") {
+  if (!card) return "";
+  const icon = getCardTypeIcon(card);
+  const hpBadge = card.hp ? `<span class="hp">HP${escapeHtml(card.hp)}</span>` : "";
+  const subText = escapeHtml(card.sub || card.category || card.type || "");
+  const isImgValid = isCardImageValid(card);
+
+  // 画像URLがある場合は不可視プローブ画像を配置（エラー発生時に瞬時に白背景カードへ切り替え）
+  const probeImg = (card.imageUrl && isImgValid)
+    ? `<img src="${escapeHtml(card.imageUrl)}" class="card-img-probe" style="display:none;" referrerpolicy="no-referrer" onerror="window.onCardImageError(this, '${escapeHtml(card.imageUrl)}')">`
+    : "";
+
+  return `
+    ${probeImg}
+    <div class="card-top">
+      <span class="name">${escapeHtml(card.name)}</span>
+      ${extraTopHtml}
+      ${hpBadge}
+    </div>
+    <div class="card-fallback-center">
+      <span class="fallback-icon">${icon}</span>
+      <span class="fallback-type-label">${subText || 'カード'}</span>
+    </div>
+    <div class="card-btm">
+      <span>${subText}</span>
+    </div>
+  `;
+}
+
+/** カード要素のクラス名とスタイル文字列を一括生成 */
+function getCardRenderProps(card, isSelected = false, extraClasses = "") {
+  if (typeof registerCard === "function" && card) {
+    registerCard(card);
+  }
+  const hasImg = isCardImageValid(card);
+  const imgClass = hasImg ? "has-img" : "card-fallback-white";
+  const imgStyle = hasImg ? `style="background-image: url('${escapeHtml(card.imageUrl)}');"` : "";
+  const selClass = isSelected ? "selected" : "";
+  const colorClass = card ? (card.color || "trainer") : "trainer";
+  const className = `card ${colorClass} ${imgClass} ${selClass} ${extraClasses}`.trim().replace(/\s+/g, " ");
+
+  return {
+    className,
+    imgStyle,
+    hasImg,
+    isFallback: !hasImg
+  };
+}
+
+/** 拡大モーダル用の高精細フォールバック白カードHTML */
+function buildZoomFallbackCardHtml(card) {
+  if (!card) return "";
+  const icon = getCardTypeIcon(card);
+  const hpBadge = card.hp ? `<span class="hp" style="font-size:16px; background:#fee2e2; color:#b91c1c; border:1.5px solid #f87171; font-weight:800; padding:2px 8px; border-radius:6px;">HP${escapeHtml(card.hp)}</span>` : "";
+  const subText = escapeHtml(card.category || card.sub || card.type || "カード");
+
+  return `
+    <div class="card card-fallback-white zoom-fallback-card" style="width:240px; height:336px; padding:16px; box-shadow:0 10px 25px rgba(0,0,0,0.6); border-radius:12px;">
+      <div class="card-top" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
+        <span class="name" style="font-size:19px; font-weight:900; color:#0f172a; line-height:1.25; word-break:break-word; max-width:72%;">${escapeHtml(card.name)}</span>
+        ${hpBadge}
+      </div>
+      <div class="card-fallback-center" style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:10px;">
+        <span style="font-size:64px; line-height:1;">${icon}</span>
+        <span style="font-size:14px; font-weight:bold; color:#334155; background:#f1f5f9; border:1px solid #cbd5e1; padding:3px 12px; border-radius:999px;">${subText}</span>
+        <span style="font-size:11px; color:#94a3b8; font-weight:bold;">[カード代替表示]</span>
+      </div>
+      <div class="card-btm" style="border-top:1px dashed #cbd5e1; padding-top:6px; display:flex; justify-content:space-between; color:#64748b; font-size:12px; font-weight:bold;">
+        <span>${subText}</span>
+        <span>${escapeHtml(card.type || "")}</span>
+      </div>
+    </div>
+  `;
+}
+
+/** デッキ内画像の事前検証（バックグラウンドで画像存在確認） */
+function preloadAndVerifyDeckImages(deck) {
+  if (!Array.isArray(deck)) return;
+  const uniqueUrls = [...new Set(deck.map(c => c && c.imageUrl).filter(Boolean))];
+  uniqueUrls.forEach(url => {
+    if (window.brokenImageUrls && window.brokenImageUrls.has(url)) return;
+    const img = new Image();
+    img.referrerPolicy = "no-referrer";
+    img.onerror = () => {
+      if (window.brokenImageUrls) {
+        window.brokenImageUrls.add(url);
+      }
+      // 画面内に既に描画された対象カードがあれば白背景フォールバックへ変換
+      document.querySelectorAll(`.card[style*="${url}"]`).forEach(cardEl => {
+        cardEl.classList.remove("has-img");
+        cardEl.classList.add("card-fallback-white");
+        cardEl.style.backgroundImage = "none";
+        const center = cardEl.querySelector(".card-fallback-center");
+        if (center) center.style.display = "flex";
+      });
+    };
+    img.src = url;
+  });
+}
+
+window.isCardImageValid = isCardImageValid;
+window.getCardTypeIcon = getCardTypeIcon;
+window.buildCardInnerHtml = buildCardInnerHtml;
+window.getCardRenderProps = getCardRenderProps;
+window.buildZoomFallbackCardHtml = buildZoomFallbackCardHtml;
+window.preloadAndVerifyDeckImages = preloadAndVerifyDeckImages;

@@ -287,20 +287,16 @@ function showNextOpponentMulliganModal() {
   hand.forEach((c, i) => {
     const isBasicThis = (typeof isBasicPokemonCard === "function") && isBasicPokemonCard(c);
     const safeCard = { ...c, uid: `opp_mulligan_${count}_${i}` };
-    registerCard(safeCard);
-    const hasImg = !!safeCard.imageUrl;
-    const bgImgStyle = hasImg ? `background-image: url('${safeCard.imageUrl}');` : '';
+    const cardProps = getCardRenderProps(safeCard);
     const basicBorder = isBasicThis ? 'box-shadow: 0 0 12px #ef4444; border: 2.5px solid #ef4444 !important;' : '';
+    const extraStyle = cardProps.imgStyle ? cardProps.imgStyle.replace(/^style="/, "").replace(/"$/, "") : "";
+    const basicBadge = isBasicThis ? '<span style="font-size:9px; background:#ef4444; color:#fff; padding:1px 4px; border-radius:3px; font-weight:bold;">たね</span>' : '';
     bodyHtml += `
-      <div class="card ${safeCard.color || 'pokemon'} ${hasImg ? 'has-img' : ''}"
-           style="${bgImgStyle} ${basicBorder}"
+      <div class="${cardProps.className}"
+           style="${extraStyle}; ${basicBorder}"
            ondblclick="event.stopPropagation(); window.openCardZoomByUid('${safeCard.uid}')"
            title="${isBasicThis ? '⚠️ たねポケモンです！' : 'ダブルクリックで拡大'}">
-        <div class="card-top">
-          <span class="name">${escapeHtml(safeCard.name)}</span>
-          ${isBasicThis ? '<span style="font-size:9px; background:#ef4444; color:#fff; padding:1px 4px; border-radius:3px; font-weight:bold;">たね</span>' : ''}
-        </div>
-        <div class="card-btm"><span>${escapeHtml(safeCard.sub || safeCard.category || '')}</span></div>
+        ${buildCardInnerHtml(safeCard, basicBadge)}
       </div>
     `;
   });

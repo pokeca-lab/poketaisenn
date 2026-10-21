@@ -25,23 +25,18 @@ function renderDeckModalContent() {
     <div class="card-grid deck-select-grid">
   `;
   state.myDeck.forEach((c, idx) => {
-    registerCard(c);
     const isSel = deckModalSelected.has(idx);
-    const hasImg = !!c.imageUrl;
-    const imgStyle = hasImg ? `style="background-image: url('${c.imageUrl}');"` : '';
+    const cardProps = getCardRenderProps(c, isSel);
+    const zoomBtn = `<button class="deck-zoom-icon" onclick="event.stopPropagation(); window.openCardZoomByUid('${c.uid}')" title="カードを拡大表示">🔍</button>`;
     bodyHtml += `
-      <div class="card ${c.color} ${hasImg ? 'has-img' : ''} ${isSel ? 'selected' : ''}" 
-           ${imgStyle}
+      <div class="${cardProps.className}" 
+           ${cardProps.imgStyle}
            onclick="toggleDeckModalCard(event, ${idx})"
            oncontextmenu="showDeckCardContextMenu(event, ${idx})"
            ondblclick="event.stopPropagation(); window.openCardZoomByUid('${c.uid}')" 
            title="クリックで選択 / 右クリックでメニュー / ダブルクリックで拡大">
-        <div class="card-top">
-          <span class="name">${c.name}</span>
-          <button class="deck-zoom-icon" onclick="event.stopPropagation(); window.openCardZoomByUid('${c.uid}')" title="カードを拡大表示">🔍</button>
-        </div>
         ${isSel ? `<div class="deck-sel-badge">✓ 選択中</div>` : ''}
-        <div class="card-btm"><span>${c.sub || c.category || ''}</span></div>
+        ${buildCardInnerHtml(c, zoomBtn)}
       </div>
     `;
   });
@@ -260,20 +255,17 @@ function showCardListModal(titleText, cardList) {
 
   let bodyHtml = `<div class="card-grid modal-card-grid" id="modal-card-grid">`;
   cardList.forEach((c, idx) => {
-    registerCard(c);
-    const hasImg = !!c.imageUrl;
-    const imgStyle = hasImg ? `style="background-image: url('${c.imageUrl}');"` : '';
+    const cardProps = getCardRenderProps(c);
     const safeTitle = titleText.replace(/'/g, "\\'");
     bodyHtml += `
-      <div class="card ${c.color} ${hasImg ? 'has-img' : ''}" 
+      <div class="${cardProps.className}" 
            id="modal-card-${idx}"
-           ${imgStyle}
+           ${cardProps.imgStyle}
            onclick="${!isOpponentList ? `toggleModalCardSelection(${idx})` : ''}"
            oncontextmenu="${!isOpponentList ? `showTrashCardContextMenu(event, ${idx}, '${safeTitle}')` : ''}"
            ondblclick="event.stopPropagation(); window.openCardZoomByUid('${c.uid}')" 
            title="タップで選択 / 右クリックでメニュー / ダブルクリックで拡大">
-        <div class="card-top"><span class="name">${escapeHtml(c.name)}</span></div>
-        <div class="card-btm"><span>${escapeHtml(c.sub || c.category || '')}</span></div>
+        ${buildCardInnerHtml(c)}
       </div>
     `;
   });

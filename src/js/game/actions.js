@@ -643,12 +643,13 @@ function renderPopupCardVisuals(cards) {
   return cards.slice(0, 6).map(c => {
     if (!c) return "";
     const safeName = escapeHtml(c.name || "カード");
-    if (c.imageUrl) {
-      return `<img src="${escapeHtml(c.imageUrl)}" alt="${safeName}">`;
-    }
     const safeSub = escapeHtml(c.category || c.sub || "");
+    const isImgValid = typeof isCardImageValid === "function" ? isCardImageValid(c) : !!c.imageUrl;
+    if (isImgValid) {
+      return `<img src="${escapeHtml(c.imageUrl)}" alt="${safeName}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.outerHTML='<div class=\\'card card-fallback-white popup-fallback-card\\'><div class=\\'card-top\\'><span class=\\'name\\'>${safeName}</span></div><div class=\\'card-btm\\'><span>${safeSub}</span></div></div>';">`;
+    }
     return `
-      <div class="card ${c.color || 'pokemon'} popup-fallback-card">
+      <div class="card card-fallback-white popup-fallback-card">
         <div class="card-top"><span class="name">${safeName}</span></div>
         <div class="card-btm"><span>${safeSub}</span></div>
       </div>
@@ -893,11 +894,10 @@ function executeDramaticAutoTrash(card) {
 
   const flyer = document.createElement("div");
   flyer.className = "flying-auto-trash-card";
-  const hasImg = !!card.imageUrl;
+  const cardProps = getCardRenderProps(card);
   flyer.innerHTML = `
-    <div class="card ${card.color || 'pokemon'} ${hasImg ? 'has-img' : ''}"
-         ${hasImg ? `style="background-image: url('${card.imageUrl}');"` : ''}>
-      <div class="card-top"><span class="name">${escapeHtml(card.name)}</span></div>
+    <div class="${cardProps.className}" ${cardProps.imgStyle}>
+      ${buildCardInnerHtml(card)}
     </div>
   `;
 
@@ -1192,34 +1192,21 @@ function openCardZoom(card) {
   }
 
   let cardVisualHtml = "";
-  if (card.imageUrl) {
+  const isImgValid = typeof isCardImageValid === "function" ? isCardImageValid(card) : !!card.imageUrl;
+  if (isImgValid) {
     cardVisualHtml = `
       <div class="zoom-card-img-wrap" style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-        <img src="${card.imageUrl}" alt="${card.name}" class="zoom-card-img" />
+        <img src="${card.imageUrl}" alt="${escapeHtml(card.name)}" class="zoom-card-img" referrerpolicy="no-referrer"
+             onerror="this.onerror=null; if(window.brokenImageUrls) window.brokenImageUrls.add('${escapeHtml(card.imageUrl)}'); const wrap=this.closest('.zoom-card-img-wrap'); if(wrap){ wrap.outerHTML = buildZoomFallbackCardHtml(findCardByUid('${card.uid}') || ${JSON.stringify(card).replace(/"/g, '&quot;')}); }" />
         <div style="font-size:13px; color:#cbd5e1; font-weight:bold; display:flex; align-items:center; gap:8px;">
-          <span>${card.name}</span>
-          ${card.hp ? `<span style="color:#f87171;">(HP${card.hp})</span>` : ''}
-          <span style="font-size:11px; color:#94a3b8; font-weight:normal;">${card.category || card.sub || ''}</span>
+          <span>${escapeHtml(card.name)}</span>
+          ${card.hp ? `<span style="color:#f87171;">(HP${escapeHtml(card.hp)})</span>` : ''}
+          <span style="font-size:11px; color:#94a3b8; font-weight:normal;">${escapeHtml(card.category || card.sub || '')}</span>
         </div>
       </div>
     `;
   } else {
-    cardVisualHtml = `
-      <div class="card ${card.color || 'trainer'}">
-        <div class="card-top">
-          <span class="name" style="font-size:18px;">${card.name}</span>
-          ${card.hp ? `<span class="hp" style="font-size:16px;">HP${card.hp}</span>` : ''}
-        </div>
-        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.6; font-size:48px; gap:8px;">
-          <span>🎴</span>
-          <span style="font-size:14px; color:#cbd5e1; font-weight:normal;">[拡大表示中]</span>
-        </div>
-        <div class="card-btm" style="font-size:13px;">
-          <span>${card.category || card.sub || 'カード'}</span>
-          <span>${card.type || ''}</span>
-        </div>
-      </div>
-    `;
+    cardVisualHtml = buildZoomFallbackCardHtml(card);
   }
 
   content.innerHTML = `
@@ -2126,14 +2113,16 @@ function openPrizePickModal({ forOpponent = false, victimName = "" }) {
     registerCard(card);
     const wrap = document.createElement("div");
     wrap.className = "prize-slot-wrap";
-    const hasImg = !!card.imageUrl;
+    const hasImg = typeof isCardImageValid === "function" ? isCardImageValid(card) : !!card.imageUrl;
+    const probe = (card.imageUrl && hasImg) ? `<img src="${escapeHtml(card.imageUrl)}" style="display:none;" referrerpolicy="no-referrer" onerror="window.onCardImageError(this, '${escapeHtml(card.imageUrl)}'); const pf = this.closest('.prize-front'); if(pf){ pf.classList.remove('has-img'); pf.classList.add('card-fallback-white'); pf.style.backgroundImage='none'; }">` : '';
     wrap.innerHTML = `
       <div class="prize-card-inner" id="prize-card-${idx}">
         <div class="prize-face prize-back">
           <span class="prize-back-number">サイド ${idx + 1}</span>
           <span class="prize-back-hint">タップでめくる</span>
         </div>
-        <div class="prize-face prize-front ${hasImg ? 'has-img' : ''}" ${hasImg ? `style="background-image: url('${card.imageUrl}');"` : ''}>
+        <div class="prize-face prize-front ${hasImg ? 'has-img' : 'card-fallback-white'}" ${hasImg ? `style="background-image: url('${card.imageUrl}');"` : ''}>
+          ${probe}
           <div class="prize-front-name">${escapeHtml(card.name)}</div>
           <div class="prize-front-sub">${escapeHtml(card.sub || card.category || '')}</div>
         </div>
@@ -2498,22 +2487,15 @@ function showPromoteActiveModal(benchIndices, onComplete) {
     const b = state.myBench[bIdx];
     if (!b || !b.card) return;
     registerCard(b.card);
-    const hasImg = !!b.card.imageUrl;
-    const imgStyle = hasImg ? `style="background-image: url('${b.card.imageUrl}');"` : '';
+    const cardProps = getCardRenderProps(b.card);
     const energyCount = (b.energies && b.energies.length) ? b.energies.length : 0;
     const dmg = b.damage || 0;
 
     bodyHtml += `
       <div style="display:flex; flex-direction:column; align-items:center; gap:6px; background:rgba(30,41,59,0.7); padding:8px; border-radius:8px; border:1.5px solid #3b82f6;">
         <span style="font-size:11px; font-weight:bold; color:#ffd84a;">🪑 ベンチ ${bIdx + 1}</span>
-        <div class="card ${b.card.color} ${hasImg ? 'has-img' : ''}" ${imgStyle} style="width:100px; height:140px; cursor:default;">
-          <div class="card-top">
-            <span class="name">${escapeHtml(b.card.name)}</span>
-            ${b.card.hp ? `<span class="hp">HP${b.card.hp}</span>` : ''}
-          </div>
-          <div class="card-btm">
-            <span>${escapeHtml(b.card.sub || b.card.category || '')}</span>
-          </div>
+        <div class="${cardProps.className}" ${cardProps.imgStyle} style="width:100px; height:140px; cursor:default;">
+          ${buildCardInnerHtml(b.card)}
           ${dmg > 0 ? `<div class="dmg">${dmg}</div>` : ''}
         </div>
         <div style="font-size:10px; color:#cbd5e1; display:flex; gap:6px;">
@@ -2637,13 +2619,14 @@ function showTopDrawCardReveal(card, onComplete = null) {
   nameEl.textContent = `「${safeName}」`;
   if (subEl) subEl.textContent = safeSub ? `【${safeSub}】` : "";
 
-  if (card && card.imageUrl) {
-    visualEl.innerHTML = `<img src="${escapeHtml(card.imageUrl)}" class="top-draw-big-img" alt="${escapeHtml(safeName)}" />`;
+  const isImgValid = card && typeof isCardImageValid === "function" ? isCardImageValid(card) : (card && !!card.imageUrl);
+  if (card && card.imageUrl && isImgValid) {
+    visualEl.innerHTML = `<img src="${escapeHtml(card.imageUrl)}" class="top-draw-big-img" alt="${escapeHtml(safeName)}" referrerpolicy="no-referrer" onerror="this.onerror=null; this.outerHTML = '<div class=\\'card card-fallback-white top-draw-big-card\\'><div class=\\'card-top\\'><span class=\\'name\\'>${escapeHtml(safeName)}</span></div><div class=\\'card-art\\'>${getCardTypeIcon(card)}</div><div class=\\'card-btm\\'><span>${escapeHtml(safeSub)}</span></div></div>';" />`;
   } else {
     visualEl.innerHTML = `
-      <div class="card ${card ? (card.color || 'pokemon') : 'pokemon'} top-draw-big-card">
+      <div class="card card-fallback-white top-draw-big-card">
         <div class="card-top"><span class="name">${escapeHtml(safeName)}</span></div>
-        <div class="card-art">${escapeHtml(card ? (card.art || '🃏') : '🃏')}</div>
+        <div class="card-art">${getCardTypeIcon(card)}</div>
         <div class="card-btm"><span>${escapeHtml(safeSub)}</span></div>
       </div>
     `;
@@ -3502,14 +3485,12 @@ function playPrizeFlipEffect(prizeIdx, card, destination = "hand", isOpponent = 
   }
 
   const canRevealFace = !!card && (!isOpponent || destination === "trash");
-  const hasImg = canRevealFace && !!card.imageUrl;
-  const imgStyle = hasImg ? `style="background-image: url('${escapeHtml(card.imageUrl)}');"` : "";
+  const cardProps = (canRevealFace && card) ? getCardRenderProps(card, false, "fx-prize-card-front") : null;
 
-  const frontContent = canRevealFace
+  const frontContent = (canRevealFace && cardProps)
     ? `
-      <div class="card ${card.color || 'pokemon'} ${hasImg ? 'has-img' : ''} fx-prize-card-front" ${imgStyle}>
-        <div class="card-top"><span class="name">${escapeHtml(card.name)}</span></div>
-        <div class="card-btm"><span>${escapeHtml(card.category || card.sub || '')}</span></div>
+      <div class="${cardProps.className}" ${cardProps.imgStyle}>
+        ${buildCardInnerHtml(card)}
       </div>
     `
     : `<div class="back fx-prize-card-front"></div>`;

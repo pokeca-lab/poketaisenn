@@ -359,12 +359,10 @@ function renderOpponent() {
   const oppTrashEl = document.getElementById("opp-trash");
   if (state.oppTrash.length > 0) {
     const top = state.oppTrash[state.oppTrash.length - 1];
-    registerCard(top);
-    const hasImg = !!top.imageUrl;
-    const imgStyle = hasImg ? `style="background-image: url('${top.imageUrl}');"` : '';
+    const cardProps = getCardRenderProps(top);
     oppTrashEl.innerHTML = `
-      <div class="card ${top.color} ${hasImg ? 'has-img' : ''}" ${imgStyle} ondblclick="event.stopPropagation(); window.openCardZoomByUid('${top.uid}')">
-        <div class="card-top"><span class="name">${top.name}</span></div>
+      <div class="${cardProps.className}" ${cardProps.imgStyle} ondblclick="event.stopPropagation(); window.openCardZoomByUid('${top.uid}')">
+        ${buildCardInnerHtml(top)}
       </div>
       <span class="count-badge">${state.oppTrash.length}</span>
     `;
@@ -516,12 +514,10 @@ function renderMyField() {
   const myTrashEl = document.getElementById("my-trash");
   if (state.myTrash.length > 0) {
     const top = state.myTrash[state.myTrash.length - 1];
-    registerCard(top);
-    const hasImg = !!top.imageUrl;
-    const imgStyle = hasImg ? `style="background-image: url('${top.imageUrl}');"` : '';
+    const cardProps = getCardRenderProps(top);
     myTrashEl.innerHTML = `
-      <div class="card ${top.color} ${hasImg ? 'has-img' : ''}" ${imgStyle} ondblclick="event.stopPropagation(); window.openCardZoomByUid('${top.uid}')">
-        <div class="card-top"><span class="name">${top.name}</span></div>
+      <div class="${cardProps.className}" ${cardProps.imgStyle} ondblclick="event.stopPropagation(); window.openCardZoomByUid('${top.uid}')">
+        ${buildCardInnerHtml(top)}
       </div>
       <span class="count-badge">${state.myTrash.length}</span>
     `;
@@ -676,25 +672,16 @@ function renderHand() {
   }
 
   state.myHand.forEach((card, idx) => {
-    registerCard(card);
     const isSelected = state.selectedHandIndices.has(idx);
-    const hasImg = !!card.imageUrl;
+    const cardProps = getCardRenderProps(card, isSelected);
     const el = document.createElement("div");
-    el.className = `card ${card.color} ${hasImg ? 'has-img' : ''} ${isSelected ? 'selected' : ''}`;
-    if (hasImg) {
-      el.setAttribute("style", `background-image: url('${card.imageUrl}');`);
+    el.className = cardProps.className;
+    if (cardProps.imgStyle) {
+      el.setAttribute("style", cardProps.imgStyle.replace(/^style="/, "").replace(/"$/, ""));
     }
     el.dataset.index = idx;
     el.draggable = true;
-    el.innerHTML = `
-      <div class="card-top">
-        <span class="name">${card.name}</span>
-        ${card.hp ? `<span class="hp">HP${card.hp}</span>` : ''}
-      </div>
-      <div class="card-btm">
-        <span>${card.sub || card.category || ''}</span>
-      </div>
-    `;
+    el.innerHTML = buildCardInnerHtml(card);
 
     // クリック・タップで選択（スマホモード時は即座に操作メニューを表示）
     el.onclick = () => {
@@ -876,16 +863,14 @@ function renderTemp() {
   const isSelectedAny = selectedCount > 0;
 
   state.tempCards.forEach((c, idx) => {
-    registerCard(c);
     const wrapper = document.createElement("div");
-    const hasImg = !!c.imageUrl;
-    const imgStyle = hasImg ? `style="background-image: url('${c.imageUrl}');"` : '';
     const isSelected = state.selectedTempIndices.has(idx);
+    const cardProps = getCardRenderProps(c, isSelected);
+    const badgeHtml = isSelected ? '<div class="temp-selected-badge">✔ 選択中</div>' : '';
     wrapper.innerHTML = `
-      <div class="card ${c.color} ${hasImg ? 'has-img' : ''} ${isSelected ? 'selected' : ''}" ${imgStyle} title="クリックで選択/解除、ダブルクリックで拡大">
-        ${isSelected ? '<div class="temp-selected-badge">✔ 選択中</div>' : ''}
-        <div class="card-top"><span class="name">${escapeHtml(c.name)}</span></div>
-        <div class="card-btm"><span>${escapeHtml(c.sub || c.category || '')}</span></div>
+      <div class="${cardProps.className}" ${cardProps.imgStyle} title="クリックで選択/解除、ダブルクリックで拡大">
+        ${badgeHtml}
+        ${buildCardInnerHtml(c)}
       </div>
     `;
     const cardEl = wrapper.firstElementChild;
@@ -1004,13 +989,10 @@ function renderStadium() {
   };
 
   if (state.stadium) {
-    registerCard(state.stadium);
-    const hasImg = !!state.stadium.imageUrl;
-    const imgStyle = hasImg ? `style="background-image: url('${state.stadium.imageUrl}');"` : '';
+    const cardProps = getCardRenderProps(state.stadium, false, "clickable");
     el.innerHTML = `
-      <div class="card trainer ${hasImg ? 'has-img' : ''} clickable" ${imgStyle} title="クリックで操作メニュー / ダブルクリックで拡大">
-        <div class="card-top"><span class="name">${state.stadium.name}</span></div>
-        <div class="card-btm"><span>スタジアム</span></div>
+      <div class="${cardProps.className}" ${cardProps.imgStyle} title="クリックで操作メニュー / ダブルクリックで拡大">
+        ${buildCardInnerHtml(state.stadium)}
       </div>
     `;
     const cardEl = el.querySelector(".card");
@@ -1232,13 +1214,11 @@ function renderPokemonCardHtml(pokemon, location, extraClass = "") {
     }
   }
 
-  const hasImg = !!card.imageUrl;
-  const imgStyle = hasImg ? `style="background-image: url('${card.imageUrl}');"` : '';
-  const imgClass = hasImg ? 'has-img' : '';
+  const cardProps = getCardRenderProps(card, false, `${extraClass}${conditionCardClasses}${selClass}`);
 
   return `
-    <div class="card ${card.color} ${imgClass} ${extraClass}${conditionCardClasses}${selClass}"
-         ${imgStyle}
+    <div class="${cardProps.className}"
+         ${cardProps.imgStyle}
          data-location="${location}"
          ondragover="window.handlePokemonDragOver(event)"
          ondragleave="window.handlePokemonDragLeave(event)"
@@ -1248,13 +1228,7 @@ function renderPokemonCardHtml(pokemon, location, extraClass = "") {
       ${conditionFxHtml}
       ${conditionBadgesHtml}
       ${pokemon.abilityUsed ? '<div class="ability-used-badge" title="特性使用済">済</div>' : ''}
-      <div class="card-top">
-        <span class="name">${card.name}</span>
-        ${card.hp ? `<span class="hp">HP${card.hp}</span>` : ''}
-      </div>
-      <div class="card-btm">
-        <span>${card.category || card.sub || ''}</span>
-      </div>
+      ${buildCardInnerHtml(card)}
       ${damage > 0 ? `<div class="dmg">${damage}</div>` : ''}
       ${energiesHtml}
     </div>
@@ -1434,19 +1408,10 @@ window.detachTool = function(location, destination) {
 };
 
 function createCardHtml(card, damage = 0, extraClass = "") {
-  registerCard(card);
-  const hasImg = !!card.imageUrl;
-  const imgStyle = hasImg ? `style="background-image: url('${card.imageUrl}');"` : '';
-  const imgClass = hasImg ? 'has-img' : '';
+  const cardProps = getCardRenderProps(card, false, extraClass);
   return `
-    <div class="card ${card.color} ${imgClass} ${extraClass}" ${imgStyle} ondblclick="event.stopPropagation(); window.openCardZoomByUid('${card.uid || ''}')">
-      <div class="card-top">
-        <span class="name">${card.name}</span>
-        ${card.hp ? `<span class="hp">HP${card.hp}</span>` : ''}
-      </div>
-      <div class="card-btm">
-        <span>${card.category || card.sub || ''}</span>
-      </div>
+    <div class="${cardProps.className}" ${cardProps.imgStyle} ondblclick="event.stopPropagation(); window.openCardZoomByUid('${card ? (card.uid || '') : ''}')">
+      ${buildCardInnerHtml(card)}
       ${damage > 0 ? `<div class="dmg">${damage}</div>` : ''}
     </div>
   `;

@@ -34,8 +34,8 @@ function renderDeckPreview(deck, elementId = "deck-preview") {
     thumbsHtml = `
       <div class="deck-preview-thumbs">
         ${uniqueCards.slice(0, 18).map(c => `
-          <div class="deck-preview-thumb" onclick="openCardZoomByUid('${c.uid}')" title="${c.name} (タップで拡大)">
-            <img src="${c.imageUrl}" alt="${c.name}" loading="lazy" />
+          <div class="deck-preview-thumb" onclick="openCardZoomByUid('${c.uid}')" title="${escapeHtml(c.name)} (タップで拡大)">
+            <img src="${escapeHtml(c.imageUrl)}" alt="${escapeHtml(c.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null; this.closest('.deck-preview-thumb').innerHTML='<span style=\\'font-size:9.5px; font-weight:800; color:#0f172a; padding:2px; text-align:center; line-height:1.1; word-break:break-all;\\'>${escapeHtml(c.name)}</span>';" />
           </div>
         `).join("")}
         ${uniqueCards.length > 18 ? `<div style="display:flex; align-items:center; font-size:11px; color:#64748b; font-weight:bold; padding:0 6px; flex-shrink:0;">+他${uniqueCards.length - 18}種</div>` : ''}
@@ -253,6 +253,9 @@ function applyPresetToTarget(target, presetId) {
 }
 
 function applyDeckToTarget(target, deck, name, code) {
+  if (typeof preloadAndVerifyDeckImages === "function") {
+    preloadAndVerifyDeckImages(deck);
+  }
   if (target === "online") {
     state.myLoadedDeck = deck;
     const input = document.getElementById("in-deck");
