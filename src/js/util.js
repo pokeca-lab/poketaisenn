@@ -91,7 +91,51 @@ function getCardTypeIcon(card) {
   return "⚡";
 }
 
-/** カード内部のHTML構造（上部名前/HP、中央アイコン、下部カテゴリ、画像プローブ）を生成 */
+// =============================================================================
+// ポケモン公式アートワーク（全国図鑑No.1〜1025）検索＆透かし背景生成
+// =============================================================================
+const _pokemonNameToDexId = new Map();
+
+function initPokemonDexMap() {
+  if (_pokemonNameToDexId.size > 0) return;
+  const list = window.POKEMON_SPECIES_NAMES;
+  if (!Array.isArray(list)) return;
+  for (let id = 1; id < list.length; id++) {
+    const name = list[id];
+    if (name) _pokemonNameToDexId.set(name, id);
+  }
+}
+
+/** カード名からポケモンの公式イラストURLを取得 */
+function getPokemonIllustrationUrl(cardName) {
+  if (!cardName) return null;
+  initPokemonDexMap();
+
+  let clean = String(cardName).replace(/[\s　・\(\)（）\-_]/g, "");
+  clean = clean.replace(/(?:ex|EX|vmax|VMAX|vstar|VSTAR|gx|GX|v|V|break|BREAK|lv\.\d+)$/i, "");
+  clean = clean.replace(/^(?:かがやく|わるい|やさしい|ヒスイ|アローラ|ガラル|パルデア|オリジン)/, "");
+
+  // 1. 完全一致
+  if (_pokemonNameToDexId.has(clean)) {
+    const id = _pokemonNameToDexId.get(clean);
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+  }
+
+  // 2. 部分一致（図鑑を逆順＝新しい世代/長い名前から走査）
+  const list = window.POKEMON_SPECIES_NAMES;
+  if (Array.isArray(list)) {
+    for (let id = list.length - 1; id >= 1; id--) {
+      const pokeName = list[id];
+      if (pokeName && pokeName.length >= 2 && clean.includes(pokeName)) {
+        return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+      }
+    }
+  }
+
+  return null;
+}
+
+/** カード内部のHTML構造（上部名前/HP、中央アイコン、下部カテゴリ、画像プローブ、透かしイラスト）を生成 */
 function buildCardInnerHtml(card, extraTopHtml = "") {
   if (!card) return "";
   const icon = getCardTypeIcon(card);
@@ -104,15 +148,25 @@ function buildCardInnerHtml(card, extraTopHtml = "") {
     ? `<img src="${escapeHtml(card.imageUrl)}" class="card-img-probe" style="display:none;" referrerpolicy="no-referrer" onerror="window.onCardImageError(this, '${escapeHtml(card.imageUrl)}')">`
     : "";
 
+  // ポケモンの公式イラスト背景（ウォーターマーク）
+  const pokeArtUrl = (card.type === "pokemon" || card.category === "ポケモン" || card.hp)
+    ? getPokemonIllustrationUrl(card.name)
+    : null;
+
+  const watermarkHtml = pokeArtUrl
+    ? `<div class="card-fallback-watermark" style="background-image: url('${pokeArtUrl}');"></div>`
+    : "";
+
   return `
     ${probeImg}
+    ${watermarkHtml}
     <div class="card-top">
       <span class="name">${escapeHtml(card.name)}</span>
       ${extraTopHtml}
       ${hpBadge}
     </div>
-    <div class="card-fallback-center">
-      <span class="fallback-icon">${icon}</span>
+    <div class="card-fallback-center ${pokeArtUrl ? 'has-watermark' : ''}">
+      ${pokeArtUrl ? '' : `<span class="fallback-icon">${icon}</span>`}
       <span class="fallback-type-label">${subText || 'カード'}</span>
     </div>
     <div class="card-btm">
@@ -147,19 +201,23 @@ function buildZoomFallbackCardHtml(card) {
   const icon = getCardTypeIcon(card);
   const hpBadge = card.hp ? `<span class="hp" style="font-size:16px; background:#fee2e2; color:#b91c1c; border:1.5px solid #f87171; font-weight:800; padding:2px 8px; border-radius:6px;">HP${escapeHtml(card.hp)}</span>` : "";
   const subText = escapeHtml(card.category || card.sub || card.type || "カード");
+  const pokeArtUrl = (card.type === "pokemon" || card.category === "ポケモン" || card.hp)
+    ? getPokemonIllustrationUrl(card.name)
+    : null;
 
   return `
-    <div class="card card-fallback-white zoom-fallback-card" style="width:240px; height:336px; padding:16px; box-shadow:0 10px 25px rgba(0,0,0,0.6); border-radius:12px;">
-      <div class="card-top" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
+    <div class="card card-fallback-white zoom-fallback-card" style="width:240px; height:336px; padding:16px; box-shadow:0 10px 25px rgba(0,0,0,0.6); border-radius:12px; position:relative; overflow:hidden;">
+      ${pokeArtUrl ? `<div class="card-fallback-watermark" style="background-image: url('${pokeArtUrl}'); opacity: 0.35; background-size: 85% auto;"></div>` : ''}
+      <div class="card-top" style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:flex-start; width:100%; position:relative; z-index:1;">
         <span class="name" style="font-size:19px; font-weight:900; color:#0f172a; line-height:1.25; word-break:break-word; max-width:72%;">${escapeHtml(card.name)}</span>
         ${hpBadge}
       </div>
-      <div class="card-fallback-center" style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:10px;">
-        <span style="font-size:64px; line-height:1;">${icon}</span>
+      <div class="card-fallback-center" style="display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; gap:10px; position:relative; z-index:1;">
+        ${pokeArtUrl ? '' : `<span style="font-size:56px; line-height:1;">${icon}</span>`}
         <span style="font-size:14px; font-weight:bold; color:#334155; background:#f1f5f9; border:1px solid #cbd5e1; padding:3px 12px; border-radius:999px;">${subText}</span>
-        <span style="font-size:11px; color:#94a3b8; font-weight:bold;">[カード代替表示]</span>
+        <span style="font-size:11px; color:#64748b; font-weight:bold; background:rgba(255,255,255,0.85); padding:2px 8px; border-radius:4px;">${pokeArtUrl ? '[公式イラスト背景合成]' : '[カード代替表示]'}</span>
       </div>
-      <div class="card-btm" style="border-top:1px dashed #cbd5e1; padding-top:6px; display:flex; justify-content:space-between; color:#64748b; font-size:12px; font-weight:bold;">
+      <div class="card-btm" style="border-top:1px dashed #cbd5e1; padding-top:6px; display:flex; justify-content:space-between; color:#64748b; font-size:12px; font-weight:bold; position:relative; z-index:1;">
         <span>${subText}</span>
         <span>${escapeHtml(card.type || "")}</span>
       </div>
@@ -194,6 +252,7 @@ function preloadAndVerifyDeckImages(deck) {
 
 window.isCardImageValid = isCardImageValid;
 window.getCardTypeIcon = getCardTypeIcon;
+window.getPokemonIllustrationUrl = getPokemonIllustrationUrl;
 window.buildCardInnerHtml = buildCardInnerHtml;
 window.getCardRenderProps = getCardRenderProps;
 window.buildZoomFallbackCardHtml = buildZoomFallbackCardHtml;

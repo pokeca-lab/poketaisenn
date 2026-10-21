@@ -1019,6 +1019,55 @@ html, body {
   border: 2px solid #cbd5e1 !important;
   color: #0f172a !important;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* 公式ポケモンイラストの透かし背景（画像欠損時の代替表示） */
+.card-fallback-watermark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: 78% auto;
+  background-position: center 60%;
+  background-repeat: no-repeat;
+  opacity: 0.30;
+  filter: contrast(1.12) saturate(1.18);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  transition: opacity 0.3s ease;
+}
+
+.card.has-img .card-fallback-watermark {
+  display: none !important;
+}
+
+.card.card-fallback-white .card-fallback-watermark,
+.card.img-fallback .card-fallback-watermark {
+  display: block !important;
+}
+
+.card.card-fallback-white .card-top,
+.card.img-fallback .card-top,
+.card.card-fallback-white .card-fallback-center,
+.card.img-fallback .card-fallback-center,
+.card.card-fallback-white .card-btm,
+.card.img-fallback .card-btm {
+  position: relative;
+  z-index: 1;
+}
+
+.card-fallback-center.has-watermark {
+  justify-content: flex-end;
+  padding-bottom: 2px;
+}
+
+.card-fallback-center.has-watermark .fallback-type-label {
+  background: rgba(241, 245, 249, 0.88);
+  backdrop-filter: blur(2px);
 }
 
 .card.card-fallback-white .card-top,
