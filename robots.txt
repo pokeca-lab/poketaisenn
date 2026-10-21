@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pokeca-lab.github.io/poketaisenn/sitemap.xml
