@@ -1019,7 +1019,6 @@ html, body {
   border: 2px solid #cbd5e1 !important;
   color: #0f172a !important;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35) !important;
-  overflow: hidden !important;
   position: relative !important;
 }
 
@@ -2037,10 +2036,12 @@ html, body {
 .hand-cards .card {
   height: var(--hand-h);
   margin-left: calc(var(--hand-h) * -0.12);
-  transition: transform 0.15s ease-out;
+  transition: transform 0.16s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.16s ease;
   cursor: pointer;
   will-change: transform;
   backface-visibility: hidden;
+  transform-origin: center bottom;
+  position: relative;
 }
 
 .hand-cards .card:first-child {
@@ -2048,15 +2049,16 @@ html, body {
 }
 
 .hand-cards .card:hover {
-  transform: translateY(calc(var(--u) * -1.5));
-  z-index: 5;
+  transform: translateY(calc(var(--u) * -1.8)) scale(1.14);
+  z-index: 100 !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65), 0 3px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* ホバー時の全方位透明ヒット領域（カードが上に移動してもカーソルが外れず、プルプル震える振動ループを完全防止） */
+/* ホバー時の全方位透明ヒット領域（カードが拡大・上昇してもカーソルが外れず、プルプル震える振動ループを完全防止） */
 .hand-cards .card:hover::after {
   content: "";
   position: absolute;
-  inset: -10px -6px -28px -6px;
+  inset: -12px -3px -30px -3px;
   pointer-events: auto;
   z-index: -1;
 }
@@ -2064,7 +2066,14 @@ html, body {
 .hand-cards .card.selected {
   transform: translateY(calc(var(--u) * -1.5));
   outline: 3px solid #ffd84a;
-  z-index: 6;
+  z-index: 10;
+  box-shadow: 0 4px 14px rgba(255, 216, 74, 0.45);
+}
+
+.hand-cards .card.selected:hover {
+  transform: translateY(calc(var(--u) * -2)) scale(1.14);
+  z-index: 100 !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.65), 0 0 18px rgba(255, 216, 74, 0.7);
 }
 
 .hand-cards .card.dragging {
@@ -2815,7 +2824,7 @@ body.menu-open .sp-sheet {
     filter: brightness(1.15);
     box-shadow: 0 0 14px rgba(96, 165, 250, 0.9), 0 0 25px rgba(250, 204, 21, 0.5);
     outline: 2px solid #60a5fa;
-    z-index: 5;
+    z-index: 100 !important;
   }
   .hand-cards .card:hover::after {
     display: none;
