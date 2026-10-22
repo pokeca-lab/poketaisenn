@@ -68,6 +68,9 @@ function initLobbyDefaults() {
     } else if (location.hash.includes("test-deck")) {
       showDeckModal();
     }
+  } else {
+    // 初回アクセス時の操作案内ポップアップ（ロビー初期表示時）
+    openWelcomeGuideModal(false);
   }
 }
 
@@ -637,6 +640,67 @@ function discardSoloSession() {
   showToast("セーブデータを破棄しました");
 }
 
+// =============================================================================
+// 初回操作案内ポップアップ（初めに見てください）
+// =============================================================================
+function openWelcomeGuideModal(forceOpen = false) {
+  try {
+    const isHidden = localStorage.getItem("pokeca_hide_welcome_guide") === "1";
+    if (isHidden && !forceOpen) return;
+  } catch (e) {}
+
+  const modal = document.getElementById("welcome-guide-modal");
+  if (!modal) return;
+
+  const chk = document.getElementById("chk-hide-welcome-guide");
+  if (chk) {
+    try {
+      chk.checked = localStorage.getItem("pokeca_hide_welcome_guide") === "1";
+    } catch (e) {
+      chk.checked = false;
+    }
+  }
+
+  modal.classList.remove("hidden");
+  const video = document.getElementById("welcome-demo-video");
+  if (video) {
+    try {
+      video.currentTime = 0;
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+    } catch (e) {}
+  }
+}
+
+function closeWelcomeGuideModal() {
+  const modal = document.getElementById("welcome-guide-modal");
+  if (!modal) return;
+
+  const chk = document.getElementById("chk-hide-welcome-guide");
+  if (chk) {
+    try {
+      if (chk.checked) {
+        localStorage.setItem("pokeca_hide_welcome_guide", "1");
+      } else {
+        localStorage.removeItem("pokeca_hide_welcome_guide");
+      }
+    } catch (e) {}
+  }
+
+  const video = document.getElementById("welcome-demo-video");
+  if (video) {
+    try {
+      video.pause();
+    } catch (e) {}
+  }
+
+  modal.classList.add("hidden");
+}
+
+window.openWelcomeGuideModal = openWelcomeGuideModal;
+window.closeWelcomeGuideModal = closeWelcomeGuideModal;
 window.debouncedSaveSoloSession = debouncedSaveSoloSession;
 window.checkSoloResumeBanner = checkSoloResumeBanner;
 window.resumeSoloSession = resumeSoloSession;
