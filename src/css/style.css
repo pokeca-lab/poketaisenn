@@ -342,10 +342,10 @@ html, body {
   vertical-align: middle;
 }
 
-/* ロビー最上部ナビゲーション行（モード切替タブ ＆ 操作マニュアルボタン） */
+/* ロビー最上部ナビゲーション行（モード切替タブ ＆ 操作案内・マニュアルボタン） */
 .lobby-top-nav-row {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
   width: 100%;
 }
@@ -357,13 +357,14 @@ html, body {
   border-radius: 10px;
   padding: 3px;
   gap: 4px;
-  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mode-tab-btn {
   flex: 1;
   padding: 8px 12px;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: bold;
   border-radius: 8px;
   border: none;
@@ -372,6 +373,9 @@ html, body {
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mode-tab-btn.active {
@@ -383,8 +387,9 @@ html, body {
 .lobby-nav-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ロビーパネル内の効果音・音量設定ボタン */
@@ -462,24 +467,24 @@ html, body {
   font-size: 13px;
 }
 
-/* ロビーパネル内の操作マニュアルボタン（案C） */
+/* ロビーパネル内の操作マニュアルボタン */
 .lobby-panel-manual-btn {
+  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   background: linear-gradient(135deg, #2563eb, #38bdf8);
   color: #ffffff;
   font-size: 12px;
   font-weight: bold;
   text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 10px;
+  padding: 8px 10px;
+  border-radius: 9px;
   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
   transition: all 0.15s ease;
   white-space: nowrap;
-  flex-shrink: 0;
-  height: 38px;
+  height: 36px;
   box-sizing: border-box;
 }
 
@@ -500,23 +505,23 @@ html, body {
 
 /* ロビーパネル内のはじめに（操作方法案内）ボタン */
 .lobby-panel-guide-btn {
+  flex: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   background: linear-gradient(135deg, #059669, #10b981);
   color: #ffffff;
   font-size: 12px;
   font-weight: bold;
   border: none;
   cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 10px;
+  padding: 8px 10px;
+  border-radius: 9px;
   box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
   transition: all 0.15s ease;
   white-space: nowrap;
-  flex-shrink: 0;
-  height: 38px;
+  height: 36px;
   box-sizing: border-box;
 }
 
@@ -533,14 +538,13 @@ html, body {
 @media (max-width: 480px) {
   .lobby-top-nav-row {
     gap: 6px;
-    flex-wrap: wrap;
   }
   .lobby-nav-actions {
-    gap: 4px;
+    gap: 6px;
   }
   .mode-tab-btn {
-    padding: 7px 6px;
-    font-size: 11px;
+    padding: 7px 8px;
+    font-size: 12px;
   }
   .lobby-panel-sound-btn,
   .lobby-panel-tts-btn,
@@ -548,7 +552,7 @@ html, body {
   .lobby-panel-guide-btn {
     padding: 7px 8px;
     font-size: 11px;
-    height: 36px;
+    height: 34px;
   }
 }
 
@@ -7484,7 +7488,8 @@ body.menu-open .sp-sheet {
 
 .welcome-guide-panel {
   max-width: min(94vw, 680px);
-  max-height: 90vh;
+  width: 100%;
+  max-height: 88vh;
   background: #0f172a;
   border: 1px solid rgba(56, 189, 248, 0.45);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 24px rgba(14, 165, 233, 0.2);
@@ -7501,6 +7506,7 @@ body.menu-open .sp-sheet {
   padding: 12px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: #1e293b;
+  flex-shrink: 0;
 }
 
 .welcome-guide-title-wrap {
@@ -7540,10 +7546,30 @@ body.menu-open .sp-sheet {
 
 .welcome-guide-body {
   padding: 16px 18px;
-  overflow-y: auto;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+/* スクロールバーの常時/明確な表示 */
+.welcome-guide-body::-webkit-scrollbar {
+  width: 8px;
+}
+.welcome-guide-body::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 4px;
+}
+.welcome-guide-body::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.6);
+  border-radius: 4px;
+}
+.welcome-guide-body::-webkit-scrollbar-thumb:hover {
+  background: #38bdf8;
 }
 
 /* ⚠️ 最重要注意事項 */
@@ -7636,7 +7662,7 @@ body.menu-open .sp-sheet {
 
 .welcome-guide-video {
   width: 100%;
-  max-height: 270px;
+  max-height: 230px;
   object-fit: contain;
   display: block;
 }
@@ -7661,6 +7687,7 @@ body.menu-open .sp-sheet {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .welcome-guide-checkbox-label {
@@ -7708,9 +7735,17 @@ body.menu-open .sp-sheet {
 @media (max-width: 600px) {
   .welcome-guide-panel {
     max-width: 96vw;
-    max-height: 94vh;
+    max-height: 92vh;
+  }
+  .welcome-guide-head {
+    padding: 10px 14px;
+  }
+  .welcome-guide-body {
+    padding: 12px 14px;
+    gap: 10px;
   }
   .welcome-guide-foot {
+    padding: 10px 14px;
     flex-direction: column;
     align-items: stretch;
     gap: 10px;
@@ -7720,6 +7755,6 @@ body.menu-open .sp-sheet {
     justify-content: flex-end;
   }
   .welcome-guide-video {
-    max-height: 200px;
+    max-height: 180px;
   }
 }
