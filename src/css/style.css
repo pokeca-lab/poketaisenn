@@ -2913,6 +2913,7 @@ body.menu-open .sp-sheet {
 /* カードダブルクリック拡大スタイル */
 #card-zoom-modal {
   z-index: 500 !important;
+  padding: 12px;
 }
 
 .zoom-card-container {
@@ -2921,51 +2922,175 @@ body.menu-open .sp-sheet {
   align-items: center;
   max-width: 360px;
   width: 100%;
-  gap: 10px;
+  max-height: 94vh;
+  gap: 8px;
+  position: relative;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 16px 14px 12px 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95);
+  box-sizing: border-box;
 }
 
-.zoom-card-container .card {
-  width: 250px;
-  height: 350px;
-  border-width: 4px;
-  border-radius: 14px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(250, 204, 21, 0.5);
-  font-size: 16px;
-  padding: 14px;
-  cursor: default;
+.zoom-card-container.has-attachments {
+  max-width: min(95vw, 760px);
+}
+
+.zoom-close-icon-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 20;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.zoom-close-icon-btn:hover {
+  background: #ef4444;
+  border-color: #f87171;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+#zoom-card-content {
+  width: 100%;
+  max-height: calc(94vh - 62px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+/* 2カラムレイアウト（PC・タブレット表示） */
+.zoom-card-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .zoom-card-layout.has-attachments {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 16px;
+  }
+  .zoom-card-layout.has-attachments .zoom-main-col {
+    flex: 0 0 250px;
+    max-width: 250px;
+  }
+  .zoom-card-layout.has-attachments .zoom-side-col {
+    flex: 1 1 360px;
+    min-width: 280px;
+    max-width: 450px;
+  }
+}
+
+.zoom-main-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.zoom-side-col {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.zoom-card-img-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
 }
 
 .zoom-card-img {
-  max-height: 440px;
-  max-width: min(90vw, 320px);
-  width: 100%;
-  border-radius: 12px;
+  max-height: min(52vh, 360px);
+  max-width: min(90vw, 250px);
+  width: auto;
+  border-radius: 10px;
   border: 2px solid #475569;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(250, 204, 21, 0.4);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(250, 204, 21, 0.25);
   object-fit: contain;
   background: #0f172a;
 }
 
-.zoom-card-container .card .hp {
+@media (max-width: 639px) {
+  .zoom-card-img {
+    max-height: min(30vh, 200px);
+    max-width: 170px;
+  }
+}
+
+.zoom-card-caption {
+  font-size: 12px;
+  color: #cbd5e1;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.zoom-card-hp {
+  color: #f87171;
+}
+
+.zoom-card-cat {
+  font-size: 10.5px;
+  color: #94a3b8;
+  font-weight: normal;
+}
+
+.zoom-card-container .card {
+  width: 230px;
+  height: 320px;
+  border-width: 4px;
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(250, 204, 21, 0.5);
   font-size: 15px;
+  padding: 12px;
+  cursor: default;
+}
+
+.zoom-card-container .card .hp {
+  font-size: 14px;
 }
 
 .zoom-card-container .card-btm {
-  font-size: 13px;
+  font-size: 12px;
 }
 
-/* 拡大時の付加情報（ポケモンのどうぐ・エネルギー） */
+/* 拡大時の付加情報（ポケモンのどうぐ・エネルギー・進化前） */
 .zoom-attachments {
   width: 100%;
-  background: #0f172a;
+  background: #1e293b;
   border: 1px solid #334155;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   font-size: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
 }
 
 .zoom-section {
@@ -2978,16 +3103,19 @@ body.menu-open .sp-sheet {
   color: #94a3b8;
   font-weight: bold;
   font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .zoom-tool-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #1e293b;
+  background: #0f172a;
   border: 1px solid #0284c7;
   border-radius: 6px;
-  padding: 5px 8px;
+  padding: 4px 8px;
 }
 
 .zoom-tool-name {
@@ -2998,21 +3126,133 @@ body.menu-open .sp-sheet {
 .zoom-energy-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 
 .zoom-energy-item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
+  gap: 4px;
+  padding: 2px 7px;
   border-radius: 12px;
   border: 1.5px solid;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: bold;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0,0,0,0.8);
   box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+/* 進化前のカード水平コンテナ＆アイテム */
+.zoom-prev-stages-container {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 2px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.zoom-prev-card-item {
+  cursor: pointer;
+  flex: 0 0 auto;
+  width: 68px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  box-sizing: border-box;
+}
+
+.zoom-prev-card-item:hover {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+}
+
+.zoom-prev-img-wrap {
+  position: relative;
+  width: 60px;
+  height: 84px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-prev-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.zoom-prev-badge {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid #38bdf8;
+  color: #38bdf8;
+  font-size: 8.5px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 3px;
+  z-index: 2;
+  line-height: 1.1;
+  pointer-events: none;
+}
+
+.zoom-prev-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #f8fafc;
+  text-align: center;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.fallback-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.zoom-prev-name {
+  font-size: 9.5px;
+  color: #94a3b8;
+  margin-top: 3px;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zoom-prev-btn {
+  font-size: 8.5px !important;
+  padding: 1px 4px !important;
+  margin-top: 2px !important;
+  width: 100%;
+  border-radius: 3px !important;
+}
+
+.zoom-bottom-close-btn {
+  margin-top: 2px;
+  padding: 6px 16px;
+  font-size: 12.5px;
 }
 
 .zoom-empty {

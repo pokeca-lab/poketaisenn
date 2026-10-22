@@ -1150,86 +1150,90 @@ function openCardZoom(card) {
   if (!card) return;
   hideCtx();
   const modal = document.getElementById("card-zoom-modal");
+  const container = document.getElementById("zoom-card-container") || (modal ? modal.querySelector(".zoom-card-container") : null);
   const content = document.getElementById("zoom-card-content");
 
-  // このカードが場のポケモンか判定して、付加情報（どうぐ・エネルギー）を表示
+  // このカードが場のポケモンか判定して、付加情報（どうぐ・エネルギー・進化前）を取得
   const fieldInfo = findPokemonByCardUid(card.uid);
   const pokemon = fieldInfo ? fieldInfo.pokemon : null;
 
-  let attachmentHtml = "";
-  if (pokemon) {
-    const hasTool = !!pokemon.tool;
-    const hasEnergies = pokemon.energies && pokemon.energies.length > 0;
-    const condNames = (typeof getPokemonConditionNames === "function") ? getPokemonConditionNames(pokemon) : [];
+  const hasTool = !!(pokemon && pokemon.tool);
+  const hasEnergies = !!(pokemon && pokemon.energies && pokemon.energies.length > 0);
+  const hasPrevious = !!(pokemon && pokemon.previousStages && pokemon.previousStages.length > 0);
+  const condNames = (pokemon && typeof getPokemonConditionNames === "function") ? getPokemonConditionNames(pokemon) : [];
+  const hasConditions = condNames.length > 0;
 
+  const hasAttachments = hasTool || hasEnergies || hasPrevious || hasConditions;
+
+  if (container) {
+    container.classList.toggle("has-attachments", hasAttachments);
+  }
+
+  let attachmentHtml = "";
+  if (hasAttachments) {
     attachmentHtml = `
       <div class="zoom-attachments">
-        ${condNames.length > 0 ? `
+        ${hasConditions ? `
           <div class="zoom-section">
             <div class="zoom-section-title">🧪 特殊状態</div>
-            <div style="display:flex; gap:6px; flex-wrap:wrap; padding:4px 0;">
+            <div style="display:flex; gap:6px; flex-wrap:wrap; padding:2px 0;">
               ${condNames.map(n => `<span style="background:#581c87; border:1px solid #d8b4fe; color:#f3e8ff; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:bold;">${n}</span>`).join("")}
             </div>
           </div>
         ` : ''}
-        <!-- ポケモンのどうぐ -->
-        <div class="zoom-section">
-          <div class="zoom-section-title">🎒 ポケモンのどうぐ</div>
-          ${hasTool ? `
-            <div class="zoom-tool-row">
-              <span class="zoom-tool-name">🎒 ${pokemon.tool.name}</span>
-              <button class="btn blue" style="font-size:10px; padding:2px 8px;" onclick="openCardZoomByUid('${pokemon.tool.uid}')">どうぐを拡大</button>
-            </div>
-          ` : `
-            <div class="zoom-empty">（ポケモンのどうぐはついていません）</div>
-          `}
-        </div>
 
-        <!-- ついているエネルギー -->
-        <div class="zoom-section">
-          <div class="zoom-section-title">⚡ ついているエネルギー (${pokemon.energies ? pokemon.energies.length : 0} 個)</div>
-          ${hasEnergies ? `
+        ${hasTool ? `
+          <div class="zoom-section">
+            <div class="zoom-section-title">🎒 ポケモンのどうぐ</div>
+            <div class="zoom-tool-row">
+              <span class="zoom-tool-name">🎒 ${escapeHtml(pokemon.tool.name)}</span>
+              <button class="btn blue" style="font-size:10px; padding:2px 8px;" onclick="openCardZoomByUid('${pokemon.tool.uid}')">拡大</button>
+            </div>
+          </div>
+        ` : ''}
+
+        ${hasEnergies ? `
+          <div class="zoom-section">
+            <div class="zoom-section-title">⚡ ついているエネルギー (${pokemon.energies.length} 個)</div>
             <div class="zoom-energy-list">
               ${pokemon.energies.map((energy, eIdx) => {
                 const info = getEnergyInfo(energy);
                 return `
                   <div class="zoom-energy-item" style="background:${info.bg}; border-color:${info.border};">
                     <span>${info.icon}</span>
-                    <span>${energy.name}</span>
+                    <span>${escapeHtml(energy.name)}</span>
                   </div>
                 `;
               }).join("")}
             </div>
-          ` : `
-            <div class="zoom-empty">（エネルギーはついていません）</div>
-          `}
-        </div>
+          </div>
+        ` : ''}
 
-        <!-- 進化元カード -->
-        ${pokemon.previousStages && pokemon.previousStages.length > 0 ? `
+        ${hasPrevious ? `
           <div class="zoom-section">
-            <div class="zoom-section-title">✨ 進化前のカード (${pokemon.previousStages.length}枚) <small style="font-weight:normal; color:#94a3b8;">(クリックで拡大)</small></div>
-            <div class="zoom-prev-stages-container" style="display:flex; gap:8px; overflow-x:auto; padding:4px 2px; max-width:100%; box-sizing:border-box;">
+            <div class="zoom-section-title">
+              <span>✨ 進化前のカード (${pokemon.previousStages.length}枚)</span>
+              <small style="font-weight:normal; color:#94a3b8; font-size:10.5px;">(クリックで拡大)</small>
+            </div>
+            <div class="zoom-prev-stages-container">
               ${pokemon.previousStages.map((prevCard, pIdx) => {
                 const hasImg = prevCard.imageUrl && (!window.brokenImageUrls || !window.brokenImageUrls.has(prevCard.imageUrl));
                 const stageLabel = (pIdx === 0) ? "たね" : `${pIdx}進化`;
                 return `
-                  <div class="zoom-prev-card-item" onclick="openCardZoomByUid('${prevCard.uid}')" style="cursor:pointer; flex:0 0 auto; width:80px; display:flex; flex-direction:column; align-items:center; background:#1e293b; border:1px solid #475569; border-radius:6px; padding:4px; box-shadow:0 2px 6px rgba(0,0,0,0.5); transition:transform 0.15s ease, border-color 0.15s ease;" onmouseover="this.style.borderColor='#38bdf8'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#475569'; this.style.transform='none';">
-                    <div style="font-size:10px; color:#cbd5e1; font-weight:bold; margin-bottom:2px; text-align:center; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                      🪙 [${stageLabel}]
+                  <div class="zoom-prev-card-item" onclick="openCardZoomByUid('${prevCard.uid}')" title="${escapeHtml(prevCard.name)} (クリックで詳細拡大)">
+                    <div class="zoom-prev-img-wrap">
+                      <span class="zoom-prev-badge">${stageLabel}</span>
+                      ${hasImg ? `
+                        <img src="${prevCard.imageUrl}" alt="${escapeHtml(prevCard.name)}" class="zoom-prev-img" referrerpolicy="no-referrer" />
+                      ` : `
+                        <div class="zoom-prev-fallback">
+                          <span>🃏</span>
+                          <span class="fallback-name">${escapeHtml(prevCard.name)}</span>
+                        </div>
+                      `}
                     </div>
-                    ${hasImg ? `
-                      <img src="${prevCard.imageUrl}" alt="${escapeHtml(prevCard.name)}" style="width:72px; height:100px; object-fit:contain; border-radius:4px; background:#0f172a;" referrerpolicy="no-referrer" />
-                    ` : `
-                      <div style="width:72px; height:100px; border-radius:4px; background:#334155; display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:10px; color:#f8fafc; text-align:center; padding:2px;">
-                        <span>🃏</span>
-                        <span style="overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${escapeHtml(prevCard.name)}</span>
-                      </div>
-                    `}
-                    <div style="font-size:10px; color:#94a3b8; margin-top:2px; text-align:center; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(prevCard.name)}">
-                      ${escapeHtml(prevCard.name)}
-                    </div>
-                    <button class="btn blue" style="font-size:9px; padding:1px 6px; margin-top:3px; width:100%;">🔍 拡大</button>
+                    <div class="zoom-prev-name">${escapeHtml(prevCard.name)}</div>
+                    <button class="btn blue zoom-prev-btn">🔍 拡大</button>
                   </div>
                 `;
               }).join("")}
@@ -1244,13 +1248,13 @@ function openCardZoom(card) {
   const isImgValid = typeof isCardImageValid === "function" ? isCardImageValid(card) : !!card.imageUrl;
   if (isImgValid) {
     cardVisualHtml = `
-      <div class="zoom-card-img-wrap" style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+      <div class="zoom-card-img-wrap">
         <img src="${card.imageUrl}" alt="${escapeHtml(card.name)}" class="zoom-card-img" referrerpolicy="no-referrer"
              onerror="this.onerror=null; if(window.brokenImageUrls) window.brokenImageUrls.add('${escapeHtml(card.imageUrl)}'); const wrap=this.closest('.zoom-card-img-wrap'); if(wrap){ wrap.outerHTML = buildZoomFallbackCardHtml(findCardByUid('${card.uid}') || ${JSON.stringify(card).replace(/"/g, '&quot;')}); }" />
-        <div style="font-size:13px; color:#cbd5e1; font-weight:bold; display:flex; align-items:center; gap:8px;">
-          <span>${escapeHtml(card.name)}</span>
-          ${card.hp ? `<span style="color:#f87171;">(HP${escapeHtml(card.hp)})</span>` : ''}
-          <span style="font-size:11px; color:#94a3b8; font-weight:normal;">${escapeHtml(card.category || card.sub || '')}</span>
+        <div class="zoom-card-caption">
+          <span class="zoom-card-title">${escapeHtml(card.name)}</span>
+          ${card.hp ? `<span class="zoom-card-hp">(HP${escapeHtml(card.hp)})</span>` : ''}
+          <span class="zoom-card-cat">${escapeHtml(card.category || card.sub || '')}</span>
         </div>
       </div>
     `;
@@ -1259,8 +1263,16 @@ function openCardZoom(card) {
   }
 
   content.innerHTML = `
-    ${cardVisualHtml}
-    ${attachmentHtml}
+    <div class="zoom-card-layout ${hasAttachments ? 'has-attachments' : 'single'}">
+      <div class="zoom-main-col">
+        ${cardVisualHtml}
+      </div>
+      ${hasAttachments ? `
+        <div class="zoom-side-col">
+          ${attachmentHtml}
+        </div>
+      ` : ''}
+    </div>
   `;
   modal.classList.remove("hidden");
 }

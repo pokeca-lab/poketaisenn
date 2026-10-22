@@ -732,9 +732,10 @@
 
 <!-- カードダブルクリック拡大モーダル -->
 <div id="card-zoom-modal" class="modal hidden" onclick="closeCardZoom()">
-  <div class="zoom-card-container" onclick="event.stopPropagation()">
+  <div class="zoom-card-container" id="zoom-card-container" onclick="event.stopPropagation()">
+    <button class="zoom-close-icon-btn" onclick="closeCardZoom()" title="閉じる" aria-label="閉じる">✖</button>
     <div id="zoom-card-content"></div>
-    <button class="btn big wide" style="margin-top:12px;" onclick="closeCardZoom()">閉じる</button>
+    <button class="btn wide zoom-bottom-close-btn" onclick="closeCardZoom()">閉じる</button>
   </div>
 </div>
 
