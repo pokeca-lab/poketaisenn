@@ -10,7 +10,8 @@ const FIREBASE_CONFIG = {
   projectId: "pokelaboareana",
   storageBucket: "pokelaboareana.firebasestorage.app",
   messagingSenderId: "350656097703",
-  appId: "1:350656097703:web:39480de285b8303073da82"
+  appId: "1:350656097703:web:39480de285b8303073da82",
+  measurementId: "G-E7VCH0FFHS"
 };
 
 (function () {

@@ -6,6 +6,12 @@ function hasBasicPokemon(cards) {
 }
 
 function startBattleSetup() {
+  if (typeof gtag === "function") {
+    gtag("event", "start_online_battle", {
+      event_category: "gameplay",
+      event_label: state.roomNo || "online"
+    });
+  }
   document.getElementById("lobby").classList.add("hidden");
   document.getElementById("game").classList.remove("hidden");
   if (typeof SoundEffects !== "undefined") SoundEffects.updateVolumeUI();
@@ -71,6 +77,12 @@ function startBattleSetup() {
 
 // 一人回しモードのセットアップ（2デッキ同時展開）
 function startSoloBattleSetup() {
+  if (typeof gtag === "function") {
+    gtag("event", "start_solo_battle", {
+      event_category: "gameplay",
+      event_label: "solo"
+    });
+  }
   state.isSoloMode = true;
   state.myName = "デッキ1 (プレイヤーA)";
   state.oppName = "デッキ2 (プレイヤーB)";
