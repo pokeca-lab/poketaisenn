@@ -13,17 +13,87 @@ function renderAll() {
   document.getElementById("g-opp-name").textContent = state.oppName;
   document.getElementById("g-turn").textContent = turnInfo.label;
 
-  // １）どちらのプレイヤーのターンかを明確にするため、ターン中プレイヤー名の左側に赤い丸を表示
+  // １）どちらのプレイヤーのターンかを明確にするため、ターン中プレイヤー名の左側に赤い丸を表示＆名前タグ強調
   const dotOpp = document.getElementById("turn-dot-opp");
   const dotMe = document.getElementById("turn-dot-me");
+  const wrapOpp = document.getElementById("g-opp-name-wrap");
+  const wrapMe = document.getElementById("g-my-name-wrap");
   if (dotOpp && dotMe) {
-    if (turnInfo.isMyTurn) {
+    if (state.isSetupPhase) {
+      dotMe.className = "turn-dot hidden";
+      dotOpp.className = "turn-dot hidden";
+      if (wrapMe) wrapMe.className = "name";
+      if (wrapOpp) wrapOpp.className = "name";
+    } else if (turnInfo.isMyTurn) {
       dotMe.className = "turn-dot active";
       dotOpp.className = "turn-dot hidden";
+      if (wrapMe) wrapMe.className = "name me turn-active-player";
+      if (wrapOpp) wrapOpp.className = "name turn-inactive-player";
     } else {
       dotMe.className = "turn-dot hidden";
       dotOpp.className = "turn-dot active";
+      if (wrapMe) wrapMe.className = "name turn-inactive-player";
+      if (wrapOpp) wrapOpp.className = "name opp turn-active-player";
     }
+  }
+
+  // ターンステータスバッジ（turn-panel内）
+  const turnBadge = document.getElementById("turn-status-badge");
+  if (turnBadge) {
+    if (state.isSetupPhase) {
+      turnBadge.classList.add("hidden");
+    } else {
+      turnBadge.classList.remove("hidden");
+      if (state.isSoloMode) {
+        turnBadge.className = "turn-status-badge is-solo";
+        turnBadge.innerHTML = `<span class="badge-icon">🃏</span><span class="badge-text">${escapeHtml(state.myName)}の手番</span>`;
+      } else if (turnInfo.isMyTurn) {
+        turnBadge.className = "turn-status-badge is-me";
+        turnBadge.innerHTML = `<span class="badge-icon">⚔️</span><span class="badge-text">あなたの手番</span>`;
+      } else {
+        turnBadge.className = "turn-status-badge is-opp";
+        turnBadge.innerHTML = `<span class="badge-icon spin-slow">⏳</span><span class="badge-text">相手の手番中</span>`;
+      }
+    }
+  }
+
+  // 上部メニューバーのターンインジケーター
+  const topTurn = document.getElementById("top-turn-indicator");
+  if (topTurn) {
+    if (state.isSetupPhase) {
+      topTurn.classList.add("hidden");
+    } else {
+      topTurn.classList.remove("hidden");
+      if (state.isSoloMode) {
+        topTurn.className = "top-turn-indicator is-solo";
+        topTurn.innerHTML = `<span class="indicator-dot"></span><span>🃏 一人回し手番</span>`;
+      } else if (turnInfo.isMyTurn) {
+        topTurn.className = "top-turn-indicator is-me";
+        topTurn.innerHTML = `<span class="indicator-dot"></span><span>⚔️ あなたのターン</span>`;
+      } else {
+        topTurn.className = "top-turn-indicator is-opp";
+        topTurn.innerHTML = `<span class="indicator-dot"></span><span>⏳ 相手の手番中</span>`;
+      }
+    }
+  }
+
+  // 中央アリーナの相手ターン待機バー
+  const oppFloatingBar = document.getElementById("opp-turn-floating-bar");
+  if (oppFloatingBar) {
+    if (!state.isSetupPhase && !state.isSoloMode && !turnInfo.isMyTurn) {
+      oppFloatingBar.classList.remove("hidden");
+      const txt = oppFloatingBar.querySelector(".opp-turn-floating-text");
+      if (txt) txt.textContent = `相手（${state.oppName}）の手番中です（待機してください）`;
+    } else {
+      oppFloatingBar.classList.add("hidden");
+    }
+  }
+
+  // 盤面全体への相手ターン中クラス付与
+  const boardEl = document.querySelector(".board");
+  if (boardEl) {
+    const isOppTurn = (!state.isSetupPhase && !state.isSoloMode && !turnInfo.isMyTurn);
+    boardEl.classList.toggle("is-opp-turn", isOppTurn);
   }
 
   // ２）プレイヤー名の右側に「先攻」と「後攻」を表示
@@ -86,6 +156,25 @@ function renderAll() {
         btnEndTurn.textContent = "相手の手番中";
         btnEndTurn.classList.add("disabled-turn");
         btnEndTurn.classList.remove("my-turn-glow");
+      }
+    }
+  }
+
+  // ⚔️ 技宣言ボタンの状態制御（相手ターン中・準備中は無効化）
+  const btnAttack = document.getElementById("btn-declare-attack");
+  if (btnAttack) {
+    if (state.isSetupPhase) {
+      btnAttack.style.display = "none";
+    } else {
+      btnAttack.style.display = "";
+      if (!state.isSoloMode && !turnInfo.isMyTurn) {
+        btnAttack.disabled = true;
+        btnAttack.classList.add("disabled-turn");
+        btnAttack.title = "相手のターン中は技宣言できません";
+      } else {
+        btnAttack.disabled = false;
+        btnAttack.classList.remove("disabled-turn");
+        btnAttack.title = "バトル場のポケモンの技を宣言";
       }
     }
   }
@@ -210,7 +299,7 @@ function renderSetupBanner() {
       } else if (state.setupStep === "coin") {
         const isGuest = (typeof P2P !== "undefined" && P2P.connected && P2P.role === "guest");
         statusEl.textContent = isGuest
-          ? "🪙 ルームオーナーが先攻・後攻を決めるコイントスを行っています..."
+          ? "🪙 相手がコインを振るまでお待ちください..."
           : "🪙 コイントスで先攻・後攻を決定してください（表：オーナー ／ 裏：相手）";
       } else if (state.setupStep === "choosing_order") {
         statusEl.textContent = "🪙 あなたが先攻・後攻を選択中...";
@@ -307,6 +396,20 @@ function renderSetupBanner() {
           btnReady.classList.remove("gold");
           btnReady.classList.add("green");
         }
+      }
+    }
+
+    // コイントス未完了時はマリガン・準備完了ボタンを無効化
+    if (state.setupStep !== "place" && !state.isSoloMode) {
+      if (btnMulligan) {
+        btnMulligan.disabled = true;
+        btnMulligan.textContent = "⏳ コイントス待ち";
+        btnMulligan.title = "先攻・後攻が決まるまで操作できません";
+      }
+      if (btnReady) {
+        btnReady.disabled = true;
+        btnReady.textContent = "⏳ 先攻・後攻決定待ち";
+        btnReady.title = "先攻・後攻が決まるまで対戦準備完了はできません";
       }
     }
   } else {
@@ -708,6 +811,11 @@ function renderHand() {
 
     // ドラッグ＆ドロップ（使用カードエリア・バトル場・ベンチへドラッグ）
     el.ondragstart = (e) => {
+      if (state.isSetupPhase && state.setupStep !== "place") {
+        e.preventDefault();
+        showToast("⚠️ コイントスで先攻・後攻が決まるまでカードは出せません");
+        return;
+      }
       // もし未選択ならこのカードを選択（DOM再描画するとドラッグがブラウザにより中断されるため、クラスのみ直接更新）
       if (!state.selectedHandIndices.has(idx)) {
         state.selectedHandIndices.clear();

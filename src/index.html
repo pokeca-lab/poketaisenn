@@ -57,7 +57,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="css/style.css?v=20261022_08">
+<link rel="stylesheet" href="css/style.css?v=20261022_10">
 </head>
 <body>
 
@@ -426,6 +426,10 @@
       <div class="top-menu">
         <span class="room">ROOM <b id="g-room"></b></span>
         <span id="g-conn-badge" class="conn-badge offline">⚪ オフライン</span>
+        <div id="top-turn-indicator" class="top-turn-indicator is-me hidden">
+          <span class="indicator-dot"></span>
+          <span class="indicator-label">あなたのターン</span>
+        </div>
         <div class="top-timer-widget is-paused" id="battle-timer-widget" title="クリックで一時停止 / 再開">
           <button type="button" class="timer-main-btn" onclick="BattleTimer.toggle()" title="一時停止 / 再開">
             <span class="timer-icon">⏱️</span>
@@ -467,6 +471,12 @@
       <div id="solo-temp-banner" class="solo-temp-banner hidden">
         <span id="solo-temp-msg">⚠️ 【相手側を手動操作中】</span>
         <button class="btn gold" style="font-weight:bold; padding:3px 10px; font-size:12px;" onclick="revertSoloTemporarySwap()">🔄 手番側に戻る</button>
+      </div>
+
+      <!-- 相手ターン待機バナー（相手の手番中にアリーナ上部に表示） -->
+      <div id="opp-turn-floating-bar" class="opp-turn-floating-bar hidden">
+        <span class="spin-slow">⏳</span>
+        <span class="opp-turn-floating-text">相手の手番中です（待機してください）</span>
       </div>
 
       <div class="log-btn">
@@ -537,6 +547,10 @@
       </div>
 
       <div class="turn-panel">
+        <div id="turn-status-badge" class="turn-status-badge is-me hidden">
+          <span class="badge-icon">⚔️</span>
+          <span class="badge-text">あなたの手番</span>
+        </div>
         <span class="name" id="g-opp-name-wrap"><span class="turn-dot hidden" id="turn-dot-opp"></span>相手：<b id="g-opp-name"></b><span class="order-badge" id="g-opp-order"></span></span>
         <span class="name me" id="g-my-name-wrap"><span class="turn-dot active" id="turn-dot-me"></span>あなた：<b id="g-my-name"></b><span class="order-badge" id="g-my-order"></span></span>
         <span class="name" id="g-turn-wrap"><b id="g-turn">先攻1ターン目</b></span>
@@ -1117,25 +1131,25 @@
 <script src="js/sound/sound.js?v=20261020_04"></script>
 <script src="js/state.js?v=20261020_04"></script>
 <script src="js/game/timer.js?v=20261020_04"></script>
-<script src="js/game/hand-actions.js?v=20261020_04"></script>
-<script src="js/game/actions.js?v=20261021_01"></script>
-<script src="js/game/setup.js?v=20261021_01"></script>
-<script src="js/game/replay.js?v=20261020_04"></script>
-<script src="js/ui/marquee.js?v=20261020_04"></script>
-<script src="js/ui/touch-dnd.js?v=20261020_04"></script>
-<script src="js/ui/render.js?v=20261021_01"></script>
-<script src="js/ui/modals.js?v=20261021_01"></script>
-<script src="js/ui/tts-settings.js?v=20261019_07"></script>
-<script src="js/ui/sound-settings.js?v=20261019_07"></script>
-<script src="js/ui/lobby.js?v=20261021_01"></script>
-<script src="js/ui/playmat.js?v=20261019_07"></script>
-<script src="js/ui/sleeve.js?v=20261019_07"></script>
-<script src="js/net/firebase-config.js?v=20261019_07"></script>
-<script src="js/net/p2p.js?v=20261019_07"></script>
+<script src="js/game/hand-actions.js?v=20261022_10"></script>
+<script src="js/game/actions.js?v=20261022_10"></script>
+<script src="js/game/setup.js?v=20261022_10"></script>
+<script src="js/game/replay.js?v=20261022_10"></script>
+<script src="js/ui/marquee.js?v=20261022_10"></script>
+<script src="js/ui/touch-dnd.js?v=20261022_10"></script>
+<script src="js/ui/render.js?v=20261022_10"></script>
+<script src="js/ui/modals.js?v=20261022_10"></script>
+<script src="js/ui/tts-settings.js?v=20261022_10"></script>
+<script src="js/ui/sound-settings.js?v=20261022_10"></script>
+<script src="js/ui/lobby.js?v=20261022_10"></script>
+<script src="js/ui/playmat.js?v=20261022_10"></script>
+<script src="js/ui/sleeve.js?v=20261022_10"></script>
+<script src="js/net/firebase-config.js?v=20261022_10"></script>
+<script src="js/net/p2p.js?v=20261022_10"></script>
 <script src="https://cdn.jsdelivr.net/npm/@skyway-sdk/token@latest/dist/skyway_token-latest.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@skyway-sdk/room@latest/dist/skyway_room-latest.js"></script>
-<script src="js/net/skyway-config.js?v=20261019_10"></script>
-<script src="js/net/voice.js?v=20261019_12"></script>
-<script src="js/main.js?v=20261022_07"></script>
+<script src="js/net/skyway-config.js?v=20261022_10"></script>
+<script src="js/net/voice.js?v=20261022_10"></script>
+<script src="js/main.js?v=20261022_10"></script>
 </body>
 </html>

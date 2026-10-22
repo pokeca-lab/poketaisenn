@@ -66,6 +66,12 @@ function startBattleSetup() {
   if (P2P.connected) {
     if (P2P.role === "host") {
       setTimeout(() => startSetupCoinToss(), 400);
+    } else {
+      setTimeout(() => {
+        if (typeof showGuestWaitingCoinModal === "function") {
+          showGuestWaitingCoinModal();
+        }
+      }, 400);
     }
   } else {
     // ローカル単体プレイ時はランダムまたは選択
@@ -159,6 +165,10 @@ function toggleSoloSetupSide() {
 /** 7枚引き直し（マリガン）宣言・実行 */
 function executeMulligan() {
   if (!state.isSetupPhase) return;
+  if (state.setupStep !== "place") {
+    showToast("⚠️ コイントスで先攻・後攻が決まるまで操作できません");
+    return;
+  }
   if (state.myActive || state.mySetupReady || state.myBench.some(b => b !== null)) {
     alert("バトル場やベンチにポケモンを配置した後や、準備完了後は引き直し（マリガン）できません。");
     return;
@@ -387,6 +397,10 @@ function rejectOpponentMulligan() {
 /** 対戦準備完了ボタン処理（このタイミングでサイド6枚を山札からセット） */
 function confirmSetupReady() {
   if (!state.isSetupPhase) return;
+  if (state.setupStep !== "place") {
+    showToast("⚠️ コイントスで先攻・後攻が決まるまで準備完了はできません");
+    return;
+  }
 
   // 一人回しモードで、すでに準備完了している場合は取り消し可能
   if (state.isSoloMode && state.mySetupReady) {

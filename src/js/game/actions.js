@@ -582,6 +582,10 @@ function moveSelectedHandToLost() {
 }
 
 function placeSelectedHandToBench() {
+  if (state.isSetupPhase && state.setupStep !== "place") {
+    showToast("⚠️ コイントスで先攻・後攻が決まるまでカードは出せません");
+    return;
+  }
   const indices = getSelectedHandIndices();
   if (indices.length === 0) {
     return alert("手札のカードをタップ/クリックして選択してください");
@@ -3139,7 +3143,7 @@ function startSetupCoinToss() {
   state.setupStep = "coin";
 
   if (typeof P2P !== "undefined" && P2P.connected && P2P.role === "guest") {
-    renderAll();
+    showGuestWaitingCoinModal();
     return;
   }
 
@@ -3159,7 +3163,31 @@ function startSetupCoinToss() {
       </button>
     </div>
   `;
-  showModal("🪙 先攻・後攻決定コイントス", bodyHtml, "");
+  showModal("🪙 先攻・後攻決定コイントス", bodyHtml, "", { dismissible: false });
+  renderAll();
+}
+
+/** ゲスト側: ホストがコイントスを振るまでの待機モーダル表示 */
+function showGuestWaitingCoinModal() {
+  if (!state.isSetupPhase) return;
+  state.setupStep = "coin";
+  const hostName = state.oppName || "相手プレイヤー（ルームオーナー）";
+  const bodyHtml = `
+    <div style="text-align:center; padding:22px 14px; color:#f8fafc;">
+      <div style="font-size:52px; margin-bottom:12px; animation: floatAnim 1.8s ease-in-out infinite;">🪙</div>
+      <p style="font-size:18px; font-weight:bold; color:#fde047; margin-bottom:10px;">
+        相手がコインを振るまでお待ちください
+      </p>
+      <p style="font-size:13px; color:#cbd5e1; line-height:1.7; margin-bottom:18px;">
+        ルームオーナー（<b>${escapeHtml(hostName)}</b>）が先攻・後攻を決めるコイントスを行っています。<br>
+        先攻・後攻が決まるまで、カードの配置などの対戦準備は行えません。
+      </p>
+      <div style="display:inline-flex; align-items:center; gap:8px; padding:6px 18px; background:rgba(30,41,59,0.85); border:1px solid rgba(148,163,184,0.3); border-radius:20px; font-size:13px; color:#93c5fd; font-weight:bold;">
+        <span class="spin-slow">⏳</span> コイントス待機中...
+      </div>
+    </div>
+  `;
+  showModal("🪙 先攻・後攻決定コイントス待ち", bodyHtml, "", { dismissible: false });
   renderAll();
 }
 
@@ -3214,7 +3242,7 @@ function handleCoinResult(isHeads, chooserRole) {
         </p>
       </div>
     `;
-    showModal("🪙 コイントス結果", bodyHtml, "");
+    showModal("🪙 コイントス結果", bodyHtml, "", { dismissible: false });
   }
   renderAll();
 }
@@ -3244,7 +3272,7 @@ function openOrderSelectModal(resultText = "") {
       </div>
     </div>
   `;
-  showModal("⚡ 先攻・後攻の選択", bodyHtml, "");
+  showModal("⚡ 先攻・後攻の選択", bodyHtml, "", { dismissible: false });
 }
 
 /** 先攻・後攻の決定処理 */
@@ -4953,6 +4981,18 @@ window.hidePrizeWaitOverlay = hidePrizeWaitOverlay;
 // =============================================================================
 
 function openAttackModal() {
+  if (state.isSetupPhase) {
+    showToast("⚠️ 対戦準備フェーズ中は技宣言できません");
+    return;
+  }
+  const turnInfo = (typeof getTurnInfo === "function")
+    ? getTurnInfo(state.turnStep || 1)
+    : { isMyTurn: true };
+  if (!state.isSoloMode && !turnInfo.isMyTurn) {
+    showToast("⚠️ 相手のターン中は技宣言できません");
+    return;
+  }
+
   const isOppActiveTurn = (state.isSoloMode && state.turn === "opp");
   const targetSpot = isOppActiveTurn ? state.oppActive : state.myActive;
   const pokemonName = (targetSpot && targetSpot.card) ? targetSpot.card.name : "バトル場のポケモン";
@@ -5003,6 +5043,15 @@ function openAttackModal() {
 }
 
 function submitAttackDeclaration(pokemonName, actorName) {
+  if (state.isSetupPhase) return;
+  const turnInfo = (typeof getTurnInfo === "function")
+    ? getTurnInfo(state.turnStep || 1)
+    : { isMyTurn: true };
+  if (!state.isSoloMode && !turnInfo.isMyTurn) {
+    showToast("⚠️ 相手のターン中は技宣言できません");
+    return;
+  }
+
   const input = document.getElementById("in-attack-name");
   const rawAttack = input ? input.value.trim() : "";
   state.lastDeclaredAttackName = rawAttack; // 次回のために記憶
@@ -5347,6 +5396,7 @@ function hideChatBubbleToast() {
   }
 }
 
+window.showGuestWaitingCoinModal = showGuestWaitingCoinModal;
 window.getPokemonCardsList = getPokemonCardsList;
 window.openAttackModal = openAttackModal;
 window.submitAttackDeclaration = submitAttackDeclaration;

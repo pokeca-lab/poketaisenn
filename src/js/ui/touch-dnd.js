@@ -24,6 +24,9 @@ function initTouchDragEngine() {
   if (!gameEl) return;
 
   gameEl.addEventListener("touchstart", (e) => {
+    if (state.isSetupPhase && state.setupStep !== "place") {
+      return;
+    }
     if (e.target.closest("button") || e.target.closest(".sp-sheet") || e.target.closest(".modal") || e.target.closest(".ctx-menu")) {
       return;
     }

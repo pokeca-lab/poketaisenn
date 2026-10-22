@@ -30,6 +30,10 @@ function clearHandSelection() {
 }
 
 function placeSelectedHandToActive() {
+  if (state.isSetupPhase && state.setupStep !== "place") {
+    showToast("⚠️ コイントスで先攻・後攻が決まるまでカードは出せません");
+    return;
+  }
   const selectedCards = getSelectedHandCards();
   if (selectedCards.length === 0) {
     if (state.selectedHandIndex >= 0 && state.selectedHandIndex < state.myHand.length) {
@@ -69,6 +73,10 @@ function placeSelectedHandToActive() {
 
 function placeHandCardToActive(handIdx) {
   if (handIdx < 0 || handIdx >= state.myHand.length) return;
+  if (state.isSetupPhase && state.setupStep !== "place") {
+    showToast("⚠️ コイントスで先攻・後攻が決まるまでカードは出せません");
+    return;
+  }
   if (state.isSetupPhase && state.myMulliganStep) {
     alert("現在「たねポケモンなし（マリガン）」の待機中です。引き直しが完了するまで場に出すことはできません。");
     return;
@@ -113,6 +121,10 @@ function placeHandCardToBenchIndex(handIdx, benchIdx) {
   if (handIdx < 0 || handIdx >= state.myHand.length) return;
   const limit = state.myBenchLimit || 5;
   if (benchIdx < 0 || benchIdx >= limit) return;
+  if (state.isSetupPhase && state.setupStep !== "place") {
+    showToast("⚠️ コイントスで先攻・後攻が決まるまでカードは出せません");
+    return;
+  }
   if (state.isSetupPhase && state.myMulliganStep) {
     alert("現在「たねポケモンなし（マリガン）」の待機中です。引き直しが完了するまで場に出すことはできません。");
     return;
@@ -169,6 +181,10 @@ function placeHandCardToFirstEmptyBench(handIdx) {
 
 function placeHandCardToStadium(handIdx) {
   if (handIdx < 0 || handIdx >= state.myHand.length) return;
+  if (state.isSetupPhase && state.setupStep !== "place") {
+    showToast("⚠️ コイントスで先攻・後攻が決まるまでカードは出せません");
+    return;
+  }
   const card = state.myHand.splice(handIdx, 1)[0];
   state.selectedHandIndices.clear();
   state.selectedHandIndex = -1;

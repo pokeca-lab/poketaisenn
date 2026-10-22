@@ -1835,10 +1835,149 @@ html, body {
   border-radius: 4px;
   display: inline-flex;
   align-items: center;
+  transition: all 0.25s ease;
 }
 
 .turn-panel .name.me {
   background: #2457c2;
+}
+
+.turn-panel .name.turn-active-player.me {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+  border: 1px solid #93c5fd;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.turn-panel .name.turn-active-player.opp {
+  background: linear-gradient(135deg, #b91c1c, #dc2626);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.7);
+  border: 1px solid #fca5a5;
+  color: #ffffff;
+  font-weight: bold;
+  animation: oppTurnTagPulse 1.6s ease-in-out infinite;
+}
+
+.turn-panel .name.turn-inactive-player {
+  background: rgba(15, 23, 42, 0.6);
+  opacity: 0.68;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ターン状態表示バッジ（turn-panel内） */
+.turn-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  margin-bottom: 2px;
+  user-select: none;
+}
+.turn-status-badge.is-me {
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.95), rgba(37, 99, 235, 0.95));
+  border: 1.5px solid #60a5fa;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.45);
+}
+.turn-status-badge.is-opp {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.95), rgba(220, 38, 38, 0.95));
+  border: 1.5px solid #f87171;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.6);
+  animation: oppTurnTagPulse 1.8s ease-in-out infinite;
+}
+.turn-status-badge.is-solo {
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.95), rgba(126, 34, 206, 0.95));
+  border: 1.5px solid #c084fc;
+  color: #ffffff;
+}
+
+/* 上部メニューバーのターンインジケーター */
+.top-turn-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+  user-select: none;
+}
+.top-turn-indicator.is-me {
+  background: rgba(30, 58, 138, 0.85);
+  border: 1px solid #3b82f6;
+  color: #bfdbfe;
+}
+.top-turn-indicator.is-me .indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #60a5fa;
+  box-shadow: 0 0 6px #60a5fa;
+}
+.top-turn-indicator.is-opp {
+  background: rgba(127, 29, 29, 0.92);
+  border: 1px solid #ef4444;
+  color: #fecaca;
+  animation: oppTurnTagPulse 1.8s ease-in-out infinite;
+}
+.top-turn-indicator.is-opp .indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f87171;
+  box-shadow: 0 0 8px #f87171;
+}
+.top-turn-indicator.is-solo {
+  background: rgba(88, 28, 135, 0.85);
+  border: 1px solid #a855f7;
+  color: #e9d5ff;
+}
+.top-turn-indicator.is-solo .indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c084fc;
+}
+
+/* 中央アリーナの相手ターン待機バナー */
+.opp-turn-floating-bar {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(69, 10, 10, 0.95));
+  border: 2px solid #ef4444;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 16px rgba(239, 68, 68, 0.45);
+  padding: 6px 18px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 28;
+  color: #fecaca;
+  font-size: 13px;
+  font-weight: 800;
+  pointer-events: none;
+  animation: oppTurnTagPulse 2s ease-in-out infinite;
+  white-space: nowrap;
+}
+
+/* 盤面全体への相手ターン中ハイライト */
+.board.is-opp-turn .active-spot.opp-active::before {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.45) !important;
+  animation: oppActiveSpotPulse 2s ease-in-out infinite !important;
+}
+.board.is-opp-turn .band.opp {
+  box-shadow: inset 0 -3px 14px rgba(239, 68, 68, 0.18);
 }
 
 .turn-dot {
@@ -1864,6 +2003,31 @@ html, body {
 @keyframes turnDotPulse {
   0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 6px #ef4444; }
   50% { transform: scale(1.35); opacity: 0.85; box-shadow: 0 0 12px #ef4444, 0 0 18px #f87171; }
+}
+
+@keyframes oppTurnTagPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 18px rgba(239, 68, 68, 0.75); }
+}
+
+@keyframes oppActiveSpotPulse {
+  0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+  50% { border-color: rgba(239, 68, 68, 0.95); box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
+}
+
+@keyframes floatAnim {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes spinSlow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spin-slow {
+  display: inline-block;
+  animation: spinSlow 3s linear infinite;
 }
 
 .turn-panel .btn.disabled-turn {
@@ -2887,6 +3051,21 @@ body.menu-open .sp-sheet {
     font-size: 11px !important;
     padding: 4px 10px !important;
     margin-top: 2px;
+  }
+  .turn-status-badge {
+    font-size: 8.5px;
+    padding: 2px 6px;
+    margin-bottom: 1px;
+  }
+  .opp-turn-floating-bar {
+    font-size: 11px;
+    padding: 4px 12px;
+    top: 4px;
+    max-width: 92vw;
+  }
+  .top-turn-indicator {
+    font-size: 9px;
+    padding: 1px 6px;
   }
   .setup-banner {
     width: 95vw;
@@ -6005,6 +6184,14 @@ body.menu-open .sp-sheet {
 }
 .btn-declare-attack:active {
   transform: translateY(-50%) scale(0.96);
+}
+.btn-declare-attack.disabled-turn {
+  opacity: 0.38 !important;
+  filter: grayscale(0.85) !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
 }
 
 @media (max-width: 768px), (orientation: portrait) {
