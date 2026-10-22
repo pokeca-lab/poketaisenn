@@ -190,20 +190,34 @@ function placeHandCardToStadium(handIdx) {
 function placeSelectedHandToStadium() {
   const selectedCards = getSelectedHandCards();
   let handIdx = -1;
+
   if (selectedCards.length > 0) {
     const stadiumPick = selectedCards.find(c => {
       const type = (c.card.type || "").toLowerCase();
       const cat = (c.card.category || "").toLowerCase();
       const sub = (c.card.subCategory || "").toLowerCase();
-      return type === "stadium" || cat.includes("スタジアム") || sub.includes("スタジアム");
+      const name = (c.card.name || "").toLowerCase();
+      return type === "stadium" || cat.includes("スタジアム") || sub.includes("スタジアム") || name.includes("スタジアム");
     });
     handIdx = stadiumPick ? stadiumPick.index : selectedCards[0].index;
   } else if (state.selectedHandIndex >= 0 && state.selectedHandIndex < state.myHand.length) {
     handIdx = state.selectedHandIndex;
+  } else {
+    // 未選択の場合：手札の中からスタジアムカードを自動特定
+    const autoIdx = state.myHand.findIndex(c => {
+      const type = (c.type || "").toLowerCase();
+      const cat = (c.category || "").toLowerCase();
+      const sub = (c.subCategory || "").toLowerCase();
+      const name = (c.name || "").toLowerCase();
+      return type === "stadium" || cat.includes("スタジアム") || sub.includes("スタジアム") || name.includes("スタジアム");
+    });
+    if (autoIdx !== -1) {
+      handIdx = autoIdx;
+    }
   }
 
   if (handIdx === -1) {
-    return alert("手札のカード（スタジアム）をタップ/クリックして選択してください");
+    return alert("手札のカード（スタジアム）を選択するか、手札にスタジアムカードがある状態で押してください");
   }
 
   placeHandCardToStadium(handIdx);

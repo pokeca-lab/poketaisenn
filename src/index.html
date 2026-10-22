@@ -51,7 +51,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="css/style.css?v=20261022_03">
+<link rel="stylesheet" href="css/style.css?v=20261022_04">
 </head>
 <body>
 
@@ -595,16 +595,16 @@
     <!-- 自分の手札（下端から覗く） -->
     <div class="hand-area">
       <div class="hand-btns">
-        <button class="btn green" data-action="draw">１枚引く</button>
-        <button class="btn blue" data-action="viewDeck">山を見る</button>
-        <button class="btn" data-action="handToDeck">山にもどす</button>
-        <button class="btn" data-action="handToBottom">山の下へ</button>
-        <button class="btn red" data-action="handTrash">トラッシュ</button>
-        <button class="btn purple" data-action="handLost">ロストへ</button>
-        <button class="btn blue" data-action="handActive">⚔️ バトル場</button>
-        <button class="btn blue" data-action="handBench">🪑 ベンチ</button>
-        <button class="btn purple wide btn-hand-stadium" data-action="handStadium">🏟️ スタジアムとして出す</button>
-        <button class="btn purple wide hidden" id="btn-solo-hand-interfere" onclick="showSoloOpponentHandMenu()">🎴 相手手札干渉</button>
+        <button class="btn green" data-action="draw" title="山札から1枚引く">１枚引く</button>
+        <button class="btn blue" data-action="viewDeck" title="山札の中身を確認">山を見る</button>
+        <button class="btn" data-action="handToDeck" title="選択した手札を山札の上に戻す">山にもどす</button>
+        <button class="btn" data-action="handToBottom" title="選択した手札を山札の下に送る">山の下へ</button>
+        <button class="btn red" data-action="handTrash" title="選択した手札をトラッシュ">トラッシュ</button>
+        <button class="btn purple" data-action="handLost" title="選択した手札をロストへ">ロストへ</button>
+        <button class="btn blue btn-field-active" data-action="handActive" title="選択したポケモンをバトル場に出す">⚔️ バトル場</button>
+        <button class="btn blue btn-field-bench" data-action="handBench" title="選択したポケモンをベンチに出す">🪑 ベンチ</button>
+        <button class="btn purple btn-field-stadium" data-action="handStadium" title="スタジアムを場に出す（未選択時は手札のスタジアムを自動検出）">🏟️ スタジアム</button>
+        <button class="btn purple wide hidden" id="btn-solo-hand-interfere" onclick="showSoloOpponentHandMenu()">🎴 相手手札干渉 (一人回し)</button>
       </div>
       <div class="hand-cards" id="hand"></div>
       <div class="hand-info">

@@ -2051,7 +2051,7 @@ html, body {
   position: relative;
   background: linear-gradient(0deg, #0f2a6b, #173f9a);
   display: grid;
-  grid-template-columns: calc(var(--u) * 26) 1fr calc(var(--u) * 30);
+  grid-template-columns: calc(var(--u) * 31) 1fr calc(var(--u) * 22);
   gap: calc(var(--u) * 1.5);
   padding: 0 calc(var(--u) * 1.5);
   overflow: visible;
@@ -2060,28 +2060,49 @@ html, body {
 .hand-btns {
   align-self: center;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(var(--u) * 0.35);
-  max-height: 100%;
+  grid-template-columns: repeat(3, 1fr);
+  gap: calc(var(--u) * 0.45);
+  width: 100%;
 }
 
 .hand-btns .btn {
-  font-size: calc(var(--fs) * 0.82);
-  padding: calc(var(--u) * 0.28) calc(var(--u) * 0.5);
+  font-size: calc(var(--fs) * 0.85);
+  font-weight: bold;
+  height: calc(var(--u) * 3.4);
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   white-space: nowrap;
-  line-height: 1.15;
-  min-height: 0;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  transition: all 0.15s ease;
+}
+
+.hand-btns .btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
 }
 
 .hand-btns .btn.wide {
-  grid-column: span 2;
+  grid-column: span 3;
 }
 
-.hand-btns .btn.btn-hand-stadium {
+/* 3大フィールド配置ボタン（バトル場・ベンチ・スタジアム） */
+.hand-btns .btn-field-active {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  border-color: #60a5fa;
+}
+
+.hand-btns .btn-field-bench {
+  background: linear-gradient(180deg, #1d4ed8, #1e40af);
+  border-color: #93c5fd;
+}
+
+.hand-btns .btn-field-stadium {
   background: linear-gradient(180deg, #7c3aed, #5b21b6);
   border-color: #c084fc;
-  font-weight: 800;
-  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.45);
 }
 
 .hand-cards {
