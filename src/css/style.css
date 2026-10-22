@@ -800,7 +800,7 @@ html, body {
     calc(var(--u) * 17)    /* 相手バンド */
     1fr                    /* 中央アリーナ */
     calc(var(--u) * 19)    /* 自分バンド */
-    calc(var(--u) * 16);   /* 自分手札 */
+    calc(var(--u) * 17);   /* 自分手札（4行ボタンも確実に枠内収容） */
   position: relative;
 }
 
@@ -2098,15 +2098,15 @@ html, body {
   align-self: center;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: calc(var(--u) * 0.45);
+  gap: calc(var(--u) * 0.3);
   width: 100%;
 }
 
 .hand-btns .btn {
-  font-size: calc(var(--fs) * 0.85);
+  font-size: calc(var(--fs) * 0.8);
   font-weight: bold;
-  height: calc(var(--u) * 3.4);
-  padding: 0 4px;
+  height: calc(var(--u) * 2.85);
+  padding: 0 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2123,6 +2123,19 @@ html, body {
 
 .hand-btns .btn.wide {
   grid-column: span 3;
+}
+
+/* 一人回し相手手札操作ボタン */
+#btn-solo-hand-interfere {
+  background: linear-gradient(180deg, #7c3aed, #5b21b6);
+  border-color: #c084fc;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.45);
+  font-size: calc(var(--fs) * 0.8);
+}
+
+#btn-solo-hand-interfere:hover {
+  background: linear-gradient(180deg, #8b5cf6, #6d28d9);
+  filter: brightness(1.2);
 }
 
 /* 3大フィールド配置ボタン（バトル場・ベンチ・スタジアム） */
