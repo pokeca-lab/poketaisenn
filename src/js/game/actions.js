@@ -174,6 +174,38 @@ function moveTempToHand() {
   renderAll();
 }
 
+function revealAndMoveTempToHand() {
+  if (state.tempCards.length === 0) return;
+  pushHistorySnapshot("テンポラリから相手に見せて手札へ");
+  const isSelectedOnly = state.selectedTempIndices && state.selectedTempIndices.size > 0;
+  const cards = extractTempCards();
+  if (cards.length === 0) return;
+  cards.forEach(c => state.myHand.push(c));
+  const names = cards.map(c => `「${c.name}」`).join("、");
+
+  addLog(`テンポラリから${names}を相手に見せて手札に加えました`, {
+    oppText: `テンポラリから${names}を相手に見せて手札に加えました`,
+    cards: cards,
+    badge: "👁️ 見せて手札へ"
+  });
+  showToast(`相手に見せて手札へ (${cards.length}枚)`);
+
+  if (typeof showCardRevealPopup === "function") {
+    showCardRevealPopup(state.myName, cards, "相手に見せて手札に加えた");
+  }
+
+  if (typeof P2P !== "undefined" && P2P.connected) {
+    P2P.send({
+      t: "deck_cards_revealed",
+      playerName: state.myName,
+      cards: cards,
+      actionLabel: "相手に見せて手札に加えた"
+    });
+  }
+
+  renderAll();
+}
+
 function moveTempToTop() {
   if (state.tempCards.length === 0) return;
   pushHistorySnapshot("テンポラリから山札の上へ");
@@ -1176,14 +1208,31 @@ function openCardZoom(card) {
         <!-- 進化元カード -->
         ${pokemon.previousStages && pokemon.previousStages.length > 0 ? `
           <div class="zoom-section">
-            <div class="zoom-section-title">✨ 進化元カード (${pokemon.previousStages.length} 枚)</div>
-            <div style="display:flex; flex-direction:column; gap:6px; padding:4px 0;">
-              ${pokemon.previousStages.map((prevCard, pIdx) => `
-                <div class="zoom-tool-row">
-                  <span class="zoom-tool-name">🪙 [${pIdx + 1}段目] ${escapeHtml(prevCard.name)}</span>
-                  <button class="btn blue" style="font-size:10px; padding:2px 8px;" onclick="openCardZoomByUid('${prevCard.uid}')">拡大</button>
-                </div>
-              `).join("")}
+            <div class="zoom-section-title">✨ 進化前のカード (${pokemon.previousStages.length}枚) <small style="font-weight:normal; color:#94a3b8;">(クリックで拡大)</small></div>
+            <div class="zoom-prev-stages-container" style="display:flex; gap:8px; overflow-x:auto; padding:4px 2px; max-width:100%; box-sizing:border-box;">
+              ${pokemon.previousStages.map((prevCard, pIdx) => {
+                const hasImg = prevCard.imageUrl && (!window.brokenImageUrls || !window.brokenImageUrls.has(prevCard.imageUrl));
+                const stageLabel = (pIdx === 0) ? "たね" : `${pIdx}進化`;
+                return `
+                  <div class="zoom-prev-card-item" onclick="openCardZoomByUid('${prevCard.uid}')" style="cursor:pointer; flex:0 0 auto; width:80px; display:flex; flex-direction:column; align-items:center; background:#1e293b; border:1px solid #475569; border-radius:6px; padding:4px; box-shadow:0 2px 6px rgba(0,0,0,0.5); transition:transform 0.15s ease, border-color 0.15s ease;" onmouseover="this.style.borderColor='#38bdf8'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#475569'; this.style.transform='none';">
+                    <div style="font-size:10px; color:#cbd5e1; font-weight:bold; margin-bottom:2px; text-align:center; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                      🪙 [${stageLabel}]
+                    </div>
+                    ${hasImg ? `
+                      <img src="${prevCard.imageUrl}" alt="${escapeHtml(prevCard.name)}" style="width:72px; height:100px; object-fit:contain; border-radius:4px; background:#0f172a;" referrerpolicy="no-referrer" />
+                    ` : `
+                      <div style="width:72px; height:100px; border-radius:4px; background:#334155; display:flex; flex-direction:column; justify-content:center; align-items:center; font-size:10px; color:#f8fafc; text-align:center; padding:2px;">
+                        <span>🃏</span>
+                        <span style="overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;">${escapeHtml(prevCard.name)}</span>
+                      </div>
+                    `}
+                    <div style="font-size:10px; color:#94a3b8; margin-top:2px; text-align:center; width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(prevCard.name)}">
+                      ${escapeHtml(prevCard.name)}
+                    </div>
+                    <button class="btn blue" style="font-size:9px; padding:1px 6px; margin-top:3px; width:100%;">🔍 拡大</button>
+                  </div>
+                `;
+              }).join("")}
             </div>
           </div>
         ` : ''}
@@ -1237,6 +1286,10 @@ function findCardByUid(uid) {
     const e = state.myActive.energies.find(x => x.uid === uid);
     if (e) return e;
   }
+  if (state.myActive && state.myActive.previousStages) {
+    const p = state.myActive.previousStages.find(x => x.uid === uid);
+    if (p) return p;
+  }
   for (const b of state.myBench) {
     if (b) {
       if (b.card.uid === uid) return b.card;
@@ -1244,6 +1297,10 @@ function findCardByUid(uid) {
       if (b.energies) {
         const e = b.energies.find(x => x.uid === uid);
         if (e) return e;
+      }
+      if (b.previousStages) {
+        const p = b.previousStages.find(x => x.uid === uid);
+        if (p) return p;
       }
     }
   }
@@ -1253,6 +1310,10 @@ function findCardByUid(uid) {
     const e = state.oppActive.energies.find(x => x.uid === uid);
     if (e) return e;
   }
+  if (state.oppActive && state.oppActive.previousStages) {
+    const p = state.oppActive.previousStages.find(x => x.uid === uid);
+    if (p) return p;
+  }
   for (const b of state.oppBench) {
     if (b) {
       if (b.card.uid === uid) return b.card;
@@ -1260,6 +1321,10 @@ function findCardByUid(uid) {
       if (b.energies) {
         const e = b.energies.find(x => x.uid === uid);
         if (e) return e;
+      }
+      if (b.previousStages) {
+        const p = b.previousStages.find(x => x.uid === uid);
+        if (p) return p;
       }
     }
   }
@@ -1557,6 +1622,16 @@ function showPokemonMenu(e, location, index, menuView = "main") {
       extraBtns += `<button onclick="detachAllEnergy('${locId}')">⚡ エネ全破棄 (${target.energies.length})</button>`;
     }
 
+    // 進化ポケモンの場合、退化させる選択肢
+    let devolveBtnsHtml = "";
+    if (target.previousStages && target.previousStages.length > 0) {
+      const prevName = target.previousStages[target.previousStages.length - 1].name;
+      devolveBtnsHtml = `
+        <button class="ctx-span-2" style="background:#4338ca; color:#e0e7ff; font-weight:bold;" onclick="devolvePokemon('${location}', ${index}, 'hand')">↩️ 退化させる (手札へ / 下:「${escapeHtml(prevName)}」)</button>
+        <button class="ctx-span-2" style="background:#374151; color:#d1d5db; font-size:11.5px;" onclick="devolvePokemon('${location}', ${index}, 'trash')">🗑️ 退化させる (トラッシュへ)</button>
+      `;
+    }
+
     // サブメニューランチャー（ダメカン操作 ＆ 特殊状態）
     let subLaunchersHtml = "";
     if (location === "active") {
@@ -1599,6 +1674,7 @@ function showPokemonMenu(e, location, index, menuView = "main") {
       ${subLaunchersHtml}
       <div class="ctx-grid-2col">
         ${extraBtns}
+        ${devolveBtnsHtml}
         <button onclick="removePokemonToTrash('${location}', ${index})">🗑️ トラッシュへ</button>
         <button onclick="removePokemonToHand('${location}', ${index})">🖐️ 手札に戻す</button>
         <button class="ctx-span-2" onclick="showPokemonMenu(event, '${location}', ${index}, 'deck')">🎴 山札に戻す ▶</button>
@@ -1895,6 +1971,52 @@ function removePokemonToHand(location, index) {
   });
   showToast(`「${target.card.name}」${extraNote}を手札に戻しました`);
   renderAll();
+}
+
+function devolvePokemon(location, index, destination = "hand") {
+  hideCtx();
+  const target = location === "active" ? state.myActive : state.myBench[index];
+  if (!target || !target.card) return;
+  if (!target.previousStages || target.previousStages.length === 0) {
+    showToast("⚠️ 進化前のカードがありません（退化できません）");
+    return;
+  }
+
+  if (typeof pushHistorySnapshot === "function") {
+    pushHistorySnapshot("退化");
+  }
+
+  const topCard = target.card;
+  const prevCard = target.previousStages.pop();
+  target.card = prevCard;
+
+  const locName = location === "active" ? "バトル場" : `ベンチ${index + 1}`;
+  if (destination === "trash") {
+    state.myTrash.push(topCard);
+    addLog(`【退化】${locName}の「${topCard.name}」を退化させ、トラッシュへ送りました（下:「${prevCard.name}」）`, {
+      cards: [topCard],
+      badge: "↩️ 退化"
+    });
+    showToast(`退化: ${topCard.name} → トラッシュ`);
+  } else {
+    state.myHand.push(topCard);
+    addLog(`【退化】${locName}の「${topCard.name}」を退化させ、手札に戻しました（下:「${prevCard.name}」）`, {
+      cards: [topCard],
+      badge: "↩️ 退化"
+    });
+    showToast(`退化: ${topCard.name} → 手札`);
+  }
+
+  // HP超過チェック
+  const maxHp = parseInt(prevCard.hp, 10);
+  if (!isNaN(maxHp) && target.damage >= maxHp) {
+    showToast(`⚠️ 退化によりHPが最大HP(${maxHp})を超えています（きぜつ判定にご注意ください）`);
+  }
+
+  renderAll();
+  if (typeof P2P !== "undefined" && P2P.connected) {
+    P2P.syncNow();
+  }
 }
 
 /**
@@ -4211,6 +4333,15 @@ function showOpponentPokemonMenu(e, location, index, menuView = "main") {
       }
     }
 
+    let oppDevolveBtnsHtml = "";
+    if (target.previousStages && target.previousStages.length > 0) {
+      const prevName = target.previousStages[target.previousStages.length - 1].name;
+      oppDevolveBtnsHtml = `
+        <button class="ctx-span-2" style="background:#4338ca; color:#e0e7ff; font-weight:bold;" onclick="devolveOpponentPokemon('${location}', ${index}, 'hand')">↩️ 相手を退化 (手札へ / 下:「${escapeHtml(prevName)}」)</button>
+        <button class="ctx-span-2" style="background:#374151; color:#d1d5db; font-size:11.5px;" onclick="devolveOpponentPokemon('${location}', ${index}, 'trash')">🗑️ 相手を退化 (トラッシュへ)</button>
+      `;
+    }
+
     ctx.innerHTML = `
       <div class="ctx-header-row">
         <span class="ctx-title-text">相手：${escapeHtml(displayName)} <small>(ダメカン: ${target.damage})</small></span>
@@ -4220,6 +4351,7 @@ function showOpponentPokemonMenu(e, location, index, menuView = "main") {
       ${subLaunchersHtml}
       <div class="ctx-grid-2col">
         ${swapActionHtml}
+        ${oppDevolveBtnsHtml}
         <button onclick="removeOpponentPokemonToTrash('${location}', ${index})">🗑️ トラッシュへ</button>
         <button onclick="removeOpponentPokemonToHand('${location}', ${index})">🖐️ 手札に戻す</button>
         <button class="ctx-span-2" onclick="showOpponentPokemonMenu(event, '${location}', ${index}, 'deck')">🎴 山札に戻す ▶</button>
@@ -4512,6 +4644,50 @@ function removeOpponentPokemonToHand(location, index) {
   }
 }
 
+function devolveOpponentPokemon(location, index, destination = "hand") {
+  hideCtx();
+  const target = location === "opp-active" ? state.oppActive : state.oppBench[index];
+  if (!target || !target.card) return;
+  if (!target.previousStages || target.previousStages.length === 0) {
+    showToast("⚠️ 進化前のカードがありません（退化できません）");
+    return;
+  }
+
+  const topCard = target.card;
+  const prevCard = target.previousStages.pop();
+  target.card = prevCard;
+
+  const locName = location === "opp-active" ? "相手バトル場" : `相手ベンチ${index + 1}`;
+  if (destination === "trash") {
+    state.oppTrash.push(topCard);
+    addLog(`【退化】${locName}の「${topCard.name}」を退化させ、相手のトラッシュへ送りました（下:「${prevCard.name}」）`, {
+      cards: [topCard],
+      badge: "↩️ 相手退化"
+    });
+    showToast(`相手退化: ${topCard.name} → トラッシュ`);
+  } else {
+    state.oppHandCount = (state.oppHandCount || 0) + 1;
+    addLog(`【退化】${locName}の「${topCard.name}」を退化させ、相手の手札に戻しました（下:「${prevCard.name}」）`, {
+      cards: [topCard],
+      badge: "↩️ 相手退化"
+    });
+    showToast(`相手退化: ${topCard.name} → 手札`);
+  }
+
+  renderAll();
+
+  if (typeof P2P !== "undefined" && P2P.connected) {
+    P2P.send({
+      t: "opp_remote_action",
+      action: "devolve_pokemon",
+      location: location === "opp-active" ? "active" : "bench",
+      index: index,
+      destination: destination
+    });
+    P2P.syncNow();
+  }
+}
+
 /**
  * 相手のポケモンを相手の山札に戻す（一人回し・手動操作用）
  * @param {"opp-active" | "opp-bench"} location
@@ -4634,6 +4810,22 @@ function handleOpponentRemoteAction(msg) {
       if (msg.location === "active") state.myActive = null;
       else state.myBench[msg.index] = null;
       addLog(`【相手の操作】「${target.card.name}」が手札に戻されました`, { isRemote: true });
+      renderAll();
+      if (typeof P2P !== "undefined") P2P.syncNow();
+    }
+  } else if (msg.action === "devolve_pokemon") {
+    const target = msg.location === "active" ? state.myActive : state.myBench[msg.index];
+    if (target && target.previousStages && target.previousStages.length > 0) {
+      const topCard = target.card;
+      const prevCard = target.previousStages.pop();
+      target.card = prevCard;
+      if (msg.destination === "trash") {
+        state.myTrash.push(topCard);
+        addLog(`【相手の操作】「${topCard.name}」が退化してトラッシュへ送られました（下:「${prevCard.name}」）`, { isRemote: true });
+      } else {
+        state.myHand.push(topCard);
+        addLog(`【相手の操作】「${topCard.name}」が退化して手札に戻されました（下:「${prevCard.name}」）`, { isRemote: true });
+      }
       renderAll();
       if (typeof P2P !== "undefined") P2P.syncNow();
     }
@@ -5157,4 +5349,8 @@ window.sendQuickChatMessage = sendQuickChatMessage;
 window.handleIncomingChatMessage = handleIncomingChatMessage;
 window.updateChatUnreadBadge = updateChatUnreadBadge;
 window.showChatBubbleToast = showChatBubbleToast;
+
+window.devolvePokemon = devolvePokemon;
+window.devolveOpponentPokemon = devolveOpponentPokemon;
+window.revealAndMoveTempToHand = revealAndMoveTempToHand;
 

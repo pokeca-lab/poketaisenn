@@ -438,6 +438,7 @@ const actions = {
 
   // テンポラリアクション
   tempToHand: () => moveTempToHand(),
+  tempRevealToHand: () => (typeof revealAndMoveTempToHand === "function" ? revealAndMoveTempToHand() : null),
   tempToTop: () => moveTempToTop(),
   tempToBottom: () => moveTempToBottom(),
   tempToTrash: () => moveTempToTrash(),
@@ -449,6 +450,7 @@ const actions = {
   handLost: () => moveSelectedHandToLost(),
   handActive: () => placeSelectedHandToActive(),
   handBench: () => placeSelectedHandToBench(),
+  handStadium: () => (typeof placeSelectedHandToStadium === "function" ? placeSelectedHandToStadium() : null),
   handToPlayArea: () => moveSelectedHandToPlayArea(),
 
   // 使用カードエリア アクション

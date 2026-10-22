@@ -187,6 +187,28 @@ function placeHandCardToStadium(handIdx) {
   }
 }
 
+function placeSelectedHandToStadium() {
+  const selectedCards = getSelectedHandCards();
+  let handIdx = -1;
+  if (selectedCards.length > 0) {
+    const stadiumPick = selectedCards.find(c => {
+      const type = (c.card.type || "").toLowerCase();
+      const cat = (c.card.category || "").toLowerCase();
+      const sub = (c.card.subCategory || "").toLowerCase();
+      return type === "stadium" || cat.includes("スタジアム") || sub.includes("スタジアム");
+    });
+    handIdx = stadiumPick ? stadiumPick.index : selectedCards[0].index;
+  } else if (state.selectedHandIndex >= 0 && state.selectedHandIndex < state.myHand.length) {
+    handIdx = state.selectedHandIndex;
+  }
+
+  if (handIdx === -1) {
+    return alert("手札のカード（スタジアム）をタップ/クリックして選択してください");
+  }
+
+  placeHandCardToStadium(handIdx);
+}
+
 function attachHandCardToPokemon(handIdx, location) {
   if (handIdx < 0 || handIdx >= state.myHand.length) return;
   const dst = getPokemonByLocation(location);
@@ -590,3 +612,4 @@ function handleDropToLost(e) {
 }
 window.placeHandCardToActive = placeHandCardToActive;
 window.placeSelectedHandToActive = placeSelectedHandToActive;
+window.placeSelectedHandToStadium = placeSelectedHandToStadium;

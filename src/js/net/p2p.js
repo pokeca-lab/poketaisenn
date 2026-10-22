@@ -1107,7 +1107,8 @@ const P2P = {
         ...p,
         card: pre(p.card),
         energies: (p.energies || []).map(pre),
-        tool: pre(p.tool)
+        tool: pre(p.tool),
+        previousStages: (p.previousStages || []).map(pre)
       } : null;
 
       state.oppName = s.name || state.oppName;
