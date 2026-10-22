@@ -51,7 +51,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="css/style.css?v=20261022_06">
+<link rel="stylesheet" href="css/style.css?v=20261022_07">
 </head>
 <body>
 
@@ -967,32 +967,34 @@
       <button type="button" class="welcome-close-btn" onclick="closeWelcomeGuideModal()" aria-label="閉じる">✕</button>
     </div>
     <div class="modal-body welcome-guide-body">
-      <!-- ⚠️ 最重要注意事項 -->
-      <div class="welcome-notice-box">
-        <div class="welcome-notice-title">
-          <span>⚠️ 【最重要】はじめにお読みください</span>
+      <div class="welcome-guide-grid">
+        <!-- 左列: ⚠️ 最重要注意事項 -->
+        <div class="welcome-notice-box">
+          <div class="welcome-notice-title">
+            <span>⚠️ 【最重要】はじめにお読みください</span>
+          </div>
+          <div class="welcome-notice-core">
+            「このツールのカード操作は自動ではありません。<br>
+            現実のカードを操作をするイメージで自分でカードを操作してください」
+          </div>
+          <p class="welcome-notice-desc">
+            本ツールは、ゲームアプリのような複雑な自動ルール判定や強制攻撃処理を行いません。<br>
+            実際の紙のポケカ対戦と同様に、<b>「山札を引く」「手札からカードを出す」「技や特性を宣言する」「相手のポケモンに自分でダメカンを乗せる」「ボスの指令で相手のポケモンを自分で動かす」「きぜつしてサイドを取る」</b>といった一連の動作を、プレイヤー自身が直感的に動かしながら対戦を進めます。
+          </p>
         </div>
-        <div class="welcome-notice-core">
-          「このツールのカード操作は自動ではありません。<br>
-          現実のカードを操作をするイメージで自分でカードを操作してください」
-        </div>
-        <p class="welcome-notice-desc">
-          本ツールは、ゲームアプリのような複雑な自動ルール判定や強制攻撃処理を行いません。<br>
-          実際の紙のポケカ対戦と同様に、<b>「山札を引く」「手札からカードを出す」「技や特性を宣言する」「相手のポケモンに自分でダメカンを乗せる」「ボスの指令で相手のポケモンを自分で動かす」「きぜつしてサイドを取る」</b>といった一連の動作を、プレイヤー自身が直感的に動かしながら対戦を進めます。
-        </p>
-      </div>
 
-      <!-- 🎬 ターンの流れ動画エリア -->
-      <div class="welcome-video-section">
-        <div class="welcome-video-head">
-          <span class="welcome-video-head-title">🎬 ターンの流れ（基本操作サイクル）</span>
-          <span class="welcome-video-badge">本ツールの実際の画面録画</span>
-        </div>
-        <div class="welcome-video-container">
-          <video id="welcome-demo-video" class="welcome-guide-video" src="manual/video/demo1.webm" autoplay loop muted playsinline controls></video>
-        </div>
-        <div class="welcome-video-caption">
-          【STEP 1】山札からドロー → 【STEP 2】手札使用 → 【STEP 3】技宣言カットイン → 【STEP 4】手動ダメカン乗せ → 【STEP 5】ターン終了
+        <!-- 右列: 🎬 ターンの流れ動画エリア -->
+        <div class="welcome-video-section">
+          <div class="welcome-video-head">
+            <span class="welcome-video-head-title">🎬 ターンの流れ（基本操作サイクル）</span>
+            <span class="welcome-video-badge">本ツールの実際の画面録画</span>
+          </div>
+          <div class="welcome-video-container">
+            <video id="welcome-demo-video" class="welcome-guide-video" src="manual/video/demo1.webm" autoplay loop muted playsinline controls></video>
+          </div>
+          <div class="welcome-video-caption">
+            【STEP 1】山札からドロー → 【STEP 2】手札使用 → 【STEP 3】技宣言カットイン → 【STEP 4】手動ダメカン乗せ → 【STEP 5】ターン終了
+          </div>
         </div>
       </div>
     </div>
@@ -1128,6 +1130,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@skyway-sdk/room@latest/dist/skyway_room-latest.js"></script>
 <script src="js/net/skyway-config.js?v=20261019_10"></script>
 <script src="js/net/voice.js?v=20261019_12"></script>
-<script src="js/main.js?v=20261022_05"></script>
+<script src="js/main.js?v=20261022_07"></script>
 </body>
 </html>

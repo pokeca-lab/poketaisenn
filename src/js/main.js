@@ -662,8 +662,21 @@ function openWelcomeGuideModal(forceOpen = false) {
   }
 
   modal.classList.remove("hidden");
+  const body = modal.querySelector(".welcome-guide-body");
+  if (body) {
+    body.scrollTop = 0;
+  }
   const video = document.getElementById("welcome-demo-video");
   if (video) {
+    if (!video._wheelBound) {
+      video._wheelBound = true;
+      video.addEventListener("wheel", (e) => {
+        const scrollTarget = modal.querySelector(".welcome-guide-body");
+        if (scrollTarget) {
+          scrollTarget.scrollTop += e.deltaY;
+        }
+      }, { passive: true });
+    }
     try {
       video.currentTime = 0;
       const playPromise = video.play();
