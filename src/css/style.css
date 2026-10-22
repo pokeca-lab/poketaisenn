@@ -2061,11 +2061,27 @@ html, body {
   align-self: center;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: calc(var(--u) * 0.5);
+  gap: calc(var(--u) * 0.35);
+  max-height: 100%;
+}
+
+.hand-btns .btn {
+  font-size: calc(var(--fs) * 0.82);
+  padding: calc(var(--u) * 0.28) calc(var(--u) * 0.5);
+  white-space: nowrap;
+  line-height: 1.15;
+  min-height: 0;
 }
 
 .hand-btns .btn.wide {
   grid-column: span 2;
+}
+
+.hand-btns .btn.btn-hand-stadium {
+  background: linear-gradient(180deg, #7c3aed, #5b21b6);
+  border-color: #c084fc;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.4);
 }
 
 .hand-cards {

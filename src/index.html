@@ -51,7 +51,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="css/style.css?v=20261022_02">
+<link rel="stylesheet" href="css/style.css?v=20261022_03">
 </head>
 <body>
 
@@ -596,14 +596,14 @@
     <div class="hand-area">
       <div class="hand-btns">
         <button class="btn green" data-action="draw">１枚引く</button>
-        <button class="btn blue" data-action="viewDeck">デッキを見る</button>
-        <button class="btn" data-action="handToDeck">手札を山にもどす</button>
-        <button class="btn" data-action="handToBottom">山の下に戻す</button>
-        <button class="btn red" data-action="handTrash">トラッシュする</button>
-        <button class="btn purple" data-action="handLost">ロストへ送る</button>
-        <button class="btn blue wide" data-action="handActive">⚔️ バトル場に出す</button>
-        <button class="btn blue wide" data-action="handBench">🪑 ベンチに出す</button>
-        <button class="btn purple wide" data-action="handStadium">🏟️ スタジアムとして出す</button>
+        <button class="btn blue" data-action="viewDeck">山を見る</button>
+        <button class="btn" data-action="handToDeck">山にもどす</button>
+        <button class="btn" data-action="handToBottom">山の下へ</button>
+        <button class="btn red" data-action="handTrash">トラッシュ</button>
+        <button class="btn purple" data-action="handLost">ロストへ</button>
+        <button class="btn blue" data-action="handActive">⚔️ バトル場</button>
+        <button class="btn blue" data-action="handBench">🪑 ベンチ</button>
+        <button class="btn purple wide btn-hand-stadium" data-action="handStadium">🏟️ スタジアムとして出す</button>
         <button class="btn purple wide hidden" id="btn-solo-hand-interfere" onclick="showSoloOpponentHandMenu()">🎴 相手手札干渉</button>
       </div>
       <div class="hand-cards" id="hand"></div>
@@ -681,6 +681,7 @@
           <button class="btn purple" data-action="handLost" data-close="1">ロストへ送る</button>
           <button class="btn blue" data-action="handActive" data-close="1">⚔️ バトル場に出す</button>
           <button class="btn blue" data-action="handBench" data-close="1">🪑 ベンチに出す</button>
+          <button class="btn purple wide" data-action="handStadium" data-close="1">🏟️ スタジアムとして出す</button>
           <button class="btn purple wide hidden" id="btn-sp-solo-hand" onclick="closeMenu(); showSoloOpponentHandMenu();">🎴 相手手札干渉 (一人回し)</button>
         </div>
       </div>

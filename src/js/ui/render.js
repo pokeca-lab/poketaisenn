@@ -1462,7 +1462,8 @@ function updateSheetUI() {
     const { index: handIdx, card } = selectedCards[0];
     const isPokemon = card.type === "pokemon";
     const isEnergy = card.type === "energy";
-    const isTrainer = card.type === "trainer" || card.type === "stadium";
+    const isStadium = card.type === "stadium" || (card.category || "").includes("スタジアム") || (card.subCategory || "").includes("スタジアム") || (card.name || "").includes("スタジアム");
+    const isTrainer = card.type === "trainer" || card.type === "stadium" || isStadium;
 
     // エネルギー付与先ボタン（バトル場 ＆ ベンチ）
     let targetButtons = "";
@@ -1592,7 +1593,8 @@ function showHandContextMenu(e, handIdx) {
 
   const isPokemon = card.type === "pokemon";
   const isEnergy = card.type === "energy";
-  const isTrainer = card.type === "trainer" || card.type === "stadium";
+  const isStadium = card.type === "stadium" || (card.category || "").includes("スタジアム") || (card.subCategory || "").includes("スタジアム") || (card.name || "").includes("スタジアム");
+  const isTrainer = card.type === "trainer" || card.type === "stadium" || isStadium;
 
   // 付与先ボタン（エネルギーまたはポケモンのどうぐ）
   let attachButtons = "";
