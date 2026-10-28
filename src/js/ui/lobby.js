@@ -174,11 +174,162 @@ async function loadSoloDeckB() {
 }
 
 // =============================================================================
+// デッキコード localStorage 保存 ＆ リスト管理
+// =============================================================================
+const STORAGE_KEY_SAVED_DECKS = "pokeca_saved_deck_codes";
+const MAX_SAVED_DECKS = 20;
+
+/** デッキリストの最初にあるポケモンカードの名称を取得 */
+function getFirstPokemonName(deck) {
+  if (!Array.isArray(deck) || deck.length === 0) return "";
+  const first = deck.find(c => c && (c.type === "pokemon" || c.category === "たね" || c.category === "ポケモン" || !!c.hp));
+  return first && first.name ? first.name : "";
+}
+
+/** 保存されたデッキコード一覧をlocalStorageから取得 */
+function getSavedDeckList() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_SAVED_DECKS);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map(item => {
+        if (typeof item === "string") {
+          const clean = item.replace(/[\(（【\[].*?[\)）】\]]/g, "").trim();
+          const m = item.match(/[\(（](.*?)[\)）]/);
+          return { code: clean, pokemon: m ? m[1] : "" };
+        }
+        if (item && typeof item === "object" && item.code) {
+          return {
+            code: String(item.code).replace(/[\(（【\[].*?[\)）】\]]/g, "").trim(),
+            pokemon: String(item.pokemon || "").trim()
+          };
+        }
+        return null;
+      }).filter(d => d && d.code);
+    }
+  } catch (e) {
+    console.warn("Failed to load saved decks from localStorage", e);
+  }
+  return [];
+}
+
+/** デッキコードをlocalStorageに保存し、リストを更新 */
+function saveDeckToStorage(code, pokemonName = "") {
+  if (!code || typeof code !== "string") return;
+  const cleanCode = code.replace(/[\(（【\[].*?[\)）】\]]/g, "").trim();
+  if (!cleanCode || cleanCode === "CUSTOM-PASTE" || cleanCode === "CUSTOM-TEXT") return;
+
+  const list = getSavedDeckList().filter(d => d.code.toUpperCase() !== cleanCode.toUpperCase());
+  list.unshift({
+    code: cleanCode,
+    pokemon: pokemonName || ""
+  });
+  if (list.length > MAX_SAVED_DECKS) {
+    list.length = MAX_SAVED_DECKS;
+  }
+
+  try {
+    localStorage.setItem(STORAGE_KEY_SAVED_DECKS, JSON.stringify(list));
+    localStorage.setItem("pokeca_last_deck_code", cleanCode);
+  } catch (e) {
+    console.warn("Failed to save deck to localStorage", e);
+  }
+
+  renderSavedDeckSelectOptions();
+}
+
+/** ロビーのセレクトボックス内に保存したデッキを反映 */
+function renderSavedDeckSelectOptions() {
+  const savedList = getSavedDeckList();
+  const selectIds = ["preset-select-online", "preset-select-a", "preset-select-b"];
+
+  selectIds.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+
+    // 既存の保存デッキoptgroupがあれば削除
+    const oldGroup = sel.querySelector("optgroup[data-type='saved-decks']");
+    if (oldGroup) oldGroup.remove();
+
+    if (savedList.length === 0) return;
+
+    const group = document.createElement("optgroup");
+    group.label = "💾 保存したデッキ";
+    group.dataset.type = "saved-decks";
+
+    savedList.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.code;
+      // リスト表示時のみ、ポケモンの名前をかっこ書きで表示
+      const label = item.pokemon ? `${item.code}（${item.pokemon}）` : item.code;
+      opt.textContent = `📁 ${label}`;
+      group.appendChild(opt);
+    });
+
+    // 最初のoption (▼ サンプルデッキから選択) の直後に挿入
+    const firstOpt = sel.querySelector("option");
+    if (firstOpt && firstOpt.nextSibling) {
+      sel.insertBefore(group, firstOpt.nextSibling);
+    } else {
+      sel.appendChild(group);
+    }
+  });
+
+  // inputサジェスト用のdatalistも更新
+  updateDeckDataList(savedList);
+}
+
+/** デッキコード入力欄のdatalist更新 */
+function updateDeckDataList(savedList) {
+  let dl = document.getElementById("saved-decks-datalist");
+  if (!dl) {
+    dl = document.createElement("datalist");
+    dl.id = "saved-decks-datalist";
+    document.body.appendChild(dl);
+  }
+  dl.innerHTML = savedList.map(item => {
+    const label = item.pokemon ? `${item.code}（${item.pokemon}）` : item.code;
+    return `<option value="${escapeHtml(item.code)}">${escapeHtml(label)}</option>`;
+  }).join("");
+
+  ["in-deck", "in-deck-a", "in-deck-b"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !el.getAttribute("list")) {
+      el.setAttribute("list", "saved-decks-datalist");
+    }
+  });
+}
+
+// =============================================================================
 // プリセット選択ハンドラー (セレクトボックス変更時)
 // =============================================================================
-function onPresetSelectChange(target, presetId) {
-  if (!presetId) return;
-  applyPresetToTarget(target, presetId);
+async function onPresetSelectChange(target, value) {
+  if (!value) return;
+
+  // 1. 既存プリセットデッキ判定
+  const isPreset = PRESET_DECKS.some(p => p.id === value || p.code === value);
+  if (isPreset) {
+    applyPresetToTarget(target, value);
+    return;
+  }
+
+  // 2. 保存されたデッキコードの場合: 入力欄に純粋なコードをセットして自動ロード
+  const inputId = target === "online" ? "in-deck" : (target === "solo-a" ? "in-deck-a" : "in-deck-b");
+  const input = document.getElementById(inputId);
+  if (input) input.value = value;
+
+  showToast(`デッキ「${value}」を読み込み中...`);
+  try {
+    const res = await resolveDeckInput(value);
+    if (res.ok) {
+      applyDeckToTarget(target, res.deck, res.name, res.code);
+    } else {
+      showToast(res.message || "デッキの読み込みに失敗しました");
+    }
+  } catch (e) {
+    showToast("デッキの読み込みでエラーが発生しました");
+  }
 }
 
 // =============================================================================
@@ -256,6 +407,14 @@ function applyDeckToTarget(target, deck, name, code) {
   if (typeof preloadAndVerifyDeckImages === "function") {
     preloadAndVerifyDeckImages(deck);
   }
+
+  // デッキコードのlocalStorage保存 ＆ セレクトボックス更新
+  const effectiveCode = code || (name && name.startsWith("公式デッキ") && typeof extractOfficialDeckCode === "function" ? extractOfficialDeckCode(name) : "");
+  if (effectiveCode && effectiveCode !== "CUSTOM-PASTE" && effectiveCode !== "CUSTOM-TEXT") {
+    const pokeName = getFirstPokemonName(deck);
+    saveDeckToStorage(effectiveCode, pokeName);
+  }
+
   if (target === "online") {
     state.myLoadedDeck = deck;
     const input = document.getElementById("in-deck");
@@ -304,3 +463,6 @@ window.openDeckPasteModal = openDeckPasteModal;
 window.submitPastedDeck = submitPastedDeck;
 window.applyPresetToTarget = applyPresetToTarget;
 window.onPresetSelectChange = onPresetSelectChange;
+window.renderSavedDeckSelectOptions = renderSavedDeckSelectOptions;
+window.getSavedDeckList = getSavedDeckList;
+window.saveDeckToStorage = saveDeckToStorage;

@@ -9,8 +9,25 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initLobbyDefaults() {
+  // 保存されたデッキコード一覧のセレクトボックス反映
+  if (typeof renderSavedDeckSelectOptions === "function") {
+    renderSavedDeckSelectOptions();
+  }
+
+  // 最後に使用したデッキコードがあれば復元、なければ初期プリセット
+  let initialDeckCode = "DEMO-CHARIZARD-2026";
+  try {
+    const lastCode = localStorage.getItem("pokeca_last_deck_code");
+    const savedList = typeof getSavedDeckList === "function" ? getSavedDeckList() : [];
+    if (lastCode && savedList.some(d => d.code === lastCode)) {
+      initialDeckCode = lastCode;
+    } else if (savedList.length > 0) {
+      initialDeckCode = savedList[0].code;
+    }
+  } catch (e) {}
+
   document.getElementById("in-name").value = "プレイヤーA";
-  document.getElementById("in-deck").value = "DEMO-CHARIZARD-2026";
+  document.getElementById("in-deck").value = initialDeckCode;
   // デッキ初期プレビュー
   state.myLoadedDeck = SAMPLE_DECK;
   state.soloDeckA = SAMPLE_DECK;
@@ -18,6 +35,16 @@ function initLobbyDefaults() {
   renderDeckPreview(SAMPLE_DECK, "deck-preview");
   renderDeckPreview(SAMPLE_DECK, "deck-preview-a");
   renderDeckPreview(SAMPLE_DECK_B, "deck-preview-b");
+
+  // 保存コードがデフォルト以外なら非同期で初期プレビューを自動更新
+  if (initialDeckCode && initialDeckCode !== "DEMO-CHARIZARD-2026" && typeof resolveDeckInput === "function") {
+    resolveDeckInput(initialDeckCode).then(res => {
+      if (res && res.ok && Array.isArray(res.deck)) {
+        state.myLoadedDeck = res.deck;
+        renderDeckPreview(res.deck, "deck-preview");
+      }
+    }).catch(() => {});
+  }
   
   const btnStart = document.getElementById("btn-start");
   if (btnStart) {

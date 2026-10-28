@@ -409,7 +409,8 @@ function parseDeckListText(rawText) {
 // =============================================================================
 function extractOfficialDeckCode(input) {
   if (!input) return null;
-  const str = input.trim();
+  // かっこ書き説明（例: "ppyypR-JwZ2WT-Up232S（リザードンex）"）を事前に除去
+  const str = input.replace(/[\(（【\[].*?[\)）】\]]/g, "").trim();
   // URLからの抽出 (deckID/XXXXXX-XXXXXX-XXXXXX または XXXXXX-XXXXXX)
   const urlMatch = str.match(/deckID\/([a-zA-Z0-9]{6}-[a-zA-Z0-9]{6}-[a-zA-Z0-9]{6}|[a-zA-Z0-9]{6}-[a-zA-Z0-9]{6})/i);
   if (urlMatch) return urlMatch[1];
@@ -562,15 +563,23 @@ async function resolveDeckInput(inputStr) {
   }
 
   const clean = inputStr.trim();
+  // かっこ書き説明（例: "DEMO-CHARIZARD-2026（リザードンex）" や "ppyypR-...（リザードンex）"）を除去した純粋なコード
+  const pureCode = clean.replace(/[\(（【\[].*?[\)）】\]]/g, "").trim();
 
   // 1. プリセットデッキ完全・部分一致
   const upper = clean.toUpperCase();
+  const pureUpper = pureCode.toUpperCase();
   for (const preset of PRESET_DECKS) {
+    const pCodeUpper = preset.code.toUpperCase();
+    const pIdUpper = preset.id.toUpperCase();
     if (
-      preset.code.toUpperCase() === upper ||
-      preset.id.toUpperCase() === upper ||
+      pCodeUpper === upper ||
+      pCodeUpper === pureUpper ||
+      pIdUpper === upper ||
+      pIdUpper === pureUpper ||
       preset.name.includes(clean) ||
-      clean.includes(preset.id)
+      clean.includes(preset.id) ||
+      (pureCode && clean.includes(preset.code))
     ) {
       return {
         ok: true,
