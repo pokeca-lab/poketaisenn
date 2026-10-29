@@ -34,7 +34,7 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="公式操作マニュアル | ポケカ一人回しツール【ポケアリ】">
   <meta name="twitter:description" content="ポケカ一人回し＆オンライン対戦ツールの操作マニュアル・操作一覧表。">
-  <link rel="stylesheet" href="css/manual.css?v=20261029_02">
+  <link rel="stylesheet" href="css/manual.css?v=20261029_03">
 </head>
 <body>
 
@@ -49,7 +49,7 @@
     </div>
     <div class="manual-nav-links">
       <a href="#cheatsheet" class="nav-btn nav-btn-outline" style="border-color:#3b82f6; color:#1d4ed8; font-weight:bold;">📋 操作一覧表</a>
-      <a href="#flow" class="nav-btn nav-btn-outline">🔄 対戦の流れ</a>
+      <a href="#flow" class="nav-btn nav-btn-outline">📑 目次</a>
       <a href="#sec-07" class="nav-btn nav-btn-outline">💬 通話・チャット</a>
       <a href="#sec-settings" class="nav-btn nav-btn-outline">⚙️ 設定について</a>
       <a href="#sec-10" class="nav-btn nav-btn-outline">📝 更新履歴</a>
@@ -84,93 +84,61 @@
       </p>
     </div>
 
-    <!-- 🔄 対戦の流れフローチャート -->
-    <section class="flowchart-section" id="flow">
+    <!-- 📑 目次 -->
+    <section class="toc-section" id="flow">
       <div class="section-head">
-        <h2 class="section-title">🔄 対戦の流れフローチャート</h2>
-        <span style="font-size:12px; color:var(--text-muted); font-weight:bold;">※ 各ステップをクリックすると詳細解説へジャンプします</span>
+        <h2 class="section-title">📑 目次</h2>
+        <span style="font-size:12px; color:var(--text-muted); font-weight:bold;">※ 項目をクリックすると該当箇所へジャンプします</span>
       </div>
 
-      <div class="flowchart-grid">
-        <a href="#sec-00" class="flow-step-card" style="border-left: 4px solid #0ea5e9;">
-          <span class="flow-step-badge" style="background:#0ea5e9;">STEP 0</span>
-          <div class="flow-step-title">
-            <span>⓪ 相手と接続する（入室・ロビー機能）</span>
-            <span class="flow-step-arrow">→</span>
-          </div>
-          <p class="flow-step-desc">【ホストvsゲスト対比】名前入力 → ルーム番号で合流 → 自作マット＆スリーブ選択 → 対戦開始！（戦績管理・端末引き継ぎ対応）</p>
+      <div class="toc-grid">
+        <a href="#sec-00" class="toc-item">
+          <span class="toc-num" style="background:#0ea5e9;">00</span>
+          <span class="toc-label">接続・入室手順</span>
         </a>
-
-        <a href="#sec-01" class="flow-step-card">
-          <span class="flow-step-badge">STEP 1</span>
-          <div class="flow-step-title">
-            <span>① ターンの基本サイクル</span>
-            <span class="flow-step-arrow">→</span>
-          </div>
-          <p class="flow-step-desc">自動1枚ドロー → カード使用 → 技宣言＆ダメカン手動載せ → ターン終了</p>
+        <a href="#sec-01" class="toc-item">
+          <span class="toc-num">01</span>
+          <span class="toc-label">ターンの流れ</span>
         </a>
-
-        <a href="#sec-02" class="flow-step-card">
-          <span class="flow-step-badge">STEP 2</span>
-          <div class="flow-step-title">
-            <span>② 相手カードの手動操作</span>
-            <span class="flow-step-arrow">→</span>
-          </div>
-          <p class="flow-step-desc">ボスの指令での相手入替、相手へのダメカン載せ・状態異常は自分で操作！</p>
+        <a href="#sec-02" class="toc-item">
+          <span class="toc-num">02</span>
+          <span class="toc-label">相手カード操作</span>
         </a>
-
-        <a href="#sec-03" class="flow-step-card">
-          <span class="flow-step-badge">STEP 3</span>
-          <div class="flow-step-title">
-            <span>③ カード使用・進化・エネ</span>
-            <span class="flow-step-arrow">→</span>
-          </div>
-          <p class="flow-step-desc">手札使用枠（5秒後自動トラッシュ）、ポケモン進化、どうぐ・エネ装着（D&D・メニュー両対応！）</p>
+        <a href="#sec-03" class="toc-item">
+          <span class="toc-num">03</span>
+          <span class="toc-label">カード基本操作</span>
         </a>
-
-        <a href="#sec-deck-trash" class="flow-step-card" style="border-left: 4px solid #8b5cf6;">
-          <span class="flow-step-badge" style="background:#8b5cf6;">STEP 4</span>
-          <div class="flow-step-title">
-            <span>④ 山札・トラッシュ・スタジアム</span>
-            <span class="flow-step-arrow">→</span>
-          </div>
-          <p class="flow-step-desc">山札確認＆シャッフル、トラッシュ回収（右クリック・選択実行）、スタジアム配置</p>
+        <a href="#sec-deck-trash" class="toc-item">
+          <span class="toc-num" style="background:#8b5cf6;">04</span>
+          <span class="toc-label">山札・トラッシュ</span>
         </a>
-
-        <a href="#sec-04" class="flow-step-card">
-          <span class="flow-step-badge">STEP 5</span>
-          <div class="flow-step-title">
-            <span>⑤ 気絶 ＆ サイドめくり</span>
-            <span class="flow-step-arrow">→</span>
-          </div>
-          <p class="flow-step-desc">HP 0で気絶処理、サイド取得モーダルで3Dカードをめくって手札へ</p>
+        <a href="#sec-04" class="toc-item">
+          <span class="toc-num">05</span>
+          <span class="toc-label">気絶・サイド取得</span>
         </a>
-
-        <a href="#sec-05" class="flow-step-card">
-          <span class="flow-step-badge">STEP 6</span>
-          <div class="flow-step-title">
-            <span>⑥ 巻き戻し（Undo）</span>
-            <span class="flow-step-arrow">→</span>
-          </div>
-          <p class="flow-step-desc">操作を誤った時の1手順巻き戻し（Undo）機能、ロストゾーン管理</p>
+        <a href="#sec-05" class="toc-item">
+          <span class="toc-num">06</span>
+          <span class="toc-label">巻き戻し・ロスト</span>
         </a>
-
-        <a href="#sec-07" class="flow-step-card">
-          <span class="flow-step-badge loop">COMMUNICATION</span>
-          <div class="flow-step-title">
-            <span>⑦ 技宣言・チャット・通話</span>
-            <span class="flow-step-arrow">→</span>
-          </div>
-          <p class="flow-step-desc">⚔️技宣言カットイン、💬かわいい対戦チャット、🎙️通話アプリ不要の無料ボイス通話</p>
+        <a href="#sec-06" class="toc-item">
+          <span class="toc-num">07</span>
+          <span class="toc-label">スマホ操作ガイド</span>
         </a>
-
-        <a href="#sec-settings" class="flow-step-card" style="border-left: 4px solid #16a34a;">
-          <span class="flow-step-badge" style="background:#16a34a;">SETTINGS</span>
-          <div class="flow-step-title">
-            <span>⑧ 設定について（音・引き継ぎ）</span>
-            <span class="flow-step-arrow">→</span>
-          </div>
-          <p class="flow-step-desc">使ったカードの自動片付け、効果音・ワザ読み上げ音声の調整、PC⇔スマホのデータ引っ越し</p>
+        <a href="#sec-07" class="toc-item">
+          <span class="toc-num" style="background:#f59e0b;">08</span>
+          <span class="toc-label">技宣言・通話</span>
+        </a>
+        <a href="#sec-08" class="toc-item">
+          <span class="toc-num">09</span>
+          <span class="toc-label">一人回しツール</span>
+        </a>
+        <a href="#sec-settings" class="toc-item">
+          <span class="toc-num" style="background:#16a34a;">10</span>
+          <span class="toc-label">設定について</span>
+        </a>
+        <a href="#sec-09" class="toc-item">
+          <span class="toc-num" style="background:#64748b;">11</span>
+          <span class="toc-label">よくある質問</span>
         </a>
       </div>
     </section>
@@ -454,9 +422,13 @@
       <div class="subsection">
         <h3 class="subsection-title">2. カードを使う（メインフェーズ）</h3>
         <p>
-          手札から使いたいグッズやサポートを中央の<b>「手札使用枠」</b>にドラッグ＆ドロップします（またはカードを右クリックして「使用する」を選択）。<br>
+          手札から使いたいグッズやサポートを右クリック（スマホは長押し）して<b>「使用する」</b>を選ぶか、中央の<b>「手札使用枠」</b>にドラッグ＆ドロップします。<br>
           使用枠に置かれたカードは相手画面にもリアルタイムで大きく表示され、5秒後に自動でトラッシュへ飛び立ちます。
         </p>
+        <div class="callout callout-important" style="margin:12px 0 0 0;">
+          <b>📢 【重要】カードに対して「使用する」を実行することで、相手にどのカードを使ったかが通知されますので、カードを使うときは「使用する」をつかいましょう！</b><br>
+          <span style="font-size:13px;">※手札から直接「トラッシュする」を選ぶと相手画面に使用通知が表示されません。必ず「使用する」（または中央の「手札使用枠」への配置）を行ってください。</span>
+        </div>
       </div>
 
       <div class="subsection">
@@ -544,9 +516,12 @@
 
       <div class="subsection">
         <h3 class="subsection-title">1. カードを使う（使用エリア同期 ＆ 5秒後自動トラッシュ）</h3>
+        <div class="callout callout-important" style="margin:10px 0 14px 0;">
+          <b>📢 カードに対して「使用する」を実行することで、相手にどのカードを使ったかが通知されますので、カードを使うときは「使用する」をつかいましょう！</b>
+        </div>
         <p>
-          手札から中央の<b>「カード使用枠」</b>へドラッグ＆ドロップすると、カードが大きく表示され、相手にも「〇〇が［カード名］を使用」とリアルタイムで通知されます。<br>
-          ロビーで「5秒後自動トラッシュ」がONの場合、カウントダウンバーが表示された後、自動的にトラッシュへ飛行移動します（右クリックメニューから「使用する」を選ぶことでも同様に使用可能です）。
+          手札のカードを右クリック（スマホは長押し）して<b>「使用する」</b>を選ぶか、中央の<b>「カード使用枠」</b>へドラッグ＆ドロップすると、カードが大きく表示され、相手にも「〇〇が［カード名］を使用」とリアルタイムで通知されます。<br>
+          「⚙️ 設定・引き継ぎ」で「使用したカードを自動でトラッシュする（5秒後）」がONの場合、カウントダウンバーが表示された後、自動的にトラッシュへ移動します。
         </p>
         <!-- 実画面操作動画③：カードを使う -->
         <div class="demo-video-box">
@@ -1041,15 +1016,14 @@
     </article>
 
     <!-- =====================================================
-         第10章：設定について（初心者向け・各メニューのやさしい解説）
+         第10章：設定について
          ===================================================== -->
     <article class="manual-chapter" id="sec-settings">
       <div class="chapter-number">CHAPTER 10</div>
-      <h2 class="chapter-title">⚙️ 設定について（設定メニューのやさしい解説）</h2>
+      <h2 class="chapter-title">⚙️ 設定について</h2>
 
       <p>
-        最初の画面（ロビー画面）の下の方にある<b>「⚙️ 設定・引き継ぎ」ボタン</b>を押すと、ゲーム中の音やカードの動き、別のスマホやパソコンへのデータ移動を設定できる画面が開きます。<br>
-        ここでは、画面の中に並んでいる項目を<b>上から順番にひとつずつ</b>、初めての方にも分かりやすく説明します。
+        最初の画面（ロビー画面）の下の方にある<b>「⚙️ 設定・引き継ぎ」ボタン</b>を押すと、ゲーム中の音やカードの動き、別のスマホやパソコンへのデータ移動を設定できる画面が開きます。
       </p>
 
       <div class="callout callout-tip">
