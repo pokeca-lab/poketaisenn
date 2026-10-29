@@ -34,7 +34,7 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="公式操作マニュアル | ポケカ一人回しツール【ポケアリ】">
   <meta name="twitter:description" content="ポケカ一人回し＆オンライン対戦ツールの操作マニュアル・操作一覧表。">
-  <link rel="stylesheet" href="css/manual.css?v=20261022_01">
+  <link rel="stylesheet" href="css/manual.css?v=20261029_01">
 </head>
 <body>
 
@@ -94,10 +94,10 @@
         <a href="#sec-00" class="flow-step-card" style="border-left: 4px solid #0ea5e9;">
           <span class="flow-step-badge" style="background:#0ea5e9;">STEP 0</span>
           <div class="flow-step-title">
-            <span>⓪ 相手と接続する（入室手順）</span>
+            <span>⓪ 相手と接続する（入室・ロビー機能）</span>
             <span class="flow-step-arrow">→</span>
           </div>
-          <p class="flow-step-desc">【ホストvsゲスト対比】名前入力 → 4桁番号で合流 → 自作マット＆スリーブ設定 → 即対戦開始！</p>
+          <p class="flow-step-desc">【ホストvsゲスト対比】名前入力 → ルーム番号で合流 → 自作マット＆スリーブ選択 → 対戦開始！（戦績管理・端末引き継ぎ対応）</p>
         </a>
 
         <a href="#sec-01" class="flow-step-card">
@@ -180,7 +180,7 @@
       <!-- 実際のロビー画面全体スクリーンショット -->
       <figure class="screen-figure">
         <img src="img/actual_lobby_pc.png" alt="実際のPC版ロビー画面（オンライン対戦セットアップ）" class="screen-img">
-        <figcaption class="screen-caption">▲ 実際のロビー画面（名前入力・ルーム作成／入室・公式デッキコード即時インポート・自作マット＆スリーブ登録・効果音＆読み上げ設定）</figcaption>
+        <figcaption class="screen-caption">▲ 実際のロビー画面（名前入力・ルーム作成／入室・公式デッキコード読込・自作マット＆スリーブ登録・戦績確認・設定＆データ引き継ぎ）</figcaption>
       </figure>
 
       <!-- ホスト側 vs ゲスト側 画面対比カード -->
@@ -330,21 +330,21 @@
           </div>
 
           <div class="callout callout-note" style="margin-top:14px; background:#ffffff;">
-            <b>💾 ブラウザ自動保存（再登録の手間なし）</b><br>
-            登録したオリジナル画像はお使いのブラウザに自動保存されます。一度登録しておけば、ページを閉じたり次回以降アクセスした際も登録一覧に残り続けるため、クリックして選ぶだけでいつでも使えます！
+            <b>💾 ブラウザ自動保存 ＆ 別端末への引き継ぎ対応</b><br>
+            登録したオリジナル画像と現在選択中のマット・スリーブはお使いのブラウザに自動保存されます。一度登録しておけば次回以降も一覧から選ぶだけで使えるほか、ロビーの<b>「⚙️ 設定・引き継ぎ」</b>から別のスマホやPCへそのまま移行することもできます。
           </div>
         </div>
       </div>
 
       <!-- 🎴 公式デッキコードの即時読込 -->
       <div class="subsection">
-        <h3 class="subsection-title">3. 🎴 ポケカ公式デッキコードの即時読込（超便利機能！）</h3>
+        <h3 class="subsection-title">3. 🎴 ポケカ公式デッキコードの即時読込 ＆ デッキ履歴の自動保存</h3>
         <p>
-          ポケモンカードゲーム公式「プレイヤーズクラブ / デッキ構築」で発行される<b>デッキコード（英数18文字・ハイフン付き、例: <code>kVVwkf-tGqhKW-VFkFbf</code>）</b>を入力枠に貼り付け、「読込」ボタンを押すだけで、<b>全60枚のカード公式高解像度画像とデータが一瞬でインポート</b>されます！<br>
-          面倒なカード1枚ずつの登録作業は一切不要です。
+          ポケモンカードゲーム公式「プレイヤーズクラブ / デッキ構築」で発行される<b>デッキコード（英数18文字・ハイフン付き、例: <code>kVVwkf-tGqhKW-VFkFbf</code>）</b>を入力枠に貼り付け、「読み込む」ボタンを押すだけで、<b>全60枚のカード公式高解像度画像とデータが即座にインポート</b>されます。<br>
+          カード1枚ずつの登録作業は不要です。また、一度読み込んだデッキコードは<b>先頭ポケモンの名前付き（例: <code>kVVwkf-tGqhKW-VFkFbf（ドラパルトex）</code>）で「💾 保存したデッキ」リストに自動保存</b>され、次回アクセス時も直前のデッキが自動で復元されます。
         </p>
         <p style="font-size:12.5px; color:#64748b; margin-top:4px;">
-          ※「ドラパルトex」「悪リザードンex」「カメックスex」「ミライドンex」「フシギバナex」などの現環境人気サンプルデッキも最初から内蔵されているため、デッキコードが手元になくてもワンクリックですぐに対戦を始められます。
+          ※「ドラパルトex」「悪リザードンex」「カメックスex」「ミライドンex」「フシギバナex」などの人気サンプルデッキも最初から内蔵されているため、デッキコードが手元になくてもワンクリックですぐに対戦を始められます。
         </p>
       </div>
 
@@ -355,6 +355,106 @@
           対戦相手がいない時や、新しく組んだデッキの初動展開・事故率テスト、技の手順確認をしたい時は、ロビー画面上部にある<b>「🃏 一人回し」タブ</b>を選んでください。<br>
           先攻（デッキA）と後攻（デッキB）の2つのデッキを自分一人で手動操作し、本番と全く同じ盤面演出・効果音エンジン・ダメージ計算でじっくり練習できます。
         </p>
+      </div>
+
+      <!-- 📊 対戦成績（戦績レコード）の確認・管理 -->
+      <div class="subsection" id="sec-battle-history">
+        <h3 class="subsection-title">5. 📊 対戦成績（戦績レコード）の確認・管理</h3>
+        <p>
+          オンライン対戦の決着がつくと、使用したデッキごとの勝敗と対戦相手のデッキ情報が自動で記録されます（※一人回しモードは記録対象外）。<br>
+          ロビー画面下部の<b>「📊 戦績を見る」ボタン</b>を押すと、これまでの通算成績やデッキごとの相性をいつでも振り返ることができます。
+        </p>
+
+        <div class="lobby-feature-box">
+          <div class="lobby-feature-grid">
+            <div class="lobby-feature-item">
+              <h4>🏆 全デッキ通算成績</h4>
+              <p>
+                戦績画面の上部に、これまでに戦った全デッキ合計の<b>勝数・敗数・勝率・総試合数</b>が大きく表示されます。
+              </p>
+            </div>
+            <div class="lobby-feature-item">
+              <h4>🔍 自分のデッキごとに絞り込み</h4>
+              <p>
+                <b>「戦績を表示する自分のデッキ:」</b>のリストからデッキを選ぶと、そのデッキ単体の成績に切り替わります（初期表示は「すべて」）。デッキは直近に対戦した順でポケモン名付きで並び、数が増えても「最近使ったデッキ」と「過去のデッキ」に自動で整理されます。
+              </p>
+            </div>
+            <div class="lobby-feature-item">
+              <h4>🖼️ デッキ60枚一覧画像 ＆ 相手別勝敗</h4>
+              <p>
+                個別のデッキを選ぶと、<b>60枚のデッキ一覧画像</b>（タップ・クリックで拡大表示）とデッキ単体の勝率に加え、<b>対戦相手のポケモンごと（<code>vs ポケモン名</code>）の勝敗・勝率</b>が一覧で表示されます。
+              </p>
+            </div>
+            <div class="lobby-feature-item">
+              <h4>🗑️ 選択デッキ別の戦績リセット</h4>
+              <p>
+                左下の<b>「🗑️ 戦績リセット」ボタン</b>を押すと確認メッセージの後に戦績をクリアします。特定のデッキを選んでいる時はそのデッキの戦績のみを削除し、「すべて」を選んでいる時は全戦績を一括クリアします。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ⚙️ 設定 ＆ 端末間データ引き継ぎ -->
+      <div class="subsection" id="sec-settings-transfer">
+        <h3 class="subsection-title">6. ⚙️ 設定 ＆ 端末間データ引き継ぎ（PC ⇔ スマホ・機種変更）</h3>
+        <p>
+          ロビー画面下部の<b>「⚙️ 設定・引き継ぎ」ボタン</b>から、対戦中の各種設定変更と、別端末・別ブラウザへのデータ移行を行えます。
+        </p>
+
+        <div class="lobby-feature-box">
+          <div class="lobby-feature-grid" style="margin-top:0;">
+            <div class="lobby-feature-item">
+              <h4>⚡ 使用カードの自動トラッシュ設定</h4>
+              <p>
+                <b>「使用したカードを自動でトラッシュする（5秒後）」</b>のON/OFFを切り替えられます。ONにすると、手札から中央の「使用」枠に出したグッズやサポートが5秒後に自動でトラッシュへ送られます。
+              </p>
+            </div>
+            <div class="lobby-feature-item">
+              <h4>🔊 効果音 ＆ 🎙️ 技名読み上げ設定</h4>
+              <p>
+                <b>「🔊 効果音」</b>ボタンからマスター音量の調整や一時ミュート（消音）・テスト試聴を行えます。<b>「🎙️ 読み上げ設定」</b>からは技宣言時のボイス種類・話速・声の高さを調整できます。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lobby-feature-box transfer-theme">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px; font-weight:800; color:#166534;">📱 6桁コードでかんたん端末間データ引き継ぎ</span>
+            <span style="font-size:11px; font-weight:bold; color:#15803d; background:#dcfce7; padding:3px 10px; border-radius:9999px;">有効期限 24時間 ・ 1回使い切り</span>
+          </div>
+          <p style="font-size:13.5px; color:#14532d; line-height:1.7; margin:0 0 10px 0;">
+            PCで登録したデッキコード履歴や自作プレイマット・スリーブをスマートフォンへ移したい時や、スマートフォンの機種変更時に、ファイルの送受信なしでデータを丸ごと引き継げます。
+          </p>
+
+          <div class="transfer-step-grid">
+            <div class="transfer-step-card">
+              <span class="transfer-step-badge">STEP 1：元の端末</span>
+              <div style="font-weight:800; font-size:14px; color:#0f172a; margin-bottom:4px;">引き継ぎコード（数字6桁）を発行</div>
+              <p style="margin:0; font-size:13px; color:#475569; line-height:1.65;">
+                元の端末で「⚙️ 設定・引き継ぎ」を開き、<b>「📱 引き継ぎコードを発行する」</b>を押すと6桁の数字コードが表示されます。
+              </p>
+            </div>
+            <div class="transfer-step-card" style="border-color:#bfdbfe;">
+              <span class="transfer-step-badge dest">STEP 2：新しい端末</span>
+              <div style="font-weight:800; font-size:14px; color:#0f172a; margin-bottom:4px;">6桁のコードを入力して復元</div>
+              <p style="margin:0; font-size:13px; color:#475569; line-height:1.65;">
+                移行先のスマホやPCで「⚙️ 設定・引き継ぎ」を開き、6桁のコードを入力して<b>「📥 データを引き継ぐ」</b>を押すと自動で復元・反映されます。
+              </p>
+            </div>
+          </div>
+
+          <div style="background:#ffffff; border:1px solid #bbf7d0; border-radius:8px; padding:12px 14px; font-size:12.5px; color:#334155; line-height:1.7;">
+            <b>📦 引き継がれるデータ一覧：</b><br>
+            ・保存したデッキコード履歴 ＆ 現在選択中のデッキ<br>
+            ・登録した自作プレイマット画像 ＆ 選択中のプレイマット<br>
+            ・登録した自作スリーブ画像 ＆ 選択中のスリーブ<br>
+            ・対戦成績（戦績レコード）<br>
+            ・各種設定（自動トラッシュ設定・効果音音量・読み上げボイス設定など）<br>
+            <span style="color:#64748b; font-size:12px;">※引き継ぎを実行すると移行先端末の現在のデータは上書きされます。発行したコードは引き継ぎ完了後に自動で無効化されます。</span>
+          </div>
+        </div>
       </div>
     </article>
 
@@ -1017,6 +1117,11 @@
       </div>
 
       <div class="callout callout-note">
+        <b>Q. PCで使っている自作マット・スリーブやデッキ履歴、戦績をスマホに移せますか？（機種変更時の引き継ぎ）</b><br>
+        A. はい、ロビー画面の<b>「⚙️ 設定・引き継ぎ」</b>ボタンから簡単に移行できます。元の端末で「📱 引き継ぎコードを発行する」を押して表示される<b>6桁の数字コード</b>を、移行先のスマホやPCに入力して「📥 データを引き継ぐ」を押してください（有効期限は24時間、1回使い切りです）。
+      </div>
+
+      <div class="callout callout-note">
         <b>Q. 新しい機能やデザインが画面に反映されていないようです。</b><br>
         A. ブラウザの古いキャッシュが残っている可能性があります。PCの場合は <span class="kbd">Ctrl + F5</span>（Macは <span class="kbd">Cmd + Shift + R</span>）、スマートフォンの場合はブラウザの「再読み込み」をお試しください。
       </div>
@@ -1041,6 +1146,11 @@
             </tr>
           </thead>
           <tbody>
+            <tr>
+              <td><span class="version-badge" style="background:#2563eb;">Ver 1.4</span></td>
+              <td class="version-date">2026-10-29</td>
+              <td><b>📊 対戦成績レコード ＆ ⚙️ 設定・端末間データ引き継ぎ機能の追加</b>（ロビーでのデッキ別対戦成績確認［全デッキ通算成績・デッキ60枚一覧画像・対戦相手のポケモン別勝敗集計・選択デッキ別リセット］、ロビー設定ポップアップへの集約、6桁コードによるPC⇔スマホ間のデータ引き継ぎ［保存デッキ・自作マット＆スリーブ・戦績・各種設定対応］、および読み込みデッキコードの先頭ポケモン名付き自動保存に対応）。</td>
+            </tr>
             <tr>
               <td><span class="version-badge" style="background:#8b5cf6;">Ver 1.3</span></td>
               <td class="version-date">2026-10-20</td>
@@ -1258,6 +1368,23 @@
               <td><b>相手と通話する</b></td>
               <td colspan="2"><b>「🎙️ 通話」</b>ボタンを押して相手を呼び出し、相手が受託すると通話開始</td>
               <td>通話アプリ不要・完全無料。通話バーはドラッグで好きな位置へ移動できます。</td>
+            </tr>
+
+            <!-- ロビー・戦績・データ引き継ぎ -->
+            <tr class="cheat-cat-row">
+              <td colspan="5">🏠 ロビー・戦績管理・端末間データ引き継ぎ</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">対戦成績（戦績）</td>
+              <td><b>勝敗・相性を確認／リセット</b></td>
+              <td colspan="2">ロビー画面の<b>「📊 戦績を見る」</b>ボタンを押す → リストから確認したい自分のデッキを選択</td>
+              <td>60枚デッキ画像・通算成績・相手ポケモン別の勝敗を表示。選んだデッキ単位でリセット可能。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">各種設定・引き継ぎ</td>
+              <td><b>音量調整・PC⇔スマホ移行</b></td>
+              <td colspan="2">ロビー画面の<b>「⚙️ 設定・引き継ぎ」</b>ボタンを押す → 元の端末で6桁コードを発行し、移行先端末に入力</td>
+              <td>保存デッキ・自作マット＆スリーブ・戦績・自動トラッシュや音声設定を別端末へ丸ごと移行できます。</td>
             </tr>
           </tbody>
         </table>
