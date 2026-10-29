@@ -34,7 +34,7 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="公式操作マニュアル | ポケカ一人回しツール【ポケアリ】">
   <meta name="twitter:description" content="ポケカ一人回し＆オンライン対戦ツールの操作マニュアル・操作一覧表。">
-  <link rel="stylesheet" href="css/manual.css?v=20261029_01">
+  <link rel="stylesheet" href="css/manual.css?v=20261029_02">
 </head>
 <body>
 
@@ -51,6 +51,7 @@
       <a href="#cheatsheet" class="nav-btn nav-btn-outline" style="border-color:#3b82f6; color:#1d4ed8; font-weight:bold;">📋 操作一覧表</a>
       <a href="#flow" class="nav-btn nav-btn-outline">🔄 対戦の流れ</a>
       <a href="#sec-07" class="nav-btn nav-btn-outline">💬 通話・チャット</a>
+      <a href="#sec-settings" class="nav-btn nav-btn-outline">⚙️ 設定について</a>
       <a href="#sec-10" class="nav-btn nav-btn-outline">📝 更新履歴</a>
       <a href="../index.html" class="nav-btn nav-btn-primary pc-lobby-btn">🎮 対戦ロビーへ戻る</a>
     </div>
@@ -161,6 +162,15 @@
             <span class="flow-step-arrow">→</span>
           </div>
           <p class="flow-step-desc">⚔️技宣言カットイン、💬かわいい対戦チャット、🎙️通話アプリ不要の無料ボイス通話</p>
+        </a>
+
+        <a href="#sec-settings" class="flow-step-card" style="border-left: 4px solid #16a34a;">
+          <span class="flow-step-badge" style="background:#16a34a;">SETTINGS</span>
+          <div class="flow-step-title">
+            <span>⑧ 設定について（音・引き継ぎ）</span>
+            <span class="flow-step-arrow">→</span>
+          </div>
+          <p class="flow-step-desc">使ったカードの自動片付け、効果音・ワザ読み上げ音声の調整、PC⇔スマホのデータ引っ越し</p>
         </a>
       </div>
     </section>
@@ -397,64 +407,11 @@
 
       <!-- ⚙️ 設定 ＆ 端末間データ引き継ぎ -->
       <div class="subsection" id="sec-settings-transfer">
-        <h3 class="subsection-title">6. ⚙️ 設定 ＆ 端末間データ引き継ぎ（PC ⇔ スマホ・機種変更）</h3>
+        <h3 class="subsection-title">6. ⚙️ 「設定・引き継ぎ」ボタンについて</h3>
         <p>
-          ロビー画面下部の<b>「⚙️ 設定・引き継ぎ」ボタン</b>から、対戦中の各種設定変更と、別端末・別ブラウザへのデータ移行を行えます。
+          ロビー画面の下部（「📊 戦績を見る」の右隣）にある<b>「⚙️ 設定・引き継ぎ」ボタン</b>を押すと、効果音の大きさ調整、ワザ名の読み上げ音声、使ったカードの自動片付け設定、およびパソコン⇔スマホ間のデータ引き継ぎ（機種変更対応）を行えます。<br>
+          それぞれの項目の詳しい使い方は、<a href="#sec-settings" style="color:var(--primary-blue); font-weight:bold;">第10章「⚙️ 設定について」</a>でひとつずつ分かりやすく説明しています。
         </p>
-
-        <div class="lobby-feature-box">
-          <div class="lobby-feature-grid" style="margin-top:0;">
-            <div class="lobby-feature-item">
-              <h4>⚡ 使用カードの自動トラッシュ設定</h4>
-              <p>
-                <b>「使用したカードを自動でトラッシュする（5秒後）」</b>のON/OFFを切り替えられます。ONにすると、手札から中央の「使用」枠に出したグッズやサポートが5秒後に自動でトラッシュへ送られます。
-              </p>
-            </div>
-            <div class="lobby-feature-item">
-              <h4>🔊 効果音 ＆ 🎙️ 技名読み上げ設定</h4>
-              <p>
-                <b>「🔊 効果音」</b>ボタンからマスター音量の調整や一時ミュート（消音）・テスト試聴を行えます。<b>「🎙️ 読み上げ設定」</b>からは技宣言時のボイス種類・話速・声の高さを調整できます。
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="lobby-feature-box transfer-theme">
-          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-            <span style="font-size:16px; font-weight:800; color:#166534;">📱 6桁コードでかんたん端末間データ引き継ぎ</span>
-            <span style="font-size:11px; font-weight:bold; color:#15803d; background:#dcfce7; padding:3px 10px; border-radius:9999px;">有効期限 24時間 ・ 1回使い切り</span>
-          </div>
-          <p style="font-size:13.5px; color:#14532d; line-height:1.7; margin:0 0 10px 0;">
-            PCで登録したデッキコード履歴や自作プレイマット・スリーブをスマートフォンへ移したい時や、スマートフォンの機種変更時に、ファイルの送受信なしでデータを丸ごと引き継げます。
-          </p>
-
-          <div class="transfer-step-grid">
-            <div class="transfer-step-card">
-              <span class="transfer-step-badge">STEP 1：元の端末</span>
-              <div style="font-weight:800; font-size:14px; color:#0f172a; margin-bottom:4px;">引き継ぎコード（数字6桁）を発行</div>
-              <p style="margin:0; font-size:13px; color:#475569; line-height:1.65;">
-                元の端末で「⚙️ 設定・引き継ぎ」を開き、<b>「📱 引き継ぎコードを発行する」</b>を押すと6桁の数字コードが表示されます。
-              </p>
-            </div>
-            <div class="transfer-step-card" style="border-color:#bfdbfe;">
-              <span class="transfer-step-badge dest">STEP 2：新しい端末</span>
-              <div style="font-weight:800; font-size:14px; color:#0f172a; margin-bottom:4px;">6桁のコードを入力して復元</div>
-              <p style="margin:0; font-size:13px; color:#475569; line-height:1.65;">
-                移行先のスマホやPCで「⚙️ 設定・引き継ぎ」を開き、6桁のコードを入力して<b>「📥 データを引き継ぐ」</b>を押すと自動で復元・反映されます。
-              </p>
-            </div>
-          </div>
-
-          <div style="background:#ffffff; border:1px solid #bbf7d0; border-radius:8px; padding:12px 14px; font-size:12.5px; color:#334155; line-height:1.7;">
-            <b>📦 引き継がれるデータ一覧：</b><br>
-            ・保存したデッキコード履歴 ＆ 現在選択中のデッキ<br>
-            ・登録した自作プレイマット画像 ＆ 選択中のプレイマット<br>
-            ・登録した自作スリーブ画像 ＆ 選択中のスリーブ<br>
-            ・対戦成績（戦績レコード）<br>
-            ・各種設定（自動トラッシュ設定・効果音音量・読み上げボイス設定など）<br>
-            <span style="color:#64748b; font-size:12px;">※引き継ぎを実行すると移行先端末の現在のデータは上書きされます。発行したコードは引き継ぎ完了後に自動で無効化されます。</span>
-          </div>
-        </div>
       </div>
     </article>
 
@@ -1084,10 +1041,235 @@
     </article>
 
     <!-- =====================================================
-         第10章：正確なよくある質問（FAQ）
+         第10章：設定について（初心者向け・各メニューのやさしい解説）
+         ===================================================== -->
+    <article class="manual-chapter" id="sec-settings">
+      <div class="chapter-number">CHAPTER 10</div>
+      <h2 class="chapter-title">⚙️ 設定について（設定メニューのやさしい解説）</h2>
+
+      <p>
+        最初の画面（ロビー画面）の下の方にある<b>「⚙️ 設定・引き継ぎ」ボタン</b>を押すと、ゲーム中の音やカードの動き、別のスマホやパソコンへのデータ移動を設定できる画面が開きます。<br>
+        ここでは、画面の中に並んでいる項目を<b>上から順番にひとつずつ</b>、初めての方にも分かりやすく説明します。
+      </p>
+
+      <div class="callout callout-tip">
+        <b>💡 はじめて遊ぶ方へ（安心ポイント）</b><br>
+        ・最初はすべて<b>一番遊びやすい標準の状態</b>になっています。よく分からない項目は、無理に触らなくてもそのまま楽しく遊べます。<br>
+        ・一度変えた設定は自動で記憶されるため、次に遊ぶときに毎回やり直す必要はありません。
+      </div>
+
+      <!-- 項目1：使用したカードを自動でトラッシュする -->
+      <div class="subsection">
+        <h3 class="subsection-title">1. ⚡ 対戦中のカード挙動</h3>
+
+        <div class="setting-guide-card theme-blue">
+          <div class="setting-guide-head">
+            <div class="setting-guide-title">
+              <span>☑️ 「使用したカードを自動でトラッシュする（5秒後）」</span>
+            </div>
+            <span class="setting-rec-badge">💡 おすすめ：印をつけたまま（初期状態）</span>
+          </div>
+          <p style="font-size:14px; color:#334155; line-height:1.8; margin:0 0 12px 0;">
+            対戦中に手札から「グッズ」や「サポート」を使ったあと、そのカードを<b>自動で片付けるかどうか</b>を決める項目です。四角い枠を押して、印（チェックマーク）をつけたり外したりできます。
+          </p>
+
+          <div class="setting-subitem-list">
+            <div class="setting-subitem">
+              <div class="setting-subitem-name">✅ 印がついているとき（初期状態）</div>
+              <p class="setting-subitem-desc">
+                手札から中央の「手札使用枠」にカードを出したあと、<b>5秒たつと自動的にトラッシュ（使い終わったカード置き場）へ片付けてくれます</b>。1枚ずつ自分で片付ける手間が省けるため、普段はこちらがおすすめです。
+              </p>
+            </div>
+            <div class="setting-subitem">
+              <div class="setting-subitem-name">⬜ 印を外しているとき</div>
+              <p class="setting-subitem-desc">
+                出したカードが勝手には動かず、中央に出たまま残ります。「カードに書かれた文章を相手と一緒にじっくり読んでから、自分のタイミングで片付けたい」という方に向いています。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 項目2：効果音ボタン -->
+      <div class="subsection">
+        <h3 class="subsection-title">2. 🔊 サウンド・ボイス設定①：「効果音」ボタン</h3>
+
+        <div class="setting-guide-card theme-amber">
+          <div class="setting-guide-head">
+            <div class="setting-guide-title">
+              <span>🔊 「効果音: 80%」ボタンを押すと開く画面</span>
+            </div>
+            <span class="setting-rec-badge" style="background:#fef3c7; color:#92400e; border-color:#fde68a;">※対戦画面の上にある「🔊」からも開けます</span>
+          </div>
+          <p style="font-size:14px; color:#334155; line-height:1.8; margin:0 0 12px 0;">
+            カードを引く音、場に出す音、ダメージを与える音、コインを投げる音、勝ったときの音楽など、<b>ゲーム中に鳴る音の大きさ</b>を調整できます。
+          </p>
+
+          <div class="setting-subitem-list">
+            <div class="setting-subitem">
+              <div class="setting-subitem-name">① マスター効果音音量（横長のバーと「0%〜100%」ボタン）</div>
+              <p class="setting-subitem-desc">
+                丸いつまみを左右に動かすか、下にある<b>「0%（消音）」「30%（小）」「60%（中）」「80%（標準）」「100%（最大）」</b>のボタンを押すだけで、全体の音の大きさをすぐに変えられます。
+              </p>
+            </div>
+            <div class="setting-subitem">
+              <div class="setting-subitem-name">② 「🔇 効果音を一時的にミュート（消音）する」</div>
+              <p class="setting-subitem-desc">
+                四角い枠に印をつけると、<b>いつもの音量（80%など）を覚えたまま、一時的にすべての効果音を消せます</b>。電車の中や夜間など、少しの間だけ音を出したくないときに便利です。印を外せば元の音量に戻ります。
+              </p>
+            </div>
+            <div class="setting-subitem">
+              <div class="setting-subitem-name">③ 「🎵 効果音を試聴する（テスト再生）」ボタン</div>
+              <p class="setting-subitem-desc">
+                押すとその場で試しに音が鳴ります。対戦を始める前に「音が大きすぎないかな？」と確かめたいときに使います。調整が終わったら右下の<b>「OK（閉じる）」</b>を押します。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 項目3：読み上げ設定ボタン -->
+      <div class="subsection">
+        <h3 class="subsection-title">3. 🎙️ サウンド・ボイス設定②：「読み上げ設定」ボタン</h3>
+
+        <div class="setting-guide-card theme-purple">
+          <div class="setting-guide-head">
+            <div class="setting-guide-title">
+              <span>🎙️ 「読み上げ設定」ボタンを押すと開く画面</span>
+            </div>
+            <span class="setting-rec-badge" style="background:#f3e8ff; color:#6b21a8; border-color:#e9d5ff;">💡 迷ったら「初期値」のままでOK</span>
+          </div>
+          <p style="font-size:14px; color:#334155; line-height:1.8; margin:0 0 12px 0;">
+            対戦中に「⚔️ 技宣言」ボタンを押してワザを使ったとき、<b>入力したワザの名前を声に出して叫んでくれる機能</b>の設定です。好みの声やしゃべり方に変えられます。
+          </p>
+
+          <div class="setting-subitem-list">
+            <div class="setting-subitem purple">
+              <div class="setting-subitem-name">① 🗣️ 声質（声のタイプを選ぶ）</div>
+              <p class="setting-subitem-desc">
+                ワザの名前を読んでくれる声の種類を選べます。「熱血バトル声（男性）」「明るい少年声」「落ち着いた知的な声」「元気なヒロイン声（女性）」など9種類から選べます（英語の名前がついていますが、<b>どれを選んでも無料</b>で使えます）。
+              </p>
+            </div>
+            <div class="setting-subitem purple">
+              <div class="setting-subitem-name">② ⚡ 話速（しゃべる速さ）</div>
+              <p class="setting-subitem-desc">
+                ワザの名前を読むスピードを変えます。つまみを<b>右に動かすほど早口</b>になり、<b>左に動かすほどゆっくり</b>読み上げます。
+              </p>
+            </div>
+            <div class="setting-subitem purple">
+              <div class="setting-subitem-name">③ 🎵 ピッチ（声の高さ）</div>
+              <p class="setting-subitem-desc">
+                声の高さを変えます。つまみを<b>右に動かすと高い声</b>になり、<b>左に動かすと低い声</b>になります。
+              </p>
+            </div>
+            <div class="setting-subitem purple">
+              <div class="setting-subitem-name">④ 🔊 音量ゲイン（読み上げの声の大きさ）</div>
+              <p class="setting-subitem-desc">
+                ワザを読む声だけの大きさを微調整します。「カードの効果音に比べて、ワザを叫ぶ声だけもう少し大きくしたい（または小さくしたい）」というときに動かします。
+              </p>
+            </div>
+            <div class="setting-subitem purple">
+              <div class="setting-subitem-name">⑤ 🔊 テスト発声（試聴）と「▶ テスト再生」ボタン</div>
+              <p class="setting-subitem-desc">
+                文字入力枠に好きなワザの名前（例：ファントムダイブ）を入れて<b>「▶ テスト再生」</b>を押すと、どんな声で聞こえるかその場で試し聞きできます。
+              </p>
+            </div>
+            <div class="setting-subitem purple">
+              <div class="setting-subitem-name">⑥ 「初期値に戻す」／「設定を保存」ボタン</div>
+              <p class="setting-subitem-desc">
+                いろいろ動かして最初の状態に戻したくなったときは、左下の<b>「初期値に戻す」</b>を押せば元通りになります。好みの声になったら、最後に右下の緑色の<b>「設定を保存」</b>ボタンを押して完了です。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 項目4：端末間データ引き継ぎ -->
+      <div class="subsection">
+        <h3 class="subsection-title">4. 📱 端末間データ引き継ぎ（機種変更・パソコン⇔スマホの引っ越し）</h3>
+
+        <div class="setting-guide-card theme-green">
+          <div class="setting-guide-head">
+            <div class="setting-guide-title">
+              <span>📱 6桁の番号でデータを別のスマホ・パソコンへ移す機能</span>
+            </div>
+            <span class="setting-rec-badge" style="background:#dcfce7; color:#166534; border-color:#bbf7d0;">会員登録・ファイル送信は不要</span>
+          </div>
+          <p style="font-size:14px; color:#334155; line-height:1.8; margin:0 0 12px 0;">
+            「家のパソコンで登録したデッキや自作マットを、外ではスマホで使いたい」「スマホを新しい機種に買い替えた」というときに、<b>6桁の数字を入力するだけで今までのデータを丸ごと引っ越しできる機能</b>です。
+          </p>
+
+          <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px 16px; margin-bottom:14px; font-size:13.5px; color:#14532d; line-height:1.75;">
+            <b>📦 一緒に引っ越しできるもの（すべて自動で移ります）：</b><br>
+            ・これまでに読み込んだ<b>デッキの一覧</b>と、選んでいたデッキ<br>
+            ・自分で登録した<b>プレイマット画像・スリーブ画像</b>と、選んでいたデザイン<br>
+            ・これまでの<b>対戦成績（勝ち負けの記録）</b><br>
+            ・上で説明した「自動トラッシュ」「効果音の大きさ」「読み上げの声」などの<b>設定すべて</b>
+          </div>
+
+          <div class="setting-subitem-list">
+            <div class="setting-subitem green">
+              <div class="setting-subitem-name">手順①：【元の端末】「📱 引き継ぎコードを発行する」ボタンを押す</div>
+              <p class="setting-subitem-desc">
+                <b>今まで遊んでいた方の端末</b>（例：パソコンや古いスマホ）で、緑色の「📱 引き継ぎコードを発行する」ボタンを押します。<br>
+                すると画面に<b>6桁の数字</b>が大きく表示されます。メモを取るか、画面を開いたままにしておきます（「📋 コードをコピー」を押すと数字をコピーできます）。
+              </p>
+            </div>
+            <div class="setting-subitem green">
+              <div class="setting-subitem-name">手順②：【新しい端末】6桁の数字を入れて「📥 データを引き継ぐ」を押す</div>
+              <p class="setting-subitem-desc">
+                <b>データを移したい方の端末</b>（例：スマホや新しい機種）でポケアリを開き、同じように「⚙️ 設定・引き継ぎ」を開きます。<br>
+                下にある入力枠にさきほどの<b>6桁の数字</b>を入れて、青い<b>「📥 データを引き継ぐ」</b>ボタンを押します。確認画面で「OK」を押すと、画面が自動で切り替わり、データの引っ越しが完了します。
+              </p>
+            </div>
+          </div>
+
+          <div class="callout callout-note" style="margin:14px 0 0 0;">
+            <b>📌 知っておきたい3つの注意点</b><br>
+            1. <b>番号が使えるのは「24時間以内・1回だけ」です</b>：1回引っ越しが終わると、その6桁の番号は自動で使えなくなるので安全です。もう一度別の端末へ移したいときは、新しく番号を発行してください（何回でも発行できます）。<br>
+            2. <b>受け取る側のデータは上書きされます</b>：新しい端末にもともと別のデータが入っていた場合、元の端末のデータに置き換わります。<br>
+            3. <b>番号の入力間違いにご注意ください</b>：番号を5回続けて間違えると、安全のためその番号は使えなくなります（その場合は元の端末でもう一度番号を発行し直してください）。
+          </div>
+        </div>
+      </div>
+
+      <!-- 項目5：補足・対戦画面のタイマー設定 -->
+      <div class="subsection">
+        <h3 class="subsection-title">5. ⏱️ （補足）対戦中の画面にある「⚙️ タイマー設定」について</h3>
+        <p>
+          対戦が始まったあとの画面上部にある時計（<code>00:00</code>）の横にも、小さな<b>「⚙️」ボタン</b>があります。こちらは対戦時間を測るタイマーの設定画面です。
+        </p>
+
+        <div class="setting-guide-card">
+          <div class="setting-subitem-list" style="margin-top:0;">
+            <div class="setting-subitem">
+              <div class="setting-subitem-name">📈 カウントアップ（初期状態）</div>
+              <p class="setting-subitem-desc">
+                <code>00:00</code> からスタートして、対戦が始まってから何分何秒たったかを数えます。時間を気にせずゆっくり遊びたいときや、1試合にかかる時間を知りたいときに向いています。
+              </p>
+            </div>
+            <div class="setting-subitem">
+              <div class="setting-subitem-name">⏳ カウントダウン（制限時間モード）</div>
+              <p class="setting-subitem-desc">
+                公式大会と同じ<b>「25分」</b>などの制限時間を決めて、残り時間を減らしながら数えます（15分・20分・25分・30分・自由入力から選べます）。残り5分で黄色、残り1分で赤色に変わり、時間になると音でお知らせします。大会に向けた練習におすすめです。
+              </p>
+            </div>
+            <div class="setting-subitem">
+              <div class="setting-subitem-name">⏯️ 一時停止 / 再開 ・ 🔄 タイマーリセット</div>
+              <p class="setting-subitem-desc">
+                対戦の途中で少し席を外すときに時間を止めたり、時間を <code>00:00</code>（または制限時間の最初）に戻したりできます。方式を変えたあとは右下の<b>「設定を適用してスタート」</b>を押します。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- =====================================================
+         第11章：正確なよくある質問（FAQ）
          ===================================================== -->
     <article class="manual-chapter" id="sec-09">
-      <div class="chapter-number">CHAPTER 10</div>
+      <div class="chapter-number">CHAPTER 11</div>
       <h2 class="chapter-title">❓ よくある質問（FAQ）</h2>
 
       <div class="callout callout-note">
@@ -1128,10 +1310,10 @@
     </article>
 
     <!-- =====================================================
-         第11章：更新履歴（Version History）
+         第12章：更新履歴（Version History）
          ===================================================== -->
     <article class="manual-chapter" id="sec-10">
-      <div class="chapter-number">CHAPTER 11</div>
+      <div class="chapter-number">CHAPTER 12</div>
       <h2 class="chapter-title">📝 更新履歴（Version History）</h2>
 
       <p>ポケカラボアリーナのこれまでの進化と機能追加の歴史です。</p>
@@ -1149,7 +1331,7 @@
             <tr>
               <td><span class="version-badge" style="background:#2563eb;">Ver 1.4</span></td>
               <td class="version-date">2026-10-29</td>
-              <td><b>📊 対戦成績レコード ＆ ⚙️ 設定・端末間データ引き継ぎ機能の追加</b>（ロビーでのデッキ別対戦成績確認［全デッキ通算成績・デッキ60枚一覧画像・対戦相手のポケモン別勝敗集計・選択デッキ別リセット］、ロビー設定ポップアップへの集約、6桁コードによるPC⇔スマホ間のデータ引き継ぎ［保存デッキ・自作マット＆スリーブ・戦績・各種設定対応］、および読み込みデッキコードの先頭ポケモン名付き自動保存に対応）。</td>
+              <td><b>📊 対戦成績レコード ＆ ⚙️ 設定・端末間データ引き継ぎ機能の追加・第10章「設定について」新設</b>（ロビーでのデッキ別対戦成績確認［全デッキ通算成績・デッキ60枚一覧画像・対戦相手のポケモン別勝敗集計・選択デッキ別リセット］、6桁コードによるPC⇔スマホ間のデータ引き継ぎ、読み込みデッキの先頭ポケモン名付き自動保存、および設定メニューの全項目を初心者向けにやさしく解説する「第10章：設定について」を追加）。</td>
             </tr>
             <tr>
               <td><span class="version-badge" style="background:#8b5cf6;">Ver 1.3</span></td>
