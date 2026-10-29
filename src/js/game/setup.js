@@ -6,6 +6,9 @@ function hasBasicPokemon(cards) {
 }
 
 function startBattleSetup() {
+  if (typeof BattleHistory !== "undefined" && typeof BattleHistory.resetMatchRecordFlag === "function") {
+    BattleHistory.resetMatchRecordFlag();
+  }
   if (typeof gtag === "function") {
     gtag("event", "start_online_battle", {
       event_category: "gameplay",

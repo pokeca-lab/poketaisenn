@@ -547,6 +547,7 @@ const P2P = {
     this.send({
       t: "hello",
       name,
+      deckCode: state.myDeckCode || "",
       matId: matSync.matId,
       matDataUrl: matSync.matDataUrl,
       deck: state.myLoadedDeck || SAMPLE_DECK
@@ -808,6 +809,7 @@ const P2P = {
 
     if (msg.t === "hello") {
       state.oppName = msg.name || "相手プレイヤー";
+      if (msg.deckCode) state.oppDeckCode = msg.deckCode;
       state.oppMatId = msg.matId || state.oppMatId;
       state.oppExited = false;
       if ("matDataUrl" in msg) state.oppMatDataUrl = msg.matDataUrl || null;
@@ -822,7 +824,7 @@ const P2P = {
       renderAll();
     } else if (msg.t === "start" || msg.t === "match_start") {
       state.oppName = msg.name || state.oppName;
-      state.oppDeckCode = msg.deckCode || "";
+      state.oppDeckCode = msg.deckCode || state.oppDeckCode || "";
       state.oppExited = false;
       if (msg.matId) state.oppMatId = msg.matId;
       if ("matDataUrl" in msg) state.oppMatDataUrl = msg.matDataUrl || null;
@@ -840,6 +842,13 @@ const P2P = {
       if (game && game.classList.contains("hidden")) {
         const nameEl = document.getElementById("in-name");
         state.myName = (nameEl && nameEl.value.trim()) || "プレイヤーB";
+        if (!state.myDeckCode) {
+          const inDeckEl = document.getElementById("in-deck");
+          const rawIn = inDeckEl ? inDeckEl.value.trim() : "";
+          if (rawIn) {
+            state.myDeckCode = (typeof extractOfficialDeckCode === "function" && extractOfficialDeckCode(rawIn)) || rawIn.replace(/[\(（【\[].*?[\)）】\]]/g, "").trim();
+          }
+        }
         startBattleSetup();
         const matSync = (typeof getMyPlaymatSyncData === "function")
           ? getMyPlaymatSyncData()
@@ -847,6 +856,7 @@ const P2P = {
         this.send({
           t: "deck_sync",
           name: state.myName,
+          deckCode: state.myDeckCode || "",
           matId: matSync.matId,
           matDataUrl: matSync.matDataUrl,
           sleeveId: state.mySleeveId,
@@ -858,6 +868,7 @@ const P2P = {
       renderAll();
     } else if (msg.t === "deck_sync") {
       state.oppName = msg.name || state.oppName;
+      if (msg.deckCode) state.oppDeckCode = msg.deckCode;
       if (msg.matId) state.oppMatId = msg.matId;
       if ("matDataUrl" in msg) state.oppMatDataUrl = msg.matDataUrl || null;
       if (msg.sleeveId) state.oppSleeveId = msg.sleeveId;

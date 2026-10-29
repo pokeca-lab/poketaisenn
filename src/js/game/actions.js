@@ -3985,17 +3985,34 @@ function playGrandVictoryEffect(winnerName, reasonText = "すべてのサイド�
   // 戦績の自動記録（通信対戦時のみ、1試合1回）
   if (typeof BattleHistory !== "undefined" && !state.isSoloMode) {
     try {
+      let effectiveMyCode = (state.myDeckCode || "").trim();
+      if (!effectiveMyCode) {
+        const inDeckEl = document.getElementById("in-deck");
+        const rawIn = inDeckEl ? inDeckEl.value.trim() : "";
+        if (rawIn) {
+          effectiveMyCode = (typeof extractOfficialDeckCode === "function" && extractOfficialDeckCode(rawIn)) || rawIn.replace(/[\(（【\[].*?[\)）】\]]/g, "").trim();
+        }
+      }
+
       const myPokemon = (typeof getFirstPokemonName === "function")
         ? getFirstPokemonName(state.myLoadedDeck)
         : "";
-      const oppPokemon = (typeof getFirstPokemonName === "function" && state.oppLoadedDeck)
+
+      let oppPokemon = (typeof getFirstPokemonName === "function" && state.oppLoadedDeck)
         ? getFirstPokemonName(state.oppLoadedDeck)
         : "";
+      if (!oppPokemon && state.oppActive && state.oppActive.card && state.oppActive.card.name) {
+        oppPokemon = state.oppActive.card.name;
+      }
+      if (!oppPokemon && Array.isArray(state.oppBench)) {
+        const bPoke = state.oppBench.find(b => b && b.card && b.card.name);
+        if (bPoke) oppPokemon = bPoke.card.name;
+      }
 
       BattleHistory.recordResult({
-        myDeckCode: state.myDeckCode || "DEFAULT-DECK",
+        myDeckCode: effectiveMyCode || "DEMO-CHARIZARD-2026",
         myPokemonName: myPokemon,
-        oppDeckCode: state.oppDeckCode || "（相手コード不明）",
+        oppDeckCode: state.oppDeckCode || "",
         oppPokemonName: oppPokemon,
         result: isMeWinner ? "win" : "lose",
         reason: reasonText

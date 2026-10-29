@@ -269,37 +269,74 @@ function renderSelectedDeckDetail() {
   const stats = BattleHistory.calculateStats(filteredRecords);
   const oppStats = BattleHistory.getOpponentStats(targetCode);
 
-  // デッキプレビュー画像のHTML（ALLの場合は非表示、個別デッキ選択時は公式画像URLを表示）
+  // デッキプレビュー画像のHTML（ALLの場合は非表示、個別デッキ選択時は公式画像またはプリセット概要を表示）
   let deckImageHtml = "";
   if (targetCode !== "ALL") {
-    const cleanCode = targetCode.replace(/[^a-zA-Z0-9-]/g, "");
-    const imgUrl = `https://www.pokemon-card.com/deck/deckView.php/deckID/${cleanCode}.png`;
-    deckImageHtml = `
-      <div style="text-align:center; margin-bottom:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px;">
-        <div style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:4px;">🃏 デッキ登録画像</div>
-        <a href="${imgUrl}" target="_blank" rel="noopener noreferrer" title="クリックで公式画像を拡大">
-          <img src="${imgUrl}" alt="Deck ${cleanCode}" style="max-width:100%; max-height:160px; object-fit:contain; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'font-size:11px; color:#94a3b8;\'>（公式デッキ画像を取得できませんでした）</span>';">
-        </a>
-      </div>
-    `;
+    let officialCode = (typeof extractOfficialDeckCode === "function")
+      ? extractOfficialDeckCode(targetCode)
+      : null;
+
+    // 過去レコードで DEFAULT-DECK として保存されていた場合、保存済みデッキコードから一致する公式コードを補完
+    if (!officialCode && targetCode === "DEFAULT-DECK") {
+      const targetPoke = filteredRecords[0] ? filteredRecords[0].myPokemonName : "";
+      if (typeof getSavedDeckList === "function") {
+        const savedList = getSavedDeckList();
+        const matched = targetPoke
+          ? savedList.find(d => d.pokemon === targetPoke && typeof extractOfficialDeckCode === "function" && extractOfficialDeckCode(d.code))
+          : savedList.find(d => typeof extractOfficialDeckCode === "function" && extractOfficialDeckCode(d.code));
+        if (matched) {
+          officialCode = extractOfficialDeckCode(matched.code);
+        }
+      }
+    }
+
+    if (officialCode) {
+      const imgUrl = `https://www.pokemon-card.com/deck/deckView.php/deckID/${encodeURIComponent(officialCode)}.png`;
+      deckImageHtml = `
+        <div style="text-align:center; margin-bottom:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:8px;">
+          <div style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:6px;">🃏 デッキ画像（タップで拡大）</div>
+          <a href="${imgUrl}" target="_blank" rel="noopener noreferrer" title="クリックで公式デッキ画像を拡大">
+            <img src="${imgUrl}" alt="Deck ${officialCode}" referrerpolicy="no-referrer" style="width:100%; max-height:220px; object-fit:contain; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.1); display:block; margin:0 auto;" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\'font-size:11px; color:#94a3b8;\'>（デッキ画像を取得できませんでした）</span>';">
+          </a>
+        </div>
+      `;
+    } else if (typeof PRESET_DECKS !== "undefined") {
+      const preset = PRESET_DECKS.find(p => p.code === targetCode || p.id === targetCode) || (targetCode === "DEFAULT-DECK" ? PRESET_DECKS[0] : null);
+      if (preset && Array.isArray(preset.deck)) {
+        const pCount = preset.deck.filter(c => c.type === "pokemon").length;
+        const tCount = preset.deck.filter(c => c.type === "trainer" || c.type === "stadium").length;
+        const eCount = preset.deck.filter(c => c.type === "energy").length;
+        const mainPokes = [...new Set(preset.deck.filter(c => c.type === "pokemon").map(c => c.name))].slice(0, 5);
+        const safePresetName = (typeof escapeHtml === "function") ? escapeHtml(preset.name) : preset.name;
+        deckImageHtml = `
+          <div style="margin-bottom:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px;">
+            <div style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:4px;">🃏 プリセットデッキ構成</div>
+            <div style="font-size:13px; font-weight:bold; color:#0f172a; margin-bottom:6px;">${safePresetName}</div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px;">
+              ${mainPokes.map(n => `<span style="font-size:11px; font-weight:bold; color:#1d4ed8; background:#dbeafe; padding:2px 8px; border-radius:12px;">${(typeof escapeHtml === "function") ? escapeHtml(n) : n}</span>`).join("")}
+            </div>
+            <div style="font-size:11px; color:#64748b;">計 ${preset.deck.length}枚（ポケモン ${pCount} / トレーナーズ ${tCount} / エネルギー ${eCount}）</div>
+          </div>
+        `;
+      }
+    }
   }
 
-  // 相手別戦績テーブル/リスト
+  // 相手別戦績テーブル/リスト（ポケモン名のみ表示）
   let oppRowsHtml = "";
   if (oppStats.length === 0) {
     oppRowsHtml = `<div style="text-align:center; padding:16px; color:#94a3b8; font-size:12px;">対戦相手の記録はまだありません</div>`;
   } else {
     oppRowsHtml = oppStats.map(opp => {
       const oppRate = opp.total > 0 ? ((opp.wins / opp.total) * 100).toFixed(0) : "0";
-      const oppLabel = opp.oppPokemonName
-        ? `<b style="color:#1e293b;">${opp.oppDeckCode}</b> <span style="color:#2563eb; font-size:11px;">（${opp.oppPokemonName}）</span>`
-        : `<b style="color:#1e293b;">${opp.oppDeckCode}</b>`;
+      const rawName = (opp.oppPokemonName && opp.oppPokemonName !== "不明") ? opp.oppPokemonName : "相手デッキ";
+      const safeName = (typeof escapeHtml === "function") ? escapeHtml(rawName) : rawName;
       return `
         <div style="display:flex; align-items:center; justify-content:space-between; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; padding:8px 12px; margin-bottom:6px; font-size:12px;">
-          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%;">
-            <span style="color:#64748b; font-size:11px;">vs</span> ${oppLabel}
+          <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:65%;">
+            <span style="color:#64748b; font-size:11px; margin-right:4px;">vs</span><b style="color:#1e293b; font-size:13px;">${safeName}</b>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
             <span style="font-weight:bold; color:#1e293b;">${opp.wins}勝 ${opp.losses}敗</span>
             <span style="font-size:11px; font-weight:bold; color:#2563eb; background:#f1f5f9; padding:2px 6px; border-radius:4px;">${oppRate}%</span>
           </div>

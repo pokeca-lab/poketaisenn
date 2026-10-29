@@ -78,8 +78,8 @@ const BattleHistory = (function () {
       date: dateStr,
       myDeckCode: cleanMyCode,
       myPokemonName: myPokemonName || "",
-      oppDeckCode: cleanOppCode || "（相手コード不明）",
-      oppPokemonName: oppPokemonName || "不明",
+      oppDeckCode: cleanOppCode || "",
+      oppPokemonName: oppPokemonName || "",
       result: result === "win" ? "win" : "lose",
       reason: reason || ""
     };
@@ -146,22 +146,21 @@ const BattleHistory = (function () {
 
     const oppMap = new Map();
     filtered.forEach(r => {
-      const oppKey = r.oppDeckCode || "（相手コード不明）";
-      if (!oppMap.has(oppKey)) {
-        oppMap.set(oppKey, {
-          oppDeckCode: oppKey,
-          oppPokemonName: r.oppPokemonName || "",
+      const pokeName = (r.oppPokemonName && r.oppPokemonName !== "不明") ? r.oppPokemonName : "相手デッキ";
+      if (!oppMap.has(pokeName)) {
+        oppMap.set(pokeName, {
+          oppPokemonName: pokeName,
+          oppDeckCode: (r.oppDeckCode && r.oppDeckCode !== "（相手コード不明）") ? r.oppDeckCode : "",
           wins: 0,
           losses: 0,
           total: 0,
           lastMatch: r.timestamp
         });
       }
-      const item = oppMap.get(oppKey);
+      const item = oppMap.get(pokeName);
       item.total += 1;
       if (r.result === "win") item.wins += 1;
       else item.losses += 1;
-      if (r.oppPokemonName && !item.oppPokemonName) item.oppPokemonName = r.oppPokemonName;
       if (r.timestamp > item.lastMatch) item.lastMatch = r.timestamp;
     });
 

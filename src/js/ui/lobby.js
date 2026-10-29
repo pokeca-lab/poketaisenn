@@ -440,6 +440,7 @@ function applyDeckToTarget(target, deck, name, code) {
       P2P.send({
         t: "deck_sync",
         name: state.myName,
+        deckCode: state.myDeckCode || "",
         matId: state.myMatId,
         deck: state.myLoadedDeck
       });

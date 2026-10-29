@@ -28,6 +28,7 @@ function initLobbyDefaults() {
 
   document.getElementById("in-name").value = "プレイヤーA";
   document.getElementById("in-deck").value = initialDeckCode;
+  state.myDeckCode = initialDeckCode;
   // デッキ初期プレビュー
   state.myLoadedDeck = SAMPLE_DECK;
   state.soloDeckA = SAMPLE_DECK;
@@ -41,6 +42,7 @@ function initLobbyDefaults() {
     resolveDeckInput(initialDeckCode).then(res => {
       if (res && res.ok && Array.isArray(res.deck)) {
         state.myLoadedDeck = res.deck;
+        state.myDeckCode = res.code || initialDeckCode;
         renderDeckPreview(res.deck, "deck-preview");
       }
     }).catch(() => {});
@@ -390,6 +392,13 @@ const actions = {
 
     const name = document.getElementById("in-name").value.trim() || "プレイヤーA";
     state.myName = name;
+    if (!state.myDeckCode) {
+      const inDeckEl = document.getElementById("in-deck");
+      const rawIn = inDeckEl ? inDeckEl.value.trim() : "";
+      if (rawIn) {
+        state.myDeckCode = (typeof extractOfficialDeckCode === "function" && extractOfficialDeckCode(rawIn)) || rawIn.replace(/[\(（【\[].*?[\)）】\]]/g, "").trim();
+      }
+    }
     startBattleSetup();
     if (typeof BattleHistory !== "undefined" && typeof BattleHistory.resetMatchRecordFlag === "function") {
       BattleHistory.resetMatchRecordFlag();
