@@ -822,6 +822,7 @@ const P2P = {
       renderAll();
     } else if (msg.t === "start" || msg.t === "match_start") {
       state.oppName = msg.name || state.oppName;
+      state.oppDeckCode = msg.deckCode || "";
       state.oppExited = false;
       if (msg.matId) state.oppMatId = msg.matId;
       if ("matDataUrl" in msg) state.oppMatDataUrl = msg.matDataUrl || null;

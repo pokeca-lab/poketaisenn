@@ -274,22 +274,13 @@
         <input type="file" id="sleeve-file-input" accept="image/*" class="hidden">
       </div>
 
-      <div class="step" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px;">
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:bold; color:#1e293b;">
-          <input type="checkbox" id="chk-auto-trash" checked style="width:18px; height:18px; accent-color:#2563eb; cursor:pointer;">
-          <span>⚡ 使用したカードを自動でトラッシュする（5秒後）</span>
-        </label>
-        <p style="font-size:11px; color:#64748b; margin:4px 0 0 26px;">
-          ONの場合、手札から「使用」エリアに出したカードが5秒後にアニメーション付きで自動的にトラッシュへ送られます。
-        </p>
-        <div style="display:flex; gap:8px; margin-top:10px; border-top:1px dashed #cbd5e1; padding-top:10px;">
-          <button type="button" class="btn lobby-setting-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:7px 10px; border-radius:6px; cursor:pointer;" onclick="openSoundSettingsModal()" title="効果音の音量・サウンド設定を開く">
-            <span class="lobby-sound-icon">🔊</span><span class="lobby-sound-text">効果音: 80%</span>
-          </button>
-          <button type="button" class="btn lobby-setting-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:7px 10px; border-radius:6px; cursor:pointer;" onclick="openTtsSettingsModal()" title="技名読み上げ・ボイス設定を開く">
-            <span>🎙️</span><span>読み上げ設定</span>
-          </button>
-        </div>
+      <div class="step" style="display:flex; gap:10px;">
+        <button type="button" class="btn wide" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:10px 14px; border-radius:8px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04);" onclick="openBattleHistoryModal()" title="デッキごとの対戦成績と勝敗を確認する">
+          <span style="font-size:16px;">📊</span><span>戦績を見る</span>
+        </button>
+        <button type="button" class="btn wide" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:10px 14px; border-radius:8px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04);" onclick="openLobbySettingsModal()" title="自動トラッシュ・効果音・データ引き継ぎ設定を開く">
+          <span style="font-size:16px;">⚙️</span><span>設定・引き継ぎ</span>
+        </button>
       </div>
 
       <div class="step">
@@ -385,22 +376,13 @@
         <div id="sleeve-preview-row-solo" class="playmat-preview-row"></div>
       </div>
 
-      <div class="step" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 14px;">
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:13px; font-weight:bold; color:#1e293b;">
-          <input type="checkbox" id="chk-auto-trash-solo" checked style="width:18px; height:18px; accent-color:#2563eb; cursor:pointer;">
-          <span>⚡ 使用したカードを自動でトラッシュする（5秒後）</span>
-        </label>
-        <p style="font-size:11px; color:#64748b; margin:4px 0 0 26px;">
-          ONの場合、手札から「使用」エリアに出したカードが5秒後にアニメーション付きで自動的にトラッシュへ送られます。
-        </p>
-        <div style="display:flex; gap:8px; margin-top:10px; border-top:1px dashed #cbd5e1; padding-top:10px;">
-          <button type="button" class="btn lobby-setting-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:7px 10px; border-radius:6px; cursor:pointer;" onclick="openSoundSettingsModal()" title="効果音の音量・サウンド設定を開く">
-            <span class="lobby-sound-icon">🔊</span><span class="lobby-sound-text">効果音: 80%</span>
-          </button>
-          <button type="button" class="btn lobby-setting-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:7px 10px; border-radius:6px; cursor:pointer;" onclick="openTtsSettingsModal()" title="技名読み上げ・ボイス設定を開く">
-            <span>🎙️</span><span>読み上げ設定</span>
-          </button>
-        </div>
+      <div class="step" style="display:flex; gap:10px;">
+        <button type="button" class="btn wide" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:10px 14px; border-radius:8px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04);" onclick="openBattleHistoryModal()" title="デッキごとの対戦成績と勝敗を確認する">
+          <span style="font-size:16px;">📊</span><span>戦績を見る</span>
+        </button>
+        <button type="button" class="btn wide" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px; font-size:13px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:10px 14px; border-radius:8px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04);" onclick="openLobbySettingsModal()" title="自動トラッシュ・効果音・データ引き継ぎ設定を開く">
+          <span style="font-size:16px;">⚙️</span><span>設定・引き継ぎ</span>
+        </button>
       </div>
 
       <div class="step">
@@ -846,6 +828,135 @@
   </div>
 </div>
 
+<!-- =====================================================
+     ロビー設定モーダル（自動トラッシュ・サウンド・データ引き継ぎ）
+     ===================================================== -->
+<div id="lobby-settings-modal" class="modal hidden" onclick="closeLobbySettingsModal(event)">
+  <div class="modal-panel" style="max-width:480px; width:92%; background:#ffffff; color:#1e293b; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.2); overflow:hidden;" onclick="event.stopPropagation()">
+    <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:12px 16px;">
+      <span style="font-weight:bold; font-size:16px; color:#0f172a;">⚙️ 設定 ＆ データ引き継ぎ</span>
+      <button type="button" class="btn" style="padding:2px 8px; font-size:14px; background:transparent; border:none; color:#64748b; cursor:pointer;" onclick="closeLobbySettingsModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column; gap:16px;">
+      
+      <!-- 1. 対戦演出設定 -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+        <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:8px;">⚡ 対戦中のカード挙動</div>
+        <label style="display:flex; align-items:flex-start; gap:8px; cursor:pointer; font-size:13px; font-weight:bold; color:#1e293b;">
+          <input type="checkbox" id="chk-auto-trash-setting" checked style="width:18px; height:18px; accent-color:#2563eb; cursor:pointer; margin-top:2px;" onchange="onSettingAutoTrashChange(this.checked)">
+          <div>
+            <span>使用したカードを自動でトラッシュする（5秒後）</span>
+            <p style="font-size:11px; font-weight:normal; color:#64748b; margin:4px 0 0 0;">
+              ONの場合、手札から「使用」エリアに出したカードが5秒後にアニメーション付きで自動的にトラッシュへ送られます。
+            </p>
+          </div>
+        </label>
+      </div>
+
+      <!-- 2. サウンド設定 -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+        <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:8px;">🔊 サウンド・ボイス設定</div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn lobby-setting-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:8px 10px; border-radius:6px; cursor:pointer;" onclick="openSoundSettingsModal()" title="効果音の音量・サウンド設定を開く">
+            <span class="lobby-sound-icon">🔊</span><span class="lobby-sound-text">効果音: 80%</span>
+          </button>
+          <button type="button" class="btn lobby-setting-btn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; font-weight:bold; background:#ffffff; color:#1e293b; border:1px solid #cbd5e1; padding:8px 10px; border-radius:6px; cursor:pointer;" onclick="openTtsSettingsModal()" title="技名読み上げ・ボイス設定を開く">
+            <span>🎙️</span><span>読み上げ設定</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. データ引き継ぎ -->
+      <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-size:13px; font-weight:bold; color:#166534;">📱 端末間データ引き継ぎ（機種変更）</span>
+          <span style="font-size:10px; font-weight:bold; color:#15803d; background:#dcfce7; padding:2px 6px; border-radius:4px;">有効期限24時間</span>
+        </div>
+        <p style="font-size:11px; color:#166534; margin:0 0 10px 0; line-height:1.4;">
+          保存したデッキコード・カスタムマット・スリーブ・対戦成績などを別のスマホやPCへ簡単に移行できます。
+        </p>
+
+        <!-- 発行エリア -->
+        <div style="border-top:1px dashed #bbf7d0; padding-top:10px; margin-top:6px;">
+          <div style="font-size:11px; font-weight:bold; color:#15803d; margin-bottom:4px;">【元の端末】引き継ぎコードを発行する</div>
+          <button type="button" id="btn-generate-transfer-code" class="btn green wide" style="font-size:12px; font-weight:bold; padding:8px 12px;" onclick="onGenerateTransferCodeClick()">
+            📱 引き継ぎコードを発行する
+          </button>
+          
+          <div id="transfer-code-result-box" class="hidden" style="margin-top:10px; background:#ffffff; border:2px dashed #22c55e; border-radius:8px; padding:12px; text-align:center;">
+            <div style="font-size:11px; color:#64748b;">引き継ぎコード（数字6桁）</div>
+            <div id="transfer-code-display" style="font-size:28px; font-weight:900; letter-spacing:4px; color:#15803d; margin:6px 0;">--- ---</div>
+            <div id="transfer-code-expire" style="font-size:10px; color:#84cc16; margin-bottom:8px;"></div>
+            <button type="button" class="btn" style="font-size:11px; padding:4px 10px; background:#f1f5f9; border:1px solid #cbd5e1; color:#334155; font-weight:bold;" onclick="copyTransferCodeToClipboard()">
+              📋 コードをコピー
+            </button>
+          </div>
+        </div>
+
+        <!-- 復元エリア -->
+        <div style="border-top:1px dashed #bbf7d0; padding-top:10px; margin-top:10px;">
+          <div style="font-size:11px; font-weight:bold; color:#15803d; margin-bottom:4px;">【新しい端末】コードを入力して引き継ぐ</div>
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="in-transfer-code" maxlength="8" placeholder="6桁コード（例: 123456）" style="flex:1; padding:8px 10px; font-size:14px; font-weight:bold; letter-spacing:1px; border:1px solid #cbd5e1; border-radius:6px; text-align:center; box-sizing:border-box;">
+            <button type="button" id="btn-execute-transfer-import" class="btn blue" style="font-size:12px; font-weight:bold; padding:8px 14px; white-space:nowrap;" onclick="onExecuteTransferImportClick()">
+              📥 データを引き継ぐ
+            </button>
+          </div>
+          <div id="transfer-import-error" class="hidden" style="font-size:11px; color:#dc2626; font-weight:bold; margin-top:6px;"></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-foot" style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:10px 16px; display:flex; justify-content:flex-end;">
+      <button type="button" class="btn" style="font-weight:bold; padding:6px 16px; background:#e2e8f0; color:#334155; border:none; border-radius:6px; cursor:pointer;" onclick="closeLobbySettingsModal()">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     戦績確認モーダル（通算成績・デッキ別詳細・リセット）
+     ===================================================== -->
+<div id="battle-history-modal" class="modal hidden" onclick="closeBattleHistoryModal(event)">
+  <div class="modal-panel" style="max-width:520px; width:92%; background:#ffffff; color:#1e293b; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.2); overflow:hidden;" onclick="event.stopPropagation()">
+    <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:12px 16px;">
+      <span style="font-weight:bold; font-size:16px; color:#0f172a;">📊 対戦成績・戦績レコード</span>
+      <button type="button" class="btn" style="padding:2px 8px; font-size:14px; background:transparent; border:none; color:#64748b; cursor:pointer;" onclick="closeBattleHistoryModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px; max-height:80vh; overflow-y:auto; display:flex; flex-direction:column; gap:14px;">
+      
+      <!-- 通算成績（上部に大きめ表示） -->
+      <div id="battle-history-total-stats" style="background:linear-gradient(135deg, #f8fafc, #f1f5f9); border:1px solid #e2e8f0; border-radius:10px; padding:14px; text-align:center;">
+        <!-- JSで動的生成 -->
+      </div>
+
+      <!-- デッキ選択セレクトボックス -->
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px;">
+        <label for="battle-history-deck-select" style="display:block; font-size:12px; font-weight:bold; color:#475569; margin-bottom:6px;">
+          🔍 戦績を表示する自分のデッキ:
+        </label>
+        <select id="battle-history-deck-select" style="width:100%; padding:8px 10px; font-size:13px; font-weight:bold; color:#1e293b; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer;" onchange="onBattleHistoryDeckChange()">
+          <option value="ALL">すべて（総合戦績）</option>
+        </select>
+        <p style="font-size:10px; color:#94a3b8; margin:4px 0 0 2px;">
+          ※直近に対戦したデッキ順に表示されます。
+        </p>
+      </div>
+
+      <!-- 選択デッキ詳細エリア（画像、デッキ通算、相手別勝敗） -->
+      <div id="battle-history-detail-wrap">
+        <!-- JSで動的生成 -->
+      </div>
+
+    </div>
+    <div class="modal-foot" style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:10px 16px; display:flex; justify-content:space-between; align-items:center;">
+      <button type="button" class="btn red" style="font-size:11px; font-weight:bold; padding:6px 12px;" onclick="onResetBattleHistoryClick()" title="選択中デッキの戦績をクリアします">
+        🗑️ 戦績リセット
+      </button>
+      <button type="button" class="btn" style="font-weight:bold; padding:6px 16px; background:#e2e8f0; color:#334155; border:none; border-radius:6px; cursor:pointer;" onclick="closeBattleHistoryModal()">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <!-- 効果音・サウンドボリューム設定ポップアップ -->
 <div id="sound-settings-modal" class="modal hidden" onclick="closeSoundSettingsModal(event)">
   <div class="modal-panel sound-settings-panel" onclick="event.stopPropagation()">
@@ -1128,11 +1239,13 @@
 <script src="js/util.js?v=20261021_03"></script>
 <script src="js/data/playmats-default.js?v=20261019_07"></script>
 <script src="js/data/sleeves-default.js?v=20261019_07"></script>
+<script src="js/data/battle-history.js?v=20261029_02"></script>
+<script src="js/data/transfer.js?v=20261029_02"></script>
 <script src="js/sound/sound.js?v=20261020_04"></script>
-<script src="js/state.js?v=20261020_04"></script>
+<script src="js/state.js?v=20261029_02"></script>
 <script src="js/game/timer.js?v=20261020_04"></script>
 <script src="js/game/hand-actions.js?v=20261022_10"></script>
-<script src="js/game/actions.js?v=20261022_10"></script>
+<script src="js/game/actions.js?v=20261029_02"></script>
 <script src="js/game/setup.js?v=20261022_10"></script>
 <script src="js/game/replay.js?v=20261022_10"></script>
 <script src="js/ui/marquee.js?v=20261022_10"></script>
@@ -1141,15 +1254,16 @@
 <script src="js/ui/modals.js?v=20261022_10"></script>
 <script src="js/ui/tts-settings.js?v=20261022_10"></script>
 <script src="js/ui/sound-settings.js?v=20261022_10"></script>
-<script src="js/ui/lobby.js?v=20261028_01"></script>
+<script src="js/ui/lobby.js?v=20261029_02"></script>
+<script src="js/ui/lobby-settings.js?v=20261029_02"></script>
 <script src="js/ui/playmat.js?v=20261022_10"></script>
 <script src="js/ui/sleeve.js?v=20261022_10"></script>
 <script src="js/net/firebase-config.js?v=20261022_10"></script>
-<script src="js/net/p2p.js?v=20261022_10"></script>
+<script src="js/net/p2p.js?v=20261029_02"></script>
 <script src="https://cdn.jsdelivr.net/npm/@skyway-sdk/token@latest/dist/skyway_token-latest.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@skyway-sdk/room@latest/dist/skyway_room-latest.js"></script>
 <script src="js/net/skyway-config.js?v=20261022_10"></script>
 <script src="js/net/voice.js?v=20261022_10"></script>
-<script src="js/main.js?v=20261028_01"></script>
+<script src="js/main.js?v=20261029_02"></script>
 </body>
 </html>

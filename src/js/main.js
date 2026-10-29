@@ -78,6 +78,8 @@ function initLobbyDefaults() {
   if (chkOnline) chkOnline.checked = !!state.autoTrashEnabled;
   const chkSolo = document.getElementById("chk-auto-trash-solo");
   if (chkSolo) chkSolo.checked = !!state.autoTrashEnabled;
+  const chkSetting = document.getElementById("chk-auto-trash-setting");
+  if (chkSetting) chkSetting.checked = !!state.autoTrashEnabled;
 
   // 一人回し再開データの確認
   checkSoloResumeBanner();
@@ -220,8 +222,10 @@ function setupEventListeners() {
     } catch (err) {}
     const c1 = document.getElementById("chk-auto-trash");
     const c2 = document.getElementById("chk-auto-trash-solo");
+    const c3 = document.getElementById("chk-auto-trash-setting");
     if (c1) c1.checked = state.autoTrashEnabled;
     if (c2) c2.checked = state.autoTrashEnabled;
+    if (c3) c3.checked = state.autoTrashEnabled;
   };
 
   const chk1 = document.getElementById("chk-auto-trash");
@@ -231,6 +235,10 @@ function setupEventListeners() {
   const chk2 = document.getElementById("chk-auto-trash-solo");
   if (chk2) {
     chk2.addEventListener("change", (e) => syncAutoTrashToggle(e.target.checked));
+  }
+  const chk3 = document.getElementById("chk-auto-trash-setting");
+  if (chk3) {
+    chk3.addEventListener("change", (e) => syncAutoTrashToggle(e.target.checked));
   }
 
   // リプレイスライダー
@@ -383,6 +391,9 @@ const actions = {
     const name = document.getElementById("in-name").value.trim() || "プレイヤーA";
     state.myName = name;
     startBattleSetup();
+    if (typeof BattleHistory !== "undefined" && typeof BattleHistory.resetMatchRecordFlag === "function") {
+      BattleHistory.resetMatchRecordFlag();
+    }
     if (P2P.connected) {
       if (typeof resetOpponentCards === "function") {
         resetOpponentCards();
@@ -394,6 +405,7 @@ const actions = {
       P2P.send({
         t: "start",
         name: state.myName,
+        deckCode: state.myDeckCode || "",
         matId: matSync.matId,
         matDataUrl: matSync.matDataUrl,
         sleeveId: state.mySleeveId,

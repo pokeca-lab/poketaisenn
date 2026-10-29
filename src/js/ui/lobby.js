@@ -417,6 +417,7 @@ function applyDeckToTarget(target, deck, name, code) {
 
   if (target === "online") {
     state.myLoadedDeck = deck;
+    state.myDeckCode = effectiveCode || code || name || "";
     const input = document.getElementById("in-deck");
     if (input) input.value = code || name;
     renderDeckPreview(deck, "deck-preview");

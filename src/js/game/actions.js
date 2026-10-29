@@ -3981,6 +3981,29 @@ function playGrandVictoryEffect(winnerName, reasonText = "すべてのサイド�
 
   overlay.classList.remove("hidden");
   startConfettiAnimation();
+
+  // 戦績の自動記録（通信対戦時のみ、1試合1回）
+  if (typeof BattleHistory !== "undefined" && !state.isSoloMode) {
+    try {
+      const myPokemon = (typeof getFirstPokemonName === "function")
+        ? getFirstPokemonName(state.myLoadedDeck)
+        : "";
+      const oppPokemon = (typeof getFirstPokemonName === "function" && state.oppLoadedDeck)
+        ? getFirstPokemonName(state.oppLoadedDeck)
+        : "";
+
+      BattleHistory.recordResult({
+        myDeckCode: state.myDeckCode || "DEFAULT-DECK",
+        myPokemonName: myPokemon,
+        oppDeckCode: state.oppDeckCode || "（相手コード不明）",
+        oppPokemonName: oppPokemon,
+        result: isMeWinner ? "win" : "lose",
+        reason: reasonText
+      });
+    } catch (err) {
+      console.warn("[BattleHistory] recordResult error:", err);
+    }
+  }
 }
 
 function closeVictoryOverlay() {

@@ -118,6 +118,8 @@ let state = {
   soloDeckB: SAMPLE_DECK_B,
   myLoadedDeck: SAMPLE_DECK,
   oppLoadedDeck: null,
+  myDeckCode: "",
+  oppDeckCode: "",
   oppExited: false,
   logs: [],
 
