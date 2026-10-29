@@ -4,6 +4,7 @@
 // スリーブ管理＆描画 (Sleeve Manager)
 // =============================================================================
 const STORAGE_KEY_SLEEVES = "pokeca_custom_sleeves_v1";
+const STORAGE_KEY_SELECTED_SLEEVE = "pokeca_selected_sleeve_id";
 
 function loadCustomSleeves() {
   try {
@@ -35,7 +36,11 @@ function deleteCustomSleeve(sleeveId) {
   try {
     const list = loadCustomSleeves().filter(s => s.id !== sleeveId);
     localStorage.setItem(STORAGE_KEY_SLEEVES, JSON.stringify(list));
-    if (state.mySleeveId === sleeveId) state.mySleeveId = "sleeve_01";
+    if (state.mySleeveId === sleeveId) {
+      state.mySleeveId = "sleeve_01";
+      state.mySleeveDataUrl = null;
+      try { localStorage.setItem(STORAGE_KEY_SELECTED_SLEEVE, "sleeve_01"); } catch (e) {}
+    }
     if (state.oppSleeveId === sleeveId) state.oppSleeveId = "sleeve_01";
     initSleeves();
     renderSleeves();
@@ -56,6 +61,17 @@ function getSleeveById(id) {
 }
 
 function initSleeves() {
+  try {
+    const savedSleeveId = localStorage.getItem(STORAGE_KEY_SELECTED_SLEEVE);
+    if (savedSleeveId) {
+      const all = getAllSleeves();
+      const found = all.find(s => s.id === savedSleeveId);
+      if (found) {
+        state.mySleeveId = found.id;
+        state.mySleeveDataUrl = found.dataUrl || null;
+      }
+    }
+  } catch (e) {}
   renderSleeveSelector();
 }
 
@@ -100,6 +116,7 @@ function renderSleeveSelector() {
 
 function selectSleeve(sleeveId) {
   state.mySleeveId = sleeveId;
+  try { localStorage.setItem(STORAGE_KEY_SELECTED_SLEEVE, sleeveId); } catch (e) {}
   const sleeve = getSleeveById(sleeveId);
   state.mySleeveDataUrl = sleeve.dataUrl || null;
 
@@ -123,8 +140,9 @@ function renderSleeves() {
   const oppSleeve = getSleeveById(state.oppSleeveId);
 
   const getStyleString = (sleeve, customDataUrl) => {
-    if (customDataUrl) {
-      return `background: #1e293b url('${customDataUrl}') center center / cover no-repeat !important; border-color: ${sleeve.border || '#d4af37'} !important;`;
+    const imgDataUrl = customDataUrl || sleeve.dataUrl || null;
+    if (imgDataUrl) {
+      return `background: #1e293b url('${imgDataUrl}') center center / cover no-repeat !important; border-color: ${sleeve.border || '#d4af37'} !important;`;
     }
     if (sleeve.url) {
       return `background: #1e293b url('${sleeve.url}') center center / cover no-repeat !important; border-color: ${sleeve.border || '#d4af37'} !important;`;

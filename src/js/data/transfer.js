@@ -13,12 +13,15 @@ const DataTransfer = (function () {
   const TRANSFER_STORAGE_KEYS = [
     "pokeca_saved_deck_codes",
     "pokeca_last_deck_code",
-    "pokeca_custom_playmats",
-    "pokeca_custom_sleeves",
+    "pokeca_custom_playmats_v1",
+    "pokeca_custom_sleeves_v1",
+    "pokeca_selected_playmat_id",
+    "pokeca_selected_sleeve_id",
     "pokeca_auto_trash",
     "pokeca_sound_volume",
     "pokeca_sound_muted",
-    "pokeca_gcp_tts_config",
+    "pokeca_gcp_tts_settings",
+    "pokeca_hide_welcome_guide",
     "pokeca_battle_records"
   ];
 
@@ -167,13 +170,29 @@ const DataTransfer = (function () {
     const payload = data.payload || {};
     let restoredCount = 0;
 
-    // ローカルストレージに書き込み
-    Object.keys(payload).forEach(key => {
-      if (TRANSFER_STORAGE_KEYS.includes(key)) {
+    // 書き込み時の一時的な容量上限(QuotaExceeded)を防ぐため、上書き対象キーの既存データを退避・解放してから書き込む
+    const targetKeys = Object.keys(payload).filter(key => TRANSFER_STORAGE_KEYS.includes(key));
+    const prevSnapshot = {};
+    targetKeys.forEach(key => {
+      prevSnapshot[key] = localStorage.getItem(key);
+      localStorage.removeItem(key);
+    });
+
+    try {
+      targetKeys.forEach(key => {
         localStorage.setItem(key, payload[key]);
         restoredCount++;
-      }
-    });
+      });
+    } catch (writeErr) {
+      // 万が一ブラウザ保存容量を超えた場合はロールバックし、サーバー上のコードも消さずに残す
+      Object.keys(prevSnapshot).forEach(key => {
+        try {
+          if (prevSnapshot[key] !== null) localStorage.setItem(key, prevSnapshot[key]);
+          else localStorage.removeItem(key);
+        } catch (e) {}
+      });
+      throw new Error("端末のブラウザ保存容量の上限を超えたため復元できませんでした。不要なブラウザデータを整理するか、登録画像の枚数を減らして再度お試しください。");
+    }
 
     // 使い切りなのでサーバーから即座に削除
     try {

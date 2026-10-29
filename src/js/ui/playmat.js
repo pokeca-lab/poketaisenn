@@ -4,6 +4,7 @@
 // プレイマット管理＆描画 (Playmat Manager)
 // =============================================================================
 const STORAGE_KEY_PLAYMATS = "pokeca_custom_playmats_v1";
+const STORAGE_KEY_SELECTED_MAT = "pokeca_selected_playmat_id";
 let activeMatTab = "my"; // "my" | "opp"
 
 function loadCustomPlaymats() {
@@ -36,7 +37,10 @@ function deleteCustomPlaymat(matId) {
   try {
     const list = loadCustomPlaymats().filter(m => m.id !== matId);
     localStorage.setItem(STORAGE_KEY_PLAYMATS, JSON.stringify(list));
-    if (state.myMatId === matId) state.myMatId = "mat_01";
+    if (state.myMatId === matId) {
+      state.myMatId = "mat_01";
+      try { localStorage.setItem(STORAGE_KEY_SELECTED_MAT, "mat_01"); } catch (e) {}
+    }
     if (state.oppMatId === matId) state.oppMatId = "mat_02";
     initPlaymats();
     renderPlaymats();
@@ -57,7 +61,17 @@ function getPlaymatById(id) {
 }
 
 function initPlaymats() {
+  try {
+    const savedMatId = localStorage.getItem(STORAGE_KEY_SELECTED_MAT);
+    if (savedMatId) {
+      const all = getAllPlaymats();
+      if (all.some(m => m.id === savedMatId)) {
+        state.myMatId = savedMatId;
+      }
+    }
+  } catch (e) {}
   renderPlaymatSelector();
+  renderPlaymats();
 }
 
 function renderPlaymatSelector() {
@@ -113,6 +127,7 @@ function syncMyPlaymatToPeer() {
 
 window.selectPlaymat = function(matId) {
   state.myMatId = matId;
+  try { localStorage.setItem(STORAGE_KEY_SELECTED_MAT, matId); } catch (e) {}
   renderPlaymatSelector();
   renderPlaymats();
   syncMyPlaymatToPeer();
@@ -173,6 +188,7 @@ function handleCustomPlaymatUpload(file) {
 
       if (saveCustomPlaymat(newMat)) {
         state.myMatId = newMat.id;
+        try { localStorage.setItem(STORAGE_KEY_SELECTED_MAT, newMat.id); } catch (e) {}
         initPlaymats();
         renderPlaymats();
         syncMyPlaymatToPeer();
