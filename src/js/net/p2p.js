@@ -195,9 +195,21 @@ const P2P = {
           this._roomRef.child("status").set("closed");
         } else if (this.role === "guest") {
           this._roomRef.child("guest/online").set(false);
+        } else if (this.role === "spectator" && this._spectatorId) {
+          this._roomRef.child(`spectators/${this._spectatorId}`).remove();
         }
       } catch (e) {}
     }
+
+    if (this.role === "spectator" || state.isSpectator) {
+      state.isSpectator = false;
+      state.spectatorId = null;
+      const barEl = document.getElementById("spectator-bar");
+      if (barEl) barEl.style.display = "none";
+    }
+    this._spectatorId = null;
+    this._spectatorRef = null;
+    this._pendingSpectatorModalId = null;
 
     this._roomRef = null;
     this._actionsRef = null;
@@ -323,6 +335,9 @@ const P2P = {
       // アクション受信監視
       this._startActionsListener();
 
+      // 観戦リクエスト監視（オーナー側）
+      this._startSpectatorRequestsListener();
+
       return true;
     } catch (err) {
       this.lastError = err;
@@ -369,10 +384,9 @@ const P2P = {
         return false;
       }
 
-      // 満員チェック（既に有効なゲストがいる場合）
+      // 満員チェック（既に有効なゲストがいる場合は観戦モードへ誘導）
       if (roomData.guest && roomData.guest.online) {
-        this._setState(P2P_STATES.CONNECTION_FAILED, "このルームは既に2人対戦中です（定員2名）");
-        return false;
+        return await this._handleRoomFullForSpectator(cleanCode, roomData);
       }
 
       const myName = (document.getElementById("in-name")?.value.trim()) || state.myName || "プレイヤーB";
@@ -418,8 +432,351 @@ const P2P = {
       if (!item) return;
       // 自分が送信したものは無視
       if (item.sender === this.role) return;
-      this._onData(item.data);
+      this._onData(item.data, item.sender);
     });
+  },
+
+  // ==========================================
+  // 👁️ 観戦者モード (Spectator Mode) 関連処理
+  // ==========================================
+
+  /** 満員時に観戦確認ダイアログを表示 */
+  async _handleRoomFullForSpectator(cleanCode, roomData) {
+    const doSpectate = confirm(
+      "このルームIDはすでにマッチング済みです。観戦しますか？\n（ルームオーナーに観戦リクエストを送信します）"
+    );
+    if (!doSpectate) {
+      this._setState(P2P_STATES.CONNECTION_FAILED, "観戦をキャンセルしました（対戦満員）");
+      return false;
+    }
+    return await this.requestSpectate(cleanCode, roomData);
+  },
+
+  /** 観戦リクエスト送信とオーナーの承認待機 */
+  async requestSpectate(cleanCode, roomData) {
+    this.role = "spectator";
+    state.isSpectator = true;
+    state.roomNo = cleanCode;
+
+    const hostName = roomData.host?.name || "ホスト";
+    const guestName = roomData.guest?.name || "ゲスト";
+    state.spectatorHostName = hostName;
+    state.spectatorGuestName = guestName;
+
+    const specId = "spec_" + Math.random().toString(36).substring(2, 9) + "_" + Date.now();
+    this._spectatorId = specId;
+    state.spectatorId = specId;
+
+    const myName = (document.getElementById("in-name")?.value.trim()) || state.myName || "観戦者";
+    state.myName = myName;
+
+    this._setState(P2P_STATES.CONNECTING, `オーナー（${hostName}）へ観戦リクエスト中...`);
+
+    const specRef = this._roomRef.child(`spectators/${specId}`);
+    this._spectatorRef = specRef;
+
+    try {
+      await specRef.set({
+        id: specId,
+        name: myName,
+        status: "pending",
+        online: true,
+        requestedAt: firebase.database.ServerValue.TIMESTAMP
+      });
+      specRef.onDisconnect().remove();
+
+      // 承認待ちモーダル表示
+      if (typeof showModal === "function") {
+        showModal(
+          "👁️ 観戦リクエスト送信中",
+          `<div style="text-align:center; padding:18px 10px; color:#f8fafc;">
+            <div style="font-size:44px; margin-bottom:12px;">⏳</div>
+            <p style="font-size:16px; font-weight:bold; color:#38bdf8; margin-bottom:8px;">
+              オーナー（${this._escapeHtml(hostName)} さん）の承認を待っています...
+            </p>
+            <p style="font-size:13px; color:#94a3b8; line-height:1.6;">
+              オーナーが承認すると、自動的に観戦画面へ移動します。
+            </p>
+          </div>`,
+          `<div style="display:flex; justify-content:center;">
+            <button class="btn red" onclick="P2P.cancelSpectateRequest('${cleanCode}', '${specId}')">リクエストを取り消す</button>
+          </div>`
+        );
+      }
+
+      // 承認/拒否の監視
+      this._addListener(specRef.child("status"), "value", async (snap) => {
+        const status = snap.val();
+        if (status === "approved") {
+          if (typeof closeModal === "function") closeModal();
+          if (typeof showToast === "function") {
+            showToast("🎉 オーナーから観戦が許可されました！");
+          }
+          await this._startSpectating(cleanCode, roomData);
+        } else if (status === "rejected") {
+          if (typeof closeModal === "function") closeModal();
+          alert("オーナーにより観戦リクエストが拒否されました。");
+          this.leaveSpectating(false);
+        }
+      });
+
+      return true;
+    } catch (err) {
+      console.error("[Spectate Request Error]", err);
+      this._setState(P2P_STATES.CONNECTION_FAILED, "観戦リクエストに失敗しました: " + (err.message || ""));
+      return false;
+    }
+  },
+
+  /** 観戦リクエストのキャンセル */
+  cancelSpectateRequest(cleanCode, specId) {
+    if (typeof closeModal === "function") closeModal();
+    if (this._spectatorRef) {
+      try { this._spectatorRef.remove(); } catch (e) {}
+    }
+    this._destroy();
+    this._setState(P2P_STATES.DISCONNECTED, "観戦リクエストをキャンセルしました");
+  },
+
+  /** 観戦開始（ゲーム画面表示＆盤面同期開始） */
+  async _startSpectating(cleanCode, roomData) {
+    this.connected = true;
+    this.role = "spectator";
+    state.isSpectator = true;
+    state.roomNo = cleanCode;
+    state.oppName = state.spectatorGuestName;
+
+    // 画面切り替え（ロビー非表示、ゲーム画面表示）
+    const lobbyEl = document.getElementById("lobby");
+    const gameEl = document.getElementById("game");
+    if (lobbyEl) lobbyEl.classList.add("hidden");
+    if (gameEl) gameEl.classList.remove("hidden");
+
+    // 観戦者フローティングバー表示
+    const bar = document.getElementById("spectator-bar");
+    const label = document.getElementById("spectator-matchup-label");
+    if (bar) bar.style.display = "flex";
+    if (label) label.textContent = `【${state.spectatorHostName}】 vs 【${state.spectatorGuestName}】`;
+
+    // ホスト・ゲストの退室監視
+    this._addListener(this._roomRef.child("host"), "value", (hSnap) => {
+      const host = hSnap.val();
+      if ((!host || !host.online) && this.connected) {
+        if (typeof showToast === "function") showToast("【対戦終了】オーナーが退室しました");
+        addLog(`【対戦終了】オーナー（${state.spectatorHostName}）が退室しました`, { suppressSync: true });
+      }
+    });
+    this._addListener(this._roomRef.child("guest"), "value", (gSnap) => {
+      const guest = gSnap.val();
+      if ((!guest || !guest.online) && this.connected) {
+        if (typeof showToast === "function") showToast("【対戦終了】参加者が退室しました");
+        addLog(`【対戦終了】参加者（${state.spectatorGuestName}）が退室しました`, { suppressSync: true });
+      }
+    });
+
+    // アクションリスナー開始
+    this._startActionsListener();
+
+    // 過去の直近スナップショットを反映して盤面を即時復元
+    try {
+      const actionsSnap = await this._actionsRef.limitToLast(40).once("value");
+      if (actionsSnap.exists()) {
+        let lastHostState = null;
+        let lastGuestState = null;
+        actionsSnap.forEach((child) => {
+          const item = child.val();
+          if (!item || !item.data) return;
+          if (item.data.t === "state") {
+            if (item.sender === "host") lastHostState = item.data;
+            if (item.sender === "guest") lastGuestState = item.data;
+          }
+        });
+        if (lastHostState) this._applySpectatorSnapshot(lastHostState, "host");
+        if (lastGuestState) this._applySpectatorSnapshot(lastGuestState, "guest");
+      }
+    } catch (e) {
+      console.warn("[Spectator history sync error]", e);
+    }
+
+    // 参加通知を送信（対戦者双方から最新スナップショットを再送してもらう）
+    this.send({
+      t: "spectator_joined",
+      spectatorName: state.myName,
+      spectatorId: this._spectatorId
+    });
+
+    this._setState(P2P_STATES.CONNECTED, `観戦中: ${cleanCode}`);
+    if (typeof renderAll === "function") renderAll();
+  },
+
+  /** 観戦終了してロビーへ戻る */
+  leaveSpectating(confirmFirst = true) {
+    if (confirmFirst && !confirm("観戦を終了してロビーに戻りますか？")) {
+      return;
+    }
+    if (this._spectatorRef) {
+      try { this._spectatorRef.remove(); } catch (e) {}
+    }
+    this._destroy();
+    state.isSpectator = false;
+    state.spectatorId = null;
+
+    const bar = document.getElementById("spectator-bar");
+    if (bar) bar.style.display = "none";
+
+    const gameEl = document.getElementById("game");
+    const lobbyEl = document.getElementById("lobby");
+    if (gameEl) gameEl.classList.add("hidden");
+    if (lobbyEl) lobbyEl.classList.remove("hidden");
+
+    this._setState(P2P_STATES.DISCONNECTED, "観戦を終了しました");
+    if (typeof showToast === "function") {
+      showToast("観戦を終了しました");
+    }
+    if (typeof renderAll === "function") renderAll();
+  },
+
+  /** オーナー（ホスト）側: 観戦リクエストの監視 */
+  _startSpectatorRequestsListener() {
+    if (!this._roomRef || this.role !== "host") return;
+    const specListRef = this._roomRef.child("spectators");
+    const onSpecChange = (snap) => {
+      const spec = snap.val();
+      if (!spec || spec.status !== "pending") return;
+      this._showSpectatorRequestModal(spec);
+    };
+    this._addListener(specListRef, "child_added", onSpecChange);
+    this._addListener(specListRef, "child_changed", onSpecChange);
+  },
+
+  /** オーナー側: 観戦承認モーダル表示 */
+  _showSpectatorRequestModal(spec) {
+    if (this._pendingSpectatorModalId === spec.id) return;
+    this._pendingSpectatorModalId = spec.id;
+
+    const safeName = this._escapeHtml(spec.name || "観戦希望者");
+    if (typeof showModal === "function") {
+      showModal(
+        "👁️ 観戦リクエスト",
+        `<div style="text-align:center; padding:18px 10px; color:#f8fafc;">
+          <div style="font-size:44px; margin-bottom:12px;">👀</div>
+          <p style="font-size:16px; font-weight:bold; color:#38bdf8; margin-bottom:8px;">
+            <b>${safeName}</b> さんが観戦しようとしています。<br>許可しますか？
+          </p>
+          <p style="font-size:13px; color:#94a3b8; line-height:1.6;">
+            許可すると、盤面がリアルタイムに共有されます。<br>
+            （※手札は観戦者には見えません）
+          </p>
+        </div>`,
+        `<div style="display:flex; gap:12px; justify-content:center;">
+          <button class="btn" style="background:#e11d48; border-color:#fda4af; color:#fff;" onclick="P2P.resolveSpectatorRequest('${spec.id}', false, '${safeName}')">❌ 拒否する</button>
+          <button class="btn" style="background:#10b981; border-color:#6ee7b7; color:#fff;" onclick="P2P.resolveSpectatorRequest('${spec.id}', true, '${safeName}')">⭕ 許可する</button>
+        </div>`
+      );
+    } else {
+      const ok = confirm(`${spec.name || "観戦希望者"} さんが観戦しようとしています。許可しますか？`);
+      this.resolveSpectatorRequest(spec.id, ok, spec.name);
+    }
+  },
+
+  /** オーナー側: 観戦リクエストの承認/拒否処理 */
+  resolveSpectatorRequest(specId, isApproved, specName) {
+    if (typeof closeModal === "function") closeModal();
+    this._pendingSpectatorModalId = null;
+    if (!this._roomRef) return;
+
+    const specRef = this._roomRef.child(`spectators/${specId}`);
+    if (isApproved) {
+      specRef.update({
+        status: "approved",
+        approvedAt: firebase.database.ServerValue.TIMESTAMP
+      });
+      if (typeof showToast === "function") {
+        showToast(`👁️ ${specName || "観戦者"} の観戦を許可しました`);
+      }
+      addLog(`【観戦】${specName || "観戦者"} さんの観戦を許可しました`, { suppressSync: true });
+      this.syncNow();
+    } else {
+      specRef.update({
+        status: "rejected",
+        rejectedAt: firebase.database.ServerValue.TIMESTAMP
+      });
+      if (typeof showToast === "function") {
+        showToast(`❌ ${specName || "観戦者"} の観戦を拒否しました`);
+      }
+      addLog(`【観戦】${specName || "観戦者"} さんの観戦リクエストを拒否しました`, { suppressSync: true });
+    }
+  },
+
+  /** 観戦者側: ホスト・ゲストのスナップショットを盤面に振り分け反映 */
+  _applySpectatorSnapshot(s, sender) {
+    if (!s || typeof s !== "object") return;
+    this._isApplyingSnapshot = true;
+    try {
+      const pre = (c) => c ? { ...c, uid: (sender === "guest" ? "opp:" : "") + String(c.uid).replace(/^(opp:)+/, "") } : c;
+      const prePk = (p) => p ? {
+        ...p,
+        card: pre(p.card),
+        energies: (p.energies || []).map(pre),
+        tool: pre(p.tool),
+        previousStages: (p.previousStages || []).map(pre)
+      } : null;
+
+      if (sender === "host") {
+        // ホストの盤面 → 手前側（state.my...）にセット
+        state.spectatorHostName = s.name || state.spectatorHostName;
+        state.myMatId = s.matId || state.myMatId;
+        if (s.sleeveId) state.mySleeveId = s.sleeveId;
+        if ("sleeveDataUrl" in s) state.mySleeveDataUrl = s.sleeveDataUrl || null;
+        state.myHandCount = s.handCount | 0;
+        state.myHand = Array(state.myHandCount).fill(null).map((_, i) => ({ uid: `spec_host_hand_${i}`, isBlank: true, name: "手札" }));
+        state.myDeckCount = s.deckCount | 0;
+        state.myDeck = Array(state.myDeckCount).fill(null);
+        state.myPrizes = Array(s.prizes | 0).fill(null);
+        state.myTrash = (s.trash || []).map(pre);
+        state.myLost = Array(s.lostCount | 0).fill(null);
+        state.myActive = prePk(s.active);
+        state.myBenchLimit = s.benchLimit || 5;
+        const rawBench = s.bench || {};
+        state.myBench = [0, 1, 2, 3, 4, 5, 6, 7].map(i => prePk(rawBench[i] || null));
+        state.playCard = s.playCard ? pre(s.playCard) : null;
+      } else if (sender === "guest") {
+        // ゲストの盤面 → 奥側（state.opp...）にセット
+        state.spectatorGuestName = s.name || state.spectatorGuestName;
+        state.oppName = state.spectatorGuestName;
+        state.oppMatId = s.matId || state.oppMatId;
+        if (s.sleeveId) state.oppSleeveId = s.sleeveId;
+        if ("sleeveDataUrl" in s) state.oppSleeveDataUrl = s.sleeveDataUrl || null;
+        state.oppHandCount = s.handCount | 0;
+        state.oppDeckCount = s.deckCount | 0;
+        state.oppPrizes = s.prizes | 0;
+        state.oppTrash = (s.trash || []).map(pre);
+        state.oppLostCount = s.lostCount | 0;
+        state.oppActive = prePk(s.active);
+        state.oppBenchLimit = s.benchLimit || 5;
+        const rawBench = s.bench || {};
+        state.oppBench = [0, 1, 2, 3, 4, 5, 6, 7].map(i => prePk(rawBench[i] || null));
+        state.oppPlayCard = s.playCard ? pre(s.playCard) : null;
+      }
+
+      // スタジアム・ターン情報の更新
+      if (s.stadium) state.stadium = s.stadium;
+      if (s.stadiumTs) state.stadiumTs = Number(s.stadiumTs) || 0;
+      if (s.turn) state.turn = s.turn;
+      if (s.turnStep) state.turnStep = s.turnStep;
+
+      // 観戦者ラベルの更新
+      const matchupLabel = document.getElementById("spectator-matchup-label");
+      if (matchupLabel) {
+        matchupLabel.textContent = `【${state.spectatorHostName}】 vs 【${state.spectatorGuestName}】`;
+      }
+
+      if (typeof renderSleeves === "function") renderSleeves();
+      if (typeof renderPlaymats === "function") renderPlaymats();
+      if (typeof renderAll === "function") renderAll();
+    } finally {
+      this._isApplyingSnapshot = false;
+    }
   },
 
   _onPeerJoined(peerName) {
@@ -601,9 +958,48 @@ const P2P = {
   },
 
   // ---- 受信 ----
-  _onData(msg) {
+  _onData(msg, sender) {
     if (!msg || typeof msg !== "object") return;
-    console.log("[Firebase RECV]", msg.t);
+    console.log("[Firebase RECV]", msg.t, sender);
+
+    // 観戦者参加通知の受信（対戦者双方が最新盤面を再送）
+    if (msg.t === "spectator_joined") {
+      const specName = msg.spectatorName || "観戦者";
+      addLog(`【観戦】${specName} さんが観戦に参加しました`, { suppressSync: true });
+      if (typeof showToast === "function") {
+        showToast(`👁️ ${specName} さんが観戦に参加しました`);
+      }
+      if (this.role === "host" || this.role === "guest") {
+        this.syncNow();
+      }
+      return;
+    }
+
+    // 👁️ 観戦者モード時のスナップショット・プレイヤー情報振り分け
+    if (this.role === "spectator" || state.isSpectator) {
+      if (msg.t === "state") {
+        this._applySpectatorSnapshot(msg, sender);
+        return;
+      }
+      if (msg.t === "hello" || msg.t === "deck_sync") {
+        if (sender === "host") {
+          state.spectatorHostName = msg.name || state.spectatorHostName;
+          if (msg.matId) state.myMatId = msg.matId;
+          if (msg.sleeveId) state.mySleeveId = msg.sleeveId;
+          if ("sleeveDataUrl" in msg) state.mySleeveDataUrl = msg.sleeveDataUrl || null;
+        } else if (sender === "guest") {
+          state.spectatorGuestName = msg.name || state.spectatorGuestName;
+          state.oppName = state.spectatorGuestName;
+          if (msg.matId) state.oppMatId = msg.matId;
+          if (msg.sleeveId) state.oppSleeveId = msg.sleeveId;
+          if ("sleeveDataUrl" in msg) state.oppSleeveDataUrl = msg.sleeveDataUrl || null;
+        }
+        if (typeof renderSleeves === "function") renderSleeves();
+        if (typeof renderPlaymats === "function") renderPlaymats();
+        if (typeof renderAll === "function") renderAll();
+        return;
+      }
+    }
 
     if (msg.t === "error" && msg.code === "room_full") {
       this._clearTimeoutTimer();

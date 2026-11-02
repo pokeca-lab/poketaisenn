@@ -56,6 +56,12 @@ let state = {
   stadium: null,
   stadiumTs: 0,         // P2P同期用: スタジアム最終変更時刻
 
+  // 観戦者モード状態
+  isSpectator: false,
+  spectatorId: null,
+  spectatorHostName: "プレイヤーA",
+  spectatorGuestName: "プレイヤーB",
+
   // 相手のカードゾーン (デモ用ダミー)
   oppDeckCount: 47,
   oppHandCount: 5,

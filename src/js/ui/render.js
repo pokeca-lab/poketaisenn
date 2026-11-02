@@ -9,8 +9,26 @@ function renderAll() {
     : { label: `ターン ${state.turn}`, isMyTurn: true, activePlayerName: state.myName };
 
   document.getElementById("g-room").textContent = state.roomNo;
-  document.getElementById("g-my-name").textContent = state.myName;
-  document.getElementById("g-opp-name").textContent = state.oppName;
+
+  // 👁️ 観戦者モード時の名前表示＆バー切り替え
+  if (state.isSpectator) {
+    document.getElementById("g-my-name").textContent = state.spectatorHostName || "ホスト";
+    document.getElementById("g-opp-name").textContent = state.spectatorGuestName || "ゲスト";
+    const bar = document.getElementById("spectator-bar");
+    if (bar) {
+      bar.style.display = "flex";
+      const lbl = document.getElementById("spectator-matchup-label");
+      if (lbl) lbl.textContent = `【${state.spectatorHostName}】 vs 【${state.spectatorGuestName}】`;
+    }
+    document.body.classList.add("is-spectator-mode");
+  } else {
+    document.getElementById("g-my-name").textContent = state.myName;
+    document.getElementById("g-opp-name").textContent = state.oppName;
+    const bar = document.getElementById("spectator-bar");
+    if (bar) bar.style.display = "none";
+    document.body.classList.remove("is-spectator-mode");
+  }
+
   document.getElementById("g-turn").textContent = turnInfo.label;
 
   // １）どちらのプレイヤーのターンかを明確にするため、ターン中プレイヤー名の左側に赤い丸を表示＆名前タグ強調
@@ -80,7 +98,7 @@ function renderAll() {
   // 中央アリーナの相手ターン待機バー
   const oppFloatingBar = document.getElementById("opp-turn-floating-bar");
   if (oppFloatingBar) {
-    if (!state.isSetupPhase && !state.isSoloMode && !turnInfo.isMyTurn) {
+    if (!state.isSetupPhase && !state.isSoloMode && !state.isSpectator && !turnInfo.isMyTurn) {
       oppFloatingBar.classList.remove("hidden");
       const txt = oppFloatingBar.querySelector(".opp-turn-floating-text");
       if (txt) txt.textContent = `相手（${state.oppName}）の手番中です（待機してください）`;
@@ -92,7 +110,7 @@ function renderAll() {
   // 盤面全体への相手ターン中クラス付与
   const boardEl = document.querySelector(".board");
   if (boardEl) {
-    const isOppTurn = (!state.isSetupPhase && !state.isSoloMode && !turnInfo.isMyTurn);
+    const isOppTurn = (!state.isSetupPhase && !state.isSoloMode && !state.isSpectator && !turnInfo.isMyTurn);
     boardEl.classList.toggle("is-opp-turn", isOppTurn);
   }
 
@@ -751,6 +769,27 @@ function renderMyField() {
 function renderHand() {
   const handEl = document.getElementById("hand");
   handEl.innerHTML = "";
+  const selNameEl = document.getElementById("hand-sel");
+
+  // 👁️ 観戦者モード時は手札を非公開（スリーブ裏面カードとして枚数分描画・操作不可）
+  if (state.isSpectator) {
+    const hostCount = Number(state.myHandCount) || 0;
+    document.getElementById("hand-count").textContent = hostCount;
+    if (selNameEl) selNameEl.textContent = `【${state.spectatorHostName} の手札 (${hostCount}枚)】`;
+    const sleeveImg = state.mySleeveDataUrl || (typeof getSleeveImageUrl === "function" ? getSleeveImageUrl(state.mySleeveId) : null);
+    for (let i = 0; i < hostCount; i++) {
+      const el = document.createElement("div");
+      el.className = "card card-back card-sleeve-face";
+      if (sleeveImg) {
+        el.style.backgroundImage = `url('${sleeveImg}')`;
+        el.style.backgroundSize = "cover";
+        el.style.backgroundPosition = "center";
+      }
+      handEl.appendChild(el);
+    }
+    return;
+  }
+
   document.getElementById("hand-count").textContent = state.myHand.length;
 
   const btnSoloHand = document.getElementById("btn-solo-hand-interfere");
@@ -762,7 +801,6 @@ function renderHand() {
     }
   }
 
-  const selNameEl = document.getElementById("hand-sel");
   const selectedCards = getSelectedHandCards();
   if (selectedCards.length === 1) {
     selNameEl.textContent = `選択中: ${selectedCards[0].card.name}`;
@@ -1406,6 +1444,7 @@ window.handlePokemonDrop = function(e, location) {
 
 window.showEnergyMenu = function(e, location, energyIndex) {
   e.stopPropagation();
+  if (state.isSpectator) return;
   hideCtx();
   const pokemon = getPokemonByLocation(location);
   if (!pokemon || !pokemon.energies[energyIndex]) return;
@@ -1465,6 +1504,10 @@ window.showToolMenu = function(e, location) {
   const pokemon = getPokemonByLocation(location);
   if (!pokemon || !pokemon.tool) return;
   const tool = pokemon.tool;
+  if (state.isSpectator) {
+    openCardZoomByUid(tool.uid);
+    return;
+  }
 
   const ctx = document.getElementById("ctx");
   ctx.innerHTML = `
@@ -1672,6 +1715,7 @@ function updateSheetUI() {
 function showHandContextMenu(e, handIdx) {
   if (e && e.preventDefault) e.preventDefault();
   if (e && e.stopPropagation) e.stopPropagation();
+  if (state.isSpectator) return;
 
   if (state.mustPromoteToActive) {
     showToast("⚠️ バトル場に出すベンチポケモンを選択してください");

@@ -295,6 +295,7 @@ function showPrizeMenu(e, idx) {
     if (e.stopPropagation) e.stopPropagation();
     if (e.preventDefault) e.preventDefault();
   }
+  if (state.isSpectator) return;
   if (state.mustPromoteToActive) {
     showToast("⚠️ バトル場に出すベンチポケモンを選択してください");
     return;
@@ -1375,6 +1376,10 @@ function openOwnPokemonZoom(location, index) {
 function showStadiumMenu(e) {
   e.stopPropagation();
   if (!state.stadium) return;
+  if (state.isSpectator) {
+    openCardZoom(state.stadium);
+    return;
+  }
 
   const now = Date.now();
   if (_lastOwnFieldClick.key === "stadium" && (now - _lastOwnFieldClick.ts) < 380) {
@@ -1523,6 +1528,11 @@ function usePokemonAbility(location, index) {
 // 場のポケモンコンテキストメニュー（右クリックで呼び出し、サブメニュー方式＆特性宣言対応）
 function showPokemonMenu(e, location, index, menuView = "main") {
   if (e && e.stopPropagation) e.stopPropagation();
+  if (state.isSpectator) {
+    const target = location === "active" ? state.myActive : state.myBench[index];
+    if (target && target.card) openCardZoom(target.card, target);
+    return;
+  }
   if (state.mustPromoteToActive) {
     showToast("⚠️ バトル場に出すベンチポケモンを選択してください");
     return;
@@ -4296,6 +4306,11 @@ function getOpponentPokemonDisplayName(location, index) {
 
 function showOpponentPokemonMenu(e, location, index, menuView = "main") {
   if (e && e.stopPropagation) e.stopPropagation();
+  if (state.isSpectator) {
+    const target = location === "opp-active" ? state.oppActive : state.oppBench[index];
+    if (target && target.card) openCardZoom(target.card, target);
+    return;
+  }
   if (state.mustPromoteToActive) {
     showToast("⚠️ バトル場に出すベンチポケモンを選択してください");
     return;
@@ -5282,9 +5297,10 @@ function sendChatMessage(text) {
 
   const now = new Date();
   const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+  const senderName = state.isSpectator ? `[観戦] ${state.myName || "観戦者"}` : (state.myName || "プレイヤーA");
   const msgObj = {
     id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-    sender: state.myName || "プレイヤーA",
+    sender: senderName,
     text: text,
     time: timeStr,
     isMe: true
@@ -5294,7 +5310,7 @@ function sendChatMessage(text) {
   renderChatMessages();
 
   // 対戦ログにも記録（チャットはカードプレイではないため、画面ポップアップ・相手への行動通知は行わない）
-  addLog(`💬 [チャット] ${state.myName}: ${text}`, { category: "chat", suppressSync: true, skipLocalPopup: true });
+  addLog(`💬 [チャット] ${senderName}: ${text}`, { category: "chat", suppressSync: true, skipLocalPopup: true });
 
   // P2P送信
   if (typeof P2P !== "undefined" && P2P.connected && !state.isSoloMode) {

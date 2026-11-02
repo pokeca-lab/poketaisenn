@@ -7981,3 +7981,24 @@ body.menu-open .sp-sheet {
     max-height: 180px;
   }
 }
+
+/* =============================================================================
+   👁️ 観戦者モード (Spectator Mode) スタイル
+   ============================================================================= */
+body.is-spectator-mode .hand-btns,
+body.is-spectator-mode .deck-btns,
+body.is-spectator-mode #btn-end-turn,
+body.is-spectator-mode #setup-banner,
+body.is-spectator-mode .btn-bench-toggle,
+body.is-spectator-mode .sp-menu-btn {
+  display: none !important;
+}
+
+body.is-spectator-mode .hand-area {
+  cursor: default;
+}
+
+body.is-spectator-mode .hand-cards .card {
+  cursor: default !important;
+  pointer-events: none !important;
+}
