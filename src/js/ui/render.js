@@ -36,13 +36,14 @@ function renderAll() {
   const dotMe = document.getElementById("turn-dot-me");
   const wrapOpp = document.getElementById("g-opp-name-wrap");
   const wrapMe = document.getElementById("g-my-name-wrap");
+  const isBottomActive = state.isSpectator ? (turnInfo.activeRole === "host") : turnInfo.isMyTurn;
   if (dotOpp && dotMe) {
     if (state.isSetupPhase) {
       dotMe.className = "turn-dot hidden";
       dotOpp.className = "turn-dot hidden";
       if (wrapMe) wrapMe.className = "name";
       if (wrapOpp) wrapOpp.className = "name";
-    } else if (turnInfo.isMyTurn) {
+    } else if (isBottomActive) {
       dotMe.className = "turn-dot active";
       dotOpp.className = "turn-dot hidden";
       if (wrapMe) wrapMe.className = "name me turn-active-player";
@@ -65,6 +66,9 @@ function renderAll() {
       if (state.isSoloMode) {
         turnBadge.className = "turn-status-badge is-solo";
         turnBadge.innerHTML = `<span class="badge-icon">🃏</span><span class="badge-text">${escapeHtml(state.myName)}の手番</span>`;
+      } else if (state.isSpectator) {
+        turnBadge.className = `turn-status-badge ${turnInfo.activeRole === "host" ? "is-me" : "is-opp"}`;
+        turnBadge.innerHTML = `<span class="badge-icon">👁️</span><span class="badge-text">${escapeHtml(turnInfo.activePlayerName)}の手番</span>`;
       } else if (turnInfo.isMyTurn) {
         turnBadge.className = "turn-status-badge is-me";
         turnBadge.innerHTML = `<span class="badge-icon">⚔️</span><span class="badge-text">あなたの手番</span>`;
@@ -85,6 +89,9 @@ function renderAll() {
       if (state.isSoloMode) {
         topTurn.className = "top-turn-indicator is-solo";
         topTurn.innerHTML = `<span class="indicator-dot"></span><span>🃏 一人回し手番</span>`;
+      } else if (state.isSpectator) {
+        topTurn.className = `top-turn-indicator ${turnInfo.activeRole === "host" ? "is-me" : "is-opp"}`;
+        topTurn.innerHTML = `<span class="indicator-dot"></span><span>👁️ ${escapeHtml(turnInfo.activePlayerName)}の手番</span>`;
       } else if (turnInfo.isMyTurn) {
         topTurn.className = "top-turn-indicator is-me";
         topTurn.innerHTML = `<span class="indicator-dot"></span><span>⚔️ あなたのターン</span>`;

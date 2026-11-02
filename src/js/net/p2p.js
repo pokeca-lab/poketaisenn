@@ -1539,7 +1539,13 @@ const P2P = {
       state.turnStep = msg.turnStep || ((state.turnStep || 1) + 1);
       const newTurnInfo = (typeof getTurnInfo === "function")
         ? getTurnInfo(state.turnStep)
-        : { label: `ターン ${state.turn}`, isMyTurn: false, activePlayerName: state.oppName };
+        : {
+            label: `ターン ${state.turn}`,
+            isMyTurn: false,
+            activePlayerName: (this.role === "spectator" || state.isSpectator)
+              ? (state.spectatorGuestName || "ゲスト")
+              : state.oppName
+          };
       state.turn = newTurnInfo.round;
       if (typeof resetAllAbilitiesUsed === "function") {
         resetAllAbilitiesUsed();
@@ -1580,9 +1586,16 @@ const P2P = {
 
       showToast("🎉 せーの、オープン！ バトル開始！");
       const mulliganNote = state.oppMulliganCount > 0 ? `（※相手のマリガン ${state.oppMulliganCount}回分、必要に応じて山札から引いてください）` : "";
+      const isSpectatorMode = (this.role === "spectator" || state.isSpectator);
       const initialTurnInfo = (typeof getTurnInfo === "function")
         ? getTurnInfo(1)
-        : { label: "先攻1ターン目", isMyTurn: (state.firstPlayer !== "opp"), activePlayerName: (state.firstPlayer === "opp" ? state.oppName : state.myName) };
+        : {
+            label: "先攻1ターン目",
+            isMyTurn: !isSpectatorMode && (state.firstPlayer !== "opp"),
+            activePlayerName: isSpectatorMode
+              ? (state.firstPlayer === "opp" ? (state.spectatorGuestName || "ゲスト") : (state.spectatorHostName || "ホスト"))
+              : (state.firstPlayer === "opp" ? state.oppName : state.myName)
+          };
 
       addLog(`お互いのバトル場を公開し、対戦を開始しました！ (${initialTurnInfo.label}: 【${initialTurnInfo.activePlayerName}】の番) ${mulliganNote}`, { isRemote: true });
       renderAll();

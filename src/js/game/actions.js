@@ -2460,6 +2460,14 @@ function getTurnInfo(turnStep = (state.turnStep || 1)) {
     isMyTurn = true;
     activeRole = "me";
     activePlayerName = state.myName;
+  } else if (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator")) {
+    // 👁️ 観戦者モード:
+    // 下側（手前側）はホスト（オーナー）、上側（相手側）はゲスト（参加者）
+    // 観戦者自身にはターンは回らないため isMyTurn は常に false
+    const isHostTurn = isFirstSide ? isMeFirst : !isMeFirst;
+    activeRole = isHostTurn ? "host" : "guest";
+    activePlayerName = isHostTurn ? (state.spectatorHostName || "ホスト") : (state.spectatorGuestName || "ゲスト");
+    isMyTurn = false;
   } else {
     activeRole = isFirstSide
       ? (isMeFirst ? "me" : "opp")
@@ -2505,7 +2513,9 @@ function playTurnChangeBanner(turnInfo, onComplete = null) {
   _turnBannerCallback = onComplete;
 
   const info = turnInfo || getTurnInfo(state.turnStep || 1);
-  const isMe = !!info.isMyTurn;
+  const isMe = (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator"))
+    ? (info.activeRole === "host")
+    : !!info.isMyTurn;
 
   subEl.textContent = `${info.isFirstSide ? '⚡' : '🛡️'} ${info.label}`;
   mainEl.textContent = `【${info.activePlayerName}】のターン！`;
@@ -2559,6 +2569,10 @@ let _pendingPromoteCallback = null;
  * ２）ベンチにもポケモンがいない場合は「負け」
  */
 function checkTurnStartActiveCondition(onReady) {
+  if (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator")) {
+    if (typeof onReady === "function") onReady();
+    return;
+  }
   if (state.isSetupPhase) {
     if (typeof onReady === "function") onReady();
     return;
@@ -2698,6 +2712,7 @@ window.promoteBenchToActive = promoteBenchToActive;
  * ３）のバナーエフェクトの後に実行され、山札からドローアニメーション ＆ 画面中央大型カード表示を行う
  */
 function executeTurnStartDraw() {
+  if (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator")) return;
   if (state.isSetupPhase) return;
 
   // バトル場が空の場合は強制的に選出または敗北処理へ転送
