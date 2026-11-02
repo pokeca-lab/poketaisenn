@@ -3151,6 +3151,7 @@ function tossCoin() {
 /** 対戦準備フェーズ: ルームオーナーによるコイントス案内モーダル表示 */
 function startSetupCoinToss() {
   if (!state.isSetupPhase) return;
+  if (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator")) return;
   state.setupStep = "coin";
 
   if (typeof P2P !== "undefined" && P2P.connected && P2P.role === "guest") {
@@ -3181,6 +3182,7 @@ function startSetupCoinToss() {
 /** ゲスト側: ホストがコイントスを振るまでの待機モーダル表示 */
 function showGuestWaitingCoinModal() {
   if (!state.isSetupPhase) return;
+  if (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator")) return;
   state.setupStep = "coin";
   const hostName = state.oppName || "相手プレイヤー（ルームオーナー）";
   const bodyHtml = `
@@ -3234,6 +3236,16 @@ function executeSetupCoinToss() {
 
 /** コイントス結果の処理（選択権判定・モーダル表示） */
 function handleCoinResult(isHeads, chooserRole) {
+  // 👁️ 観戦者モード時は待機モーダルを表示しない（トーストとログのみ）
+  if (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator")) {
+    if (typeof closeModal === "function") closeModal();
+    const resultText = isHeads ? "表（オモテ）◎" : "裏（ウラ）✕";
+    const chooserName = (chooserRole === "host") ? (state.spectatorHostName || "ホスト") : (state.spectatorGuestName || "ゲスト");
+    showToast(`🪙 コイントス結果: 【${resultText}】 (${chooserName} が先攻・後攻を選択中)`);
+    renderAll();
+    return;
+  }
+
   const isMeChooser = (!P2P.connected) || (P2P.role === chooserRole);
   const resultText = isHeads ? "表（オモテ）◎" : "裏（ウラ）✕";
 
@@ -3260,6 +3272,7 @@ function handleCoinResult(isHeads, chooserRole) {
 
 /** 先攻・後攻選択モーダル */
 function openOrderSelectModal(resultText = "") {
+  if (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator")) return;
   const coinBanner = resultText
     ? `<div style="display:inline-block; background:rgba(250,204,21,0.18); border:1px solid #facc15; color:#fde047; padding:4px 14px; border-radius:20px; font-size:14px; font-weight:bold; margin-bottom:10px;">🪙 コイントス結果：【${resultText}】</div>`
     : "";

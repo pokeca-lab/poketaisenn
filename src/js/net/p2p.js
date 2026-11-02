@@ -540,9 +540,12 @@ const P2P = {
 
   /** 観戦開始（ゲーム画面表示＆盤面同期開始） */
   async _startSpectating(cleanCode, roomData) {
+    if (typeof closeModal === "function") closeModal();
     this.connected = true;
     this.role = "spectator";
     state.isSpectator = true;
+    state.isSetupPhase = false;
+    state.setupStep = "done";
     state.roomNo = cleanCode;
     state.oppName = state.spectatorGuestName;
 
@@ -713,6 +716,9 @@ const P2P = {
     if (!s || typeof s !== "object") return;
     this._isApplyingSnapshot = true;
     try {
+      state.isSetupPhase = false;
+      state.setupStep = "done";
+      if (typeof closeModal === "function") closeModal();
       const pre = (c) => c ? { ...c, uid: (sender === "guest" ? "opp:" : "") + String(c.uid).replace(/^(opp:)+/, "") } : c;
       const prePk = (p) => p ? {
         ...p,
@@ -1326,7 +1332,17 @@ const P2P = {
       state.coinChooser = msg.chooser;
       const isHeads = (msg.coin === "heads");
       const resultText = isHeads ? "表（オモテ）" : "裏（ウラ）";
-      addLog(`【対戦準備】ルームオーナーのコイントス: 【${resultText}】！ (${msg.chooser === 'host' ? 'ルームオーナー' : '相手（ゲスト）'}が先攻・後攻を選択)`, { isRemote: true });
+      const chooserName = (msg.chooser === 'host') ? (state.spectatorHostName || "ルームオーナー") : (state.spectatorGuestName || "参加者");
+      addLog(`【対戦準備】ルームオーナーのコイントス: 【${resultText}】！ (${chooserName}が先攻・後攻を選択)`, { isRemote: true });
+
+      // 👁️ 観戦者モード時は待機モーダルを表示せず、トースト表示のみで盤面を維持
+      if (this.role === "spectator" || state.isSpectator) {
+        if (typeof closeModal === "function") closeModal();
+        showToast(`🪙 コイントス結果: 【${resultText}】 (${chooserName} が先攻・後攻を選択中)`);
+        renderAll();
+        return;
+      }
+
       if (typeof playCoinTossEffect === "function") {
         playCoinTossEffect(isHeads, msg.name || state.oppName, () => {
           showToast(`コイントス: 【${resultText}】！`);
@@ -1342,6 +1358,18 @@ const P2P = {
       }
     } else if (msg.t === "order_chosen") {
       if (typeof closeModal === "function") closeModal();
+      const isHostFirst = (msg.firstPlayerRole === "host");
+      const firstName = isHostFirst ? (state.spectatorHostName || "ホスト") : (state.spectatorGuestName || "ゲスト");
+
+      // 👁️ 観戦者モード時は先攻後攻の決定通知トーストのみ表示
+      if (this.role === "spectator" || state.isSpectator) {
+        state.firstPlayer = isHostFirst ? "me" : "opp";
+        addLog(`【対戦準備】先攻・後攻が決定しました: 【${firstName}】が先攻です`, { isRemote: true });
+        showToast(`🎲 【${firstName}】が先攻になりました！`);
+        renderAll();
+        return;
+      }
+
       const isMeFirst = (msg.firstPlayerRole === this.role);
       state.firstPlayer = isMeFirst ? "me" : "opp";
       state.setupStep = "place";
@@ -1360,7 +1388,8 @@ const P2P = {
     } else if (msg.t === "mulligan_declare") {
       state.oppMulliganDeclared = true;
       const pName = msg.name || state.oppName || "相手プレイヤー";
-      addLog(`【対戦準備】相手（${pName}）が「たねポケモンなし（マリガン）」を宣言しました（あなたの準備完了後に手札が公開されます）`, { isRemote: true });
+      addLog(`【対戦準備】相手（${pName}）が「たねポケモンなし（マリガン）」を宣言しました（準備完了後に手札が公開されます）`, { isRemote: true });
+      if (this.role === "spectator" || state.isSpectator) return;
       if (typeof showActionPopup === "function") {
         showActionPopup(pName, "「たねポケモンなし（マリガン）」を宣言しました", [], "⚠️ マリガン宣言");
       }
@@ -1410,6 +1439,7 @@ const P2P = {
       state.oppSetupReady = true;
       const pName = msg.name || state.oppName || "相手プレイヤー";
       addLog(`【対戦準備】相手（${pName}）が対戦準備（バトル場・サイドセット）を完了しました`, { isRemote: true });
+      if (this.role === "spectator" || state.isSpectator) return;
       if (state.myMulliganStep === "waiting_opp_ready" && typeof sendMulliganRevealToOpponent === "function") {
         showToast("相手が準備完了しました！あなたの手札7枚を相手に公開します");
         sendMulliganRevealToOpponent();
