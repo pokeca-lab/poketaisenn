@@ -559,11 +559,6 @@ const P2P = {
   },
 
   publicSnapshot() {
-    const uid = state.stadium ? state.stadium.uid : null;
-    if (uid !== this._lastStadiumUid) {
-      state.stadiumTs = Date.now();
-      this._lastStadiumUid = uid;
-    }
     return {
       t: "state",
       name: state.myName,
@@ -579,7 +574,7 @@ const P2P = {
       bench: state.myBench,
       playCard: state.playCard,
       stadium: state.stadium,
-      stadiumTs: state.stadiumTs || 0,
+      stadiumTs: Number(state.stadiumTs) || 0,
       benchLimit: state.myBenchLimit || 5,
       turn: state.turn,
       turnStep: state.turnStep || 1
@@ -1139,22 +1134,43 @@ const P2P = {
       state.oppBench = [0, 1, 2, 3, 4, 5, 6, 7].map(i => prePk(rawBench[i] || null));
       state.oppPlayCard = s.playCard ? pre(s.playCard) : null;
 
-      if ((s.stadiumTs | 0) > (state.stadiumTs | 0)) {
-        if (state.stadium) {
-          const old = state.stadium;
-          const oldIsMine = (!old.owner || old.owner === "me") && (!old.uid || !String(old.uid).startsWith("opp:"));
-          if (oldIsMine) {
-            state.myTrash.push(old);
-            addLog(`相手がスタジアムを出したため、自分のスタジアム「${old.name}」がトラッシュされました`, {
-              cards: [old],
-              badge: "🗑️ スタジアム破棄"
-            });
-            if (typeof SoundEffects !== "undefined") SoundEffects.playTrash();
+      const incomingStadiumTs = Number(s.stadiumTs) || 0;
+      const currentStadiumTs = Number(state.stadiumTs) || 0;
+
+      if (incomingStadiumTs > currentStadiumTs) {
+        if (s.stadium) {
+          // 相手が新しいスタジアムを出した場合 (要件2-2)
+          if (state.stadium) {
+            const old = state.stadium;
+            const oldIsMine = (!old.owner || old.owner === "me") && (!old.uid || !String(old.uid).startsWith("opp:"));
+            if (oldIsMine) {
+              state.myTrash.push(old);
+              addLog(`相手がスタジアムを出したため、自分のスタジアム「${old.name}」がトラッシュされました`, {
+                cards: [old],
+                badge: "🗑️ スタジアム破棄"
+              });
+              if (typeof SoundEffects !== "undefined") SoundEffects.playTrash();
+            }
           }
+          state.stadium = { ...pre(s.stadium), owner: "opp" };
+          state.stadiumTs = incomingStadiumTs;
+        } else {
+          // 相手がスタジアムをトラッシュ/破棄した場合 (要件2-1の相手操作)
+          if (state.stadium) {
+            const old = state.stadium;
+            const oldIsMine = (!old.owner || old.owner === "me") && (!old.uid || !String(old.uid).startsWith("opp:"));
+            if (oldIsMine) {
+              state.myTrash.push(old);
+              addLog(`スタジアム「${old.name}」がトラッシュされました`, {
+                cards: [old],
+                badge: "🗑️ スタジアム破棄"
+              });
+              if (typeof SoundEffects !== "undefined") SoundEffects.playTrash();
+            }
+          }
+          state.stadium = null;
+          state.stadiumTs = incomingStadiumTs;
         }
-        state.stadium = s.stadium ? { ...pre(s.stadium), owner: "opp" } : null;
-        state.stadiumTs = s.stadiumTs;
-        this._lastStadiumUid = state.stadium ? state.stadium.uid : null;
       }
       if ((s.turnStep | 0) > (state.turnStep | 0)) {
         state.turnStep = s.turnStep | 0;

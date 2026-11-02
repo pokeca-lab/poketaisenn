@@ -54,6 +54,7 @@ function undoAction() {
     state.tempCards = snap.tempCards || [];
     state.playCard = snap.playCard || null;
     state.stadium = snap.stadium || null;
+    state.stadiumTs = Date.now();
     if (snap.turnStep !== undefined) state.turnStep = snap.turnStep;
     if (snap.turn !== undefined) state.turn = snap.turn;
     state.selectedHandIndices.clear();
