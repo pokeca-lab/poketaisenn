@@ -429,9 +429,21 @@ const P2P = {
     if (!this._actionsRef) return;
     this._addListener(this._actionsRef, "child_added", (snap) => {
       const item = snap.val();
-      if (!item) return;
+      if (!item || !item.data) return;
       // 自分が送信したものは無視
       if (item.sender === this.role) return;
+
+      // 対戦プレイヤー（host / guest）の安全保護ガード
+      if (this.role === "host" || this.role === "guest") {
+        if (item.sender === "spectator") {
+          // 観戦者からの電文はチャット、通話、参加通知のみ受け付ける（ゲーム進行電文は完全遮断）
+          const t = item.data.t;
+          if (t !== "chat_message" && t !== "spectator_joined" && !String(t).startsWith("voice_")) {
+            return;
+          }
+        }
+      }
+
       this._onData(item.data, item.sender);
     });
   },
@@ -549,18 +561,6 @@ const P2P = {
     state.roomNo = cleanCode;
     state.oppName = state.spectatorGuestName;
 
-    // 画面切り替え（ロビー非表示、ゲーム画面表示）
-    const lobbyEl = document.getElementById("lobby");
-    const gameEl = document.getElementById("game");
-    if (lobbyEl) lobbyEl.classList.add("hidden");
-    if (gameEl) gameEl.classList.remove("hidden");
-
-    // 観戦者フローティングバー表示
-    const bar = document.getElementById("spectator-bar");
-    const label = document.getElementById("spectator-matchup-label");
-    if (bar) bar.style.display = "flex";
-    if (label) label.textContent = `【${state.spectatorHostName}】 vs 【${state.spectatorGuestName}】`;
-
     // ホスト・ゲストの退室監視
     this._addListener(this._roomRef.child("host"), "value", (hSnap) => {
       const host = hSnap.val();
@@ -580,7 +580,8 @@ const P2P = {
     // アクションリスナー開始
     this._startActionsListener();
 
-    // 過去の直近スナップショットを反映して盤面を即時復元
+    // 過去の直近アクションを調査して、対戦中かロビー待機中かを判定
+    let isAlreadyStarted = false;
     try {
       const actionsSnap = await this._actionsRef.limitToLast(40).once("value");
       if (actionsSnap.exists()) {
@@ -589,6 +590,9 @@ const P2P = {
         actionsSnap.forEach((child) => {
           const item = child.val();
           if (!item || !item.data) return;
+          if (item.data.t === "start" || item.data.t === "state" || item.data.t === "match_open") {
+            isAlreadyStarted = true;
+          }
           if (item.data.t === "state") {
             if (item.sender === "host") lastHostState = item.data;
             if (item.sender === "guest") lastGuestState = item.data;
@@ -599,6 +603,38 @@ const P2P = {
       }
     } catch (e) {
       console.warn("[Spectator history sync error]", e);
+    }
+
+    if (isAlreadyStarted) {
+      // すでに対戦中ならゲーム画面を表示
+      const lobbyEl = document.getElementById("lobby");
+      const gameEl = document.getElementById("game");
+      if (lobbyEl) lobbyEl.classList.add("hidden");
+      if (gameEl) gameEl.classList.remove("hidden");
+      const bar = document.getElementById("spectator-bar");
+      const label = document.getElementById("spectator-matchup-label");
+      if (bar) bar.style.display = "flex";
+      if (label) label.textContent = `【${state.spectatorHostName}】 vs 【${state.spectatorGuestName}】`;
+    } else {
+      // まだ対戦開始前（ロビー）なら、開始待機モーダルを表示
+      if (typeof showModal === "function") {
+        showModal(
+          "👁️ 対戦開始待機中",
+          `<div style="text-align:center; padding:18px 10px; color:#f8fafc;">
+            <div style="font-size:44px; margin-bottom:12px;">⏳</div>
+            <p style="font-size:16px; font-weight:bold; color:#38bdf8; margin-bottom:8px;">
+              対戦者の準備を待っています...
+            </p>
+            <p style="font-size:13px; color:#94a3b8; line-height:1.6;">
+              ホスト（${this._escapeHtml(state.spectatorHostName)}）と参加者（${this._escapeHtml(state.spectatorGuestName)}）が対戦を開始すると、自動的に観戦画面へ移動します。
+            </p>
+          </div>`,
+          `<div style="display:flex; justify-content:center;">
+            <button class="btn red" onclick="P2P.leaveSpectating()">🚪 観戦を終了してロビーに戻る</button>
+          </div>`,
+          { dismissible: false }
+        );
+      }
     }
 
     // 参加通知を送信（対戦者双方から最新スナップショットを再送してもらう）
@@ -918,6 +954,7 @@ const P2P = {
   },
 
   _canSync() {
+    if (this.role === "spectator" || state.isSpectator) return false;
     return this.connected && !state.isSoloMode && !(typeof replayState !== "undefined" && replayState.isActive);
   },
 
@@ -1220,6 +1257,22 @@ const P2P = {
       this.updateWebRTCStatsUI();
       renderAll();
     } else if (msg.t === "start" || msg.t === "match_start") {
+      // 👁️ 観戦者の場合: 待機モーダルを閉じて対戦画面を表示し、プレイヤー用電文は送信しない
+      if (this.role === "spectator" || state.isSpectator) {
+        if (typeof closeModal === "function") closeModal();
+        const lobbyEl = document.getElementById("lobby");
+        const gameEl = document.getElementById("game");
+        if (lobbyEl) lobbyEl.classList.add("hidden");
+        if (gameEl) gameEl.classList.remove("hidden");
+        const bar = document.getElementById("spectator-bar");
+        const label = document.getElementById("spectator-matchup-label");
+        if (bar) bar.style.display = "flex";
+        if (label) label.textContent = `【${state.spectatorHostName}】 vs 【${state.spectatorGuestName}】`;
+        showToast("⚔️ 対戦が開始されました！観戦画面に切り替わります");
+        renderAll();
+        return;
+      }
+
       state.oppName = msg.name || state.oppName;
       state.oppDeckCode = msg.deckCode || state.oppDeckCode || "";
       state.oppExited = false;
@@ -1436,10 +1489,16 @@ const P2P = {
       showToast(`相手が手札を引き直しました (マリガン ${state.oppMulliganCount}回目)`);
       renderAll();
     } else if (msg.t === "setup_ready") {
+      // 👁️ 観戦者は対戦準備状態を更新しない
+      if (this.role === "spectator" || state.isSpectator) return;
+
+      // 送信者が正規の対戦相手でない場合は無視（観戦者等からの誤同期を完全遮断）
+      const expectedOppRole = (this.role === "host") ? "guest" : "host";
+      if (sender && sender !== expectedOppRole) return;
+
       state.oppSetupReady = true;
       const pName = msg.name || state.oppName || "相手プレイヤー";
       addLog(`【対戦準備】相手（${pName}）が対戦準備（バトル場・サイドセット）を完了しました`, { isRemote: true });
-      if (this.role === "spectator" || state.isSpectator) return;
       if (state.myMulliganStep === "waiting_opp_ready" && typeof sendMulliganRevealToOpponent === "function") {
         showToast("相手が準備完了しました！あなたの手札7枚を相手に公開します");
         sendMulliganRevealToOpponent();
@@ -1455,6 +1514,10 @@ const P2P = {
         renderAll();
       }
     } else if (msg.t === "mulligan_penalty_done") {
+      // 👁️ 送信者が正規の対戦相手でない場合は無視（観戦者等からの誤同期を完全遮断）
+      const expectedOppRole = (this.role === "host") ? "guest" : "host";
+      if (sender && sender !== expectedOppRole) return;
+
       if (typeof closeModal === "function") closeModal();
       if (msg.drawn && msg.count > 0) {
         addLog(`【対戦準備】相手（${msg.name || state.oppName}）がマリガンペナルティによりカードを${msg.count}枚引きました`, {
@@ -1501,6 +1564,11 @@ const P2P = {
         });
       }
     } else if (msg.t === "match_open") {
+      // 👁️ 送信者検証（観戦者や不正送信元からのオープン電文を遮断）
+      if (this.role === "host" && sender !== "guest") return;
+      if (this.role === "guest" && sender !== "host") return;
+      if (this.role === "spectator" && sender !== "host" && sender !== "guest") return;
+
       state.isSetupPhase = false;
       state.setupStep = "done";
       state.mySetupReady = true;
