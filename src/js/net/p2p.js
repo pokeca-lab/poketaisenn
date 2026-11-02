@@ -1473,6 +1473,7 @@ const P2P = {
       renderAll();
     } else if (msg.t === "mulligan_ack") {
       addLog(`【対戦準備】相手（${msg.name || state.oppName}）が手札を確認しました。山札に戻して7枚引き直します`, { isRemote: true });
+      if (this.role === "spectator" || state.isSpectator) return;
       if (typeof performMulliganRedraw === "function") {
         performMulliganRedraw();
       }
@@ -1480,6 +1481,7 @@ const P2P = {
       const pName = msg.name || state.oppName || "相手プレイヤー";
       const reason = msg.reason || "手札にたねポケモンが存在するため、マリガンは認められませんでした。";
       addLog(`【対戦準備】相手（${pName}）からマリガンが却下されました: ${reason}`, { isRemote: true });
+      if (this.role === "spectator" || state.isSpectator) return;
       if (typeof handleMulliganRejected === "function") {
         handleMulliganRejected(reason, pName);
       }

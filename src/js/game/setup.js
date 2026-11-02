@@ -290,21 +290,35 @@ function showNextOpponentMulliganModal() {
 
   const basicCardNames = hand.filter(c => (typeof isBasicPokemonCard === "function" ? isBasicPokemonCard(c) : false)).map(c => c.name);
 
+  const isSpectator = state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator");
+
   let bannerHtml = "";
   if (hasBasic) {
-    bannerHtml = `
-      <div style="margin-bottom:10px; padding:10px 12px; background:rgba(239, 68, 68, 0.2); border:1.5px solid #ef4444; border-radius:8px; font-size:12.5px; color:#fecaca; line-height:1.6;">
-        ⚠️ <b>注意：手札にたねポケモン（${escapeHtml(basicCardNames.join("、") || "たね")}）が含まれています！</b><br>
-        相手がたねポケモンを見落としている可能性があります。<b>「❌ たねポケモンがいるため却下（マリガンを認めない）」</b>を押して相手に対戦準備へ戻るよう伝えてください。
-      </div>
-    `;
+    bannerHtml = isSpectator
+      ? `
+        <div style="margin-bottom:10px; padding:10px 12px; background:rgba(239, 68, 68, 0.2); border:1.5px solid #ef4444; border-radius:8px; font-size:12.5px; color:#fecaca; line-height:1.6;">
+          ⚠️ <b>手札にたねポケモン（${escapeHtml(basicCardNames.join("、") || "たね")}）が含まれています。</b>（カードはダブルクリックで拡大できます）
+        </div>
+      `
+      : `
+        <div style="margin-bottom:10px; padding:10px 12px; background:rgba(239, 68, 68, 0.2); border:1.5px solid #ef4444; border-radius:8px; font-size:12.5px; color:#fecaca; line-height:1.6;">
+          ⚠️ <b>注意：手札にたねポケモン（${escapeHtml(basicCardNames.join("、") || "たね")}）が含まれています！</b><br>
+          相手がたねポケモンを見落としている可能性があります。<b>「❌ たねポケモンがいるため却下（マリガンを認めない）」</b>を押して相手に対戦準備へ戻るよう伝えてください。
+        </div>
+      `;
   } else {
-    bannerHtml = `
-      <div style="margin-bottom:10px; padding:8px 10px; background:rgba(250, 204, 21, 0.12); border:1px solid rgba(250, 204, 21, 0.4); border-radius:6px; font-size:12px; color:#fef08a;">
-        📢 <b>${oppName}</b> さんが「たねポケモンなし（マリガン ${count}回目）」のため手札7枚を公開しました。<br>
-        たねポケモンがいないことを確認して下の<b>「✅ たねポケモンなしを確認（引き直しを許可）」</b>を押してください。（カードはダブルクリックで拡大できます）
-      </div>
-    `;
+    bannerHtml = isSpectator
+      ? `
+        <div style="margin-bottom:10px; padding:8px 10px; background:rgba(250, 204, 21, 0.12); border:1px solid rgba(250, 204, 21, 0.4); border-radius:6px; font-size:12px; color:#fef08a;">
+          📢 <b>${oppName}</b> さんが「たねポケモンなし（マリガン ${count}回目）」のため手札7枚を公開しました。（カードはダブルクリックで拡大できます）
+        </div>
+      `
+      : `
+        <div style="margin-bottom:10px; padding:8px 10px; background:rgba(250, 204, 21, 0.12); border:1px solid rgba(250, 204, 21, 0.4); border-radius:6px; font-size:12px; color:#fef08a;">
+          📢 <b>${oppName}</b> さんが「たねポケモンなし（マリガン ${count}回目）」のため手札7枚を公開しました。<br>
+          たねポケモンがいないことを確認して下の<b>「✅ たねポケモンなしを確認（引き直しを許可）」</b>を押してください。（カードはダブルクリックで拡大できます）
+        </div>
+      `;
   }
 
   let bodyHtml = bannerHtml + `<div class="card-grid">`;
@@ -327,14 +341,35 @@ function showNextOpponentMulliganModal() {
   });
   bodyHtml += `</div>`;
 
-  const footHtml = `
-    <div style="display:flex; justify-content:flex-end; gap:8px; width:100%; flex-wrap:wrap;">
-      <button class="btn red" onclick="rejectOpponentMulligan()">❌ たねポケモンがいるため却下（マリガンを認めない）</button>
-      <button class="btn green" onclick="ackOpponentMulligan()">✅ たねポケモンなしを確認（引き直しを許可）</button>
-    </div>
-  `;
+  const footHtml = isSpectator
+    ? `
+      <div style="display:flex; justify-content:center; width:100%;">
+        <button class="btn" style="min-width:140px; font-weight:bold; padding:8px 24px;" onclick="closeSpectatorMulliganModal()">閉じる</button>
+      </div>
+    `
+    : `
+      <div style="display:flex; justify-content:flex-end; gap:8px; width:100%; flex-wrap:wrap;">
+        <button class="btn red" onclick="rejectOpponentMulligan()">❌ たねポケモンがいるため却下（マリガンを認めない）</button>
+        <button class="btn green" onclick="ackOpponentMulligan()">✅ たねポケモンなしを確認（引き直しを許可）</button>
+      </div>
+    `;
 
-  showModal(`🔍 相手のマリガン手札確認 (${oppName} - ${count}回目)`, bodyHtml, footHtml, { dismissible: false });
+  const modalTitle = isSpectator
+    ? `🔍 マリガン手札公開 (${oppName} - ${count}回目)`
+    : `🔍 相手のマリガン手札確認 (${oppName} - ${count}回目)`;
+
+  showModal(modalTitle, bodyHtml, footHtml, { dismissible: isSpectator });
+}
+
+/** 👁️ 観戦者用: マリガン手札確認モーダルを閉じる */
+function closeSpectatorMulliganModal() {
+  if (Array.isArray(state.pendingOppMulliganQueue)) {
+    state.pendingOppMulliganQueue.shift();
+  }
+  closeModal();
+  if (Array.isArray(state.pendingOppMulliganQueue) && state.pendingOppMulliganQueue.length > 0) {
+    setTimeout(() => showNextOpponentMulliganModal(), 150);
+  }
 }
 
 function ackOpponentMulligan() {
@@ -691,6 +726,7 @@ window.sendMulliganRevealToOpponent = sendMulliganRevealToOpponent;
 window.performMulliganRedraw = performMulliganRedraw;
 window.enqueueOpponentMulliganReveal = enqueueOpponentMulliganReveal;
 window.showNextOpponentMulliganModal = showNextOpponentMulliganModal;
+window.closeSpectatorMulliganModal = closeSpectatorMulliganModal;
 window.ackOpponentMulligan = ackOpponentMulligan;
 window.rejectOpponentMulligan = rejectOpponentMulligan;
 window.handleMulliganRejected = handleMulliganRejected;
