@@ -406,6 +406,7 @@
   <div id="spectator-bar" class="spectator-bar hidden" style="position:fixed; top:8px; left:50%; transform:translateX(-50%); z-index:9000; background:rgba(15,23,42,0.92); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:1.5px solid #38bdf8; border-radius:9999px; padding:6px 16px; display:none; align-items:center; gap:12px; box-shadow:0 6px 20px rgba(0,0,0,0.4); color:#fff; font-size:12px;">
     <span style="font-weight:bold; color:#38bdf8; display:flex; align-items:center; gap:6px;"><span style="display:inline-block; width:8px; height:8px; background:#38bdf8; border-radius:50%; box-shadow:0 0 8px #38bdf8;"></span>👁️ 観戦モード</span>
     <span id="spectator-matchup-label" style="font-weight:bold; color:#f8fafc;">【ホスト】 vs 【ゲスト】</span>
+    <button type="button" class="btn green" id="btn-spectator-voice" style="font-size:11px; padding:3px 10px; border-radius:9999px; font-weight:bold;" onclick="VoiceChat.handleVoiceButtonClick()">🎙️ 通話</button>
     <button type="button" class="btn red" style="font-size:11px; padding:3px 10px; border-radius:9999px; font-weight:bold;" onclick="P2P.leaveSpectating()">🚪 観戦終了</button>
   </div>
 

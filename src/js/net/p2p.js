@@ -1219,6 +1219,27 @@ const P2P = {
       return;
     }
 
+    if (msg.t === "voice_spectator_request") {
+      if (window.VoiceChat) {
+        VoiceChat.handleIncomingSpectatorVoiceRequest(msg);
+      }
+      return;
+    }
+
+    if (msg.t === "voice_spectator_approved") {
+      if (window.VoiceChat) {
+        VoiceChat.handleSpectatorVoiceApproved(msg);
+      }
+      return;
+    }
+
+    if (msg.t === "voice_spectator_rejected") {
+      if (window.VoiceChat) {
+        VoiceChat.handleSpectatorVoiceRejected(msg);
+      }
+      return;
+    }
+
     if (msg.t === "voice_offer") {
       if (window.VoiceChat) {
         VoiceChat.handleRemoteOffer(msg.offer);

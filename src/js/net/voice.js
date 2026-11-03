@@ -287,7 +287,7 @@ const VoiceChat = {
         console.log(`[VoiceChat] Subscribing to audio: ${pub.id} from ${pub.publisher.id}`);
         try {
           const { stream } = await me.subscribe(pub.id);
-          this._onRemoteStream(stream);
+          this._onRemoteStream(stream, pub.id);
         } catch (subErr) {
           console.warn("[VoiceChat] subscribe failed:", subErr);
         }
@@ -300,12 +300,29 @@ const VoiceChat = {
     // 新たに相手が音声を公開したときに自動購読
     room.onStreamPublished.add((e) => subscribeToPub(e.publication));
 
-    // 相手が退出したときの監視
+    // 相手が退出したときの監視（マルチ通話対応）
     room.onMemberLeft.add((e) => {
       if (e.member.id !== me.id) {
-        console.log(`[VoiceChat] Peer left the room: ${e.member.id}`);
-        if (state.voiceCall.active) {
-          this.endCall(false);
+        console.log(`[VoiceChat] Member left the room: ${e.member.id}`);
+        // 該当メンバーのオーディオ要素を破棄
+        if (this._remoteAudios) {
+          this._remoteAudios.forEach((el, key) => {
+            if (key.includes(e.member.id)) {
+              try { el.pause(); el.srcObject = null; el.remove(); } catch (err) {}
+              this._remoteAudios.delete(key);
+            }
+          });
+        }
+        // 他に残っているメンバーがいるか確認
+        const otherMembers = room.members.filter(m => m.id !== me.id);
+        if (otherMembers.length === 0) {
+          if (state.voiceCall.active) {
+            this.endCall(false);
+          }
+        } else {
+          if (typeof showToast === "function") {
+            showToast("通話メンバーが1名退室しました");
+          }
         }
       }
     });
@@ -314,19 +331,23 @@ const VoiceChat = {
     this._onConnected();
   },
 
-  // ---- リモート音声ストリームの再生 ----
-  _onRemoteStream(skywayStream) {
+  // ---- リモート音声ストリームの再生（複数人マルチオーディオ対応） ----
+  _onRemoteStream(skywayStream, pubId = "default") {
     state.voiceCall.remoteStream = skywayStream;
 
-    let audioEl = document.getElementById("remote-voice-audio");
+    if (!this._remoteAudios) this._remoteAudios = new Map();
+
+    const elementId = `remote-voice-audio-${pubId}`;
+    let audioEl = document.getElementById(elementId);
     if (!audioEl) {
       audioEl = document.createElement("audio");
-      audioEl.id = "remote-voice-audio";
+      audioEl.id = elementId;
       audioEl.autoplay = true;
       audioEl.playsInline = true;
       audioEl.style.display = "none";
       document.body.appendChild(audioEl);
     }
+    this._remoteAudios.set(pubId, audioEl);
 
     try {
       if (typeof skywayStream.attach === "function") {
@@ -357,6 +378,16 @@ const VoiceChat = {
 
   // ---- SkyWay ルーム退出 ＆ リソース解放 ----
   async _leaveSkyWayRoom() {
+    if (this._remoteAudios) {
+      this._remoteAudios.forEach((el) => {
+        try { el.pause(); el.srcObject = null; el.remove(); } catch (e) {}
+      });
+      this._remoteAudios.clear();
+    }
+    const legacyAudio = document.getElementById("remote-voice-audio");
+    if (legacyAudio) {
+      try { legacyAudio.pause(); legacyAudio.srcObject = null; legacyAudio.remove(); } catch (e) {}
+    }
     if (this._publication) {
       try { await this._me?.unpublish(this._publication.id); } catch (e) {}
       this._publication = null;
@@ -611,6 +642,8 @@ const VoiceChat = {
   handleVoiceButtonClick() {
     if (state.voiceCall && state.voiceCall.active) {
       this.showCallControlModal();
+    } else if (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator")) {
+      this.requestSpectatorVoiceCall();
     } else {
       this.startCall();
     }
@@ -621,12 +654,14 @@ const VoiceChat = {
     const oppName = state.oppName || "対戦相手";
     const durStr = this.formatDuration(state.voiceCall.durationSec || 0);
     const isMuted = !!state.voiceCall.isMuted;
+    const isSpec = (state.isSpectator || (typeof P2P !== "undefined" && P2P.role === "spectator"));
+    const callTitle = isSpec ? "観戦ボイス通話中" : `${escapeHtml(oppName)} さんと通話中`;
 
     const bodyHtml = `
       <div style="text-align:center; padding:16px 10px; color:#f8fafc;">
         <div style="font-size:42px; margin-bottom:8px; animation: voiceLivePulse 1.2s infinite ease-in-out;">🎙️</div>
         <div style="font-size:16px; font-weight:800; color:#4ade80; margin-bottom:4px;">
-          ${escapeHtml(oppName)} さんと通話中
+          ${callTitle}
         </div>
         <div id="voice-modal-timer" style="font-size:22px; font-weight:900; font-family:monospace; color:#38bdf8; margin-bottom:18px;">
           ${durStr}
@@ -701,6 +736,22 @@ const VoiceChat = {
 
     // 3. ポケチャットモーダル内通話ボタン
     this.updateChatVoiceButton();
+
+    // 4. 観戦者フローティングバー内通話ボタン
+    const specVoiceBtn = document.getElementById("btn-spectator-voice");
+    if (specVoiceBtn) {
+      if (isInCall) {
+        specVoiceBtn.classList.add("in-call");
+        specVoiceBtn.className = "btn gold";
+        specVoiceBtn.innerHTML = `🎙️ 通話中 (${durStr})`;
+        specVoiceBtn.title = "通話中（クリックで通話管理メニューを開く）";
+      } else {
+        specVoiceBtn.classList.remove("in-call");
+        specVoiceBtn.className = "btn green";
+        specVoiceBtn.innerHTML = `🎙️ 通話`;
+        specVoiceBtn.title = "ボイスチャットに参加";
+      }
+    }
   },
 
   // ---- ポケチャットモーダル内の通話ボタン表示更新 ----
@@ -716,9 +767,187 @@ const VoiceChat = {
     } else {
       btn.innerHTML = `<span>🎙️ 通話</span>`;
       btn.className = "cute-chat-voice-btn";
-      btn.onclick = () => VoiceChat.startCall();
+      btn.onclick = () => VoiceChat.handleVoiceButtonClick();
       btn.title = "ボイス通話を開始";
     }
+  },
+
+  // =========================================================================
+  // 👁️ 観戦者ボイスチャット参加機能 (フェーズ２)
+  // =========================================================================
+
+  /** 観戦者側: オーナーへボイスチャット参加リクエスト送信 */
+  async requestSpectatorVoiceCall() {
+    if (!P2P.connected) {
+      if (typeof showToast === "function") showToast("対戦ルームに接続されていません");
+      return;
+    }
+
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (typeof showToast === "function") showToast("お使いの環境ではマイク機能がサポートされていません");
+      return;
+    }
+
+    try {
+      // マイクの事前許可確認
+      const testStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      testStream.getTracks().forEach(t => t.stop());
+    } catch (err) {
+      let errMsg = "マイクへのアクセスが許可されていません。ブラウザ設定を確認してください。";
+      if (typeof showToast === "function") showToast(`⚠️ ${errMsg}`);
+      return;
+    }
+
+    const hostName = state.spectatorHostName || "ルームオーナー";
+    const myName = (document.getElementById("in-name")?.value.trim()) || state.myName || "観戦者";
+
+    // オーナーへ通話参加リクエスト送信
+    P2P.send({
+      t: "voice_spectator_request",
+      spectatorId: P2P._spectatorId || state.spectatorId,
+      name: myName
+    });
+
+    // 観戦者画面に待機モーダルを表示
+    if (typeof showModal === "function") {
+      showModal(
+        "🎙️ ボイスチャット参加リクエスト送信中",
+        `<div style="text-align:center; padding:18px 10px; color:#f8fafc;">
+          <div style="font-size:44px; margin-bottom:12px;">⏳</div>
+          <p style="font-size:16px; font-weight:bold; color:#38bdf8; margin-bottom:8px;">
+            オーナー（${escapeHtml(hostName)} さん）の許可を待っています...
+          </p>
+          <p style="font-size:13px; color:#94a3b8; line-height:1.6;">
+            オーナーが許可すると、自動的にボイスチャットに通話参加します。
+          </p>
+        </div>`,
+        `<div style="display:flex; justify-content:center;">
+          <button class="btn red" onclick="VoiceChat.cancelSpectatorVoiceRequest()">リクエストを取り消す</button>
+        </div>`
+      );
+    }
+  },
+
+  /** 観戦者側: 通話リクエストの取り消し */
+  cancelSpectatorVoiceRequest() {
+    if (typeof closeModal === "function") closeModal();
+    if (typeof showToast === "function") showToast("ボイスチャット参加リクエストを取り消しました");
+  },
+
+  /** オーナー側: 観戦者からのボイスチャット参加リクエストを受信（独立最前面ポップアップ表示） */
+  handleIncomingSpectatorVoiceRequest(msg) {
+    if (P2P.role !== "host") return;
+    const specName = msg.name || "観戦者";
+    const specId = msg.spectatorId;
+
+    // 既存のポップアップがあれば先に除去
+    const prevPopup = document.getElementById("voice-spectator-request-popup");
+    if (prevPopup) prevPopup.remove();
+
+    const popup = document.createElement("div");
+    popup.id = "voice-spectator-request-popup";
+    popup.style.cssText = `
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 100000;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.2s ease-out;
+    `;
+
+    popup.innerHTML = `
+      <div style="background: #1e293b; border: 2px solid #38bdf8; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); max-width: 420px; width: 90%; padding: 22px; color: #f8fafc; text-align: center; box-sizing: border-box;">
+        <div style="font-size: 40px; margin-bottom: 8px;">🎙️</div>
+        <h3 style="margin: 0 0 10px; font-size: 18px; color: #38bdf8; font-weight: bold;">ボイスチャット参加リクエスト</h3>
+        <p style="font-size: 15px; margin: 0 0 10px; line-height: 1.5; color: #e2e8f0;">
+          <b>${escapeHtml(specName)}</b> さんがボイスチャットに参加しようとしています。<br>許可しますか？
+        </p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 0 0 20px; line-height: 1.5;">
+          許可すると、対戦プレイヤーと観戦者で一緒に通話できます。
+        </p>
+        <div style="display: flex; gap: 14px; justify-content: center;">
+          <button class="btn" style="background: #e11d48; border-color: #fda4af; color: #fff; padding: 10px 22px; font-weight: bold;" onclick="VoiceChat.resolveSpectatorVoiceRequest('${specId}', false, '${escapeHtml(specName)}')">❌ 拒否する</button>
+          <button class="btn" style="background: #10b981; border-color: #6ee7b7; color: #fff; padding: 10px 22px; font-weight: bold;" onclick="VoiceChat.resolveSpectatorVoiceRequest('${specId}', true, '${escapeHtml(specName)}')">⭕ 許可する</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(popup);
+  },
+
+  /** オーナー側: 観戦者通話リクエストの承認/拒否処理 */
+  async resolveSpectatorVoiceRequest(specId, isApproved, specName) {
+    const popup = document.getElementById("voice-spectator-request-popup");
+    if (popup) popup.remove();
+
+    if (isApproved) {
+      P2P.send({
+        t: "voice_spectator_approved",
+        spectatorId: specId,
+        hostName: state.myName
+      });
+
+      if (typeof showToast === "function") {
+        showToast(`🎙️ ${specName} さんのボイスチャット参加を許可しました`);
+      }
+      if (typeof addLog === "function") {
+        addLog(`【ボイス通話】観戦者（${specName}）の通話参加を許可しました`, { suppressSync: true });
+      }
+
+      // オーナー自身がまだSkyWay通話に参加していなければ自動参加
+      if (!state.voiceCall.active) {
+        try {
+          await this._joinSkyWayRoom();
+        } catch (e) {
+          console.warn("[VoiceChat] Owner join on spectator approval failed:", e);
+        }
+      }
+    } else {
+      P2P.send({
+        t: "voice_spectator_rejected",
+        spectatorId: specId
+      });
+      if (typeof showToast === "function") {
+        showToast(`❌ ${specName} さんのボイスチャット参加を拒否しました`);
+      }
+      if (typeof addLog === "function") {
+        addLog(`【ボイス通話】観戦者（${specName}）の通話参加を拒否しました`, { suppressSync: true });
+      }
+    }
+  },
+
+  /** 観戦者側: オーナーからの通話承認を受信してSkyWay通話へ接続 */
+  async handleSpectatorVoiceApproved(msg) {
+    if (!state.isSpectator && (typeof P2P !== "undefined" && P2P.role !== "spectator")) return;
+    if (msg.spectatorId && P2P._spectatorId && msg.spectatorId !== P2P._spectatorId) return;
+
+    if (typeof closeModal === "function") closeModal();
+    if (typeof showToast === "function") {
+      showToast("🎉 オーナーからボイスチャット参加が許可されました！接続中...");
+    }
+
+    try {
+      state.voiceCall.status = "calling";
+      state.voiceCall.isMuted = false;
+      await this._joinSkyWayRoom();
+    } catch (err) {
+      console.error("[VoiceChat] Spectator join skyway failed:", err);
+      if (typeof showToast === "function") showToast("通話接続に失敗しました: " + (err.message || ""));
+      this.resetVoiceCallState();
+    }
+  },
+
+  /** 観戦者側: オーナーからの通話拒否を受信 */
+  handleSpectatorVoiceRejected(msg) {
+    if (!state.isSpectator && (typeof P2P !== "undefined" && P2P.role !== "spectator")) return;
+    if (msg.spectatorId && P2P._spectatorId && msg.spectatorId !== P2P._spectatorId) return;
+
+    if (typeof closeModal === "function") closeModal();
+    if (typeof showToast === "function") {
+      showToast("❌ オーナーによりボイスチャット参加が拒否されました");
+    }
+    this.resetVoiceCallState();
   }
 };
 
