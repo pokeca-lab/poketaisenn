@@ -210,6 +210,8 @@ const P2P = {
     this._spectatorId = null;
     this._spectatorRef = null;
     this._pendingSpectatorModalId = null;
+    const reqPopup = document.getElementById("spectator-request-popup");
+    if (reqPopup) reqPopup.remove();
 
     this._roomRef = null;
     this._actionsRef = null;
@@ -384,19 +386,37 @@ const P2P = {
         return false;
       }
 
-      // 満員チェック（既に有効なゲストがいる場合は観戦モードへ誘導）
-      if (roomData.guest && roomData.guest.online) {
+      // 満員チェック（既に有効なゲストがいる、またはマッチング済みの場合は観戦モードへ誘導）
+      const hasExistingGuest = !!(roomData.guest && (roomData.guest.name || roomData.guest.online !== false));
+      const isAlreadyMatched = (roomData.status === "connected" || roomData.status === "playing" || hasExistingGuest);
+      if (isAlreadyMatched) {
+        console.log(`[Firebase Join] ルーム ${cleanCode} は既にマッチング済みのため観戦確認へ移行します`);
         return await this._handleRoomFullForSpectator(cleanCode, roomData);
       }
 
       const myName = (document.getElementById("in-name")?.value.trim()) || state.myName || "プレイヤーB";
 
-      // ゲストとして登録
-      await roomRef.child("guest").set({
-        name: myName,
-        joinedAt: firebase.database.ServerValue.TIMESTAMP,
-        online: true
+      // ゲスト枠への登録（アトミックなトランザクションで上書き競合を完全に排除）
+      let isAlreadyTaken = false;
+      const txResult = await roomRef.child("guest").transaction((currentGuest) => {
+        if (currentGuest && (currentGuest.name || currentGuest.online !== false)) {
+          // 既に誰かがゲストとして登録されている場合は上書きを拒否
+          isAlreadyTaken = true;
+          return undefined; // 中断
+        }
+        return {
+          name: myName,
+          joinedAt: firebase.database.ServerValue.TIMESTAMP,
+          online: true
+        };
       });
+
+      if (isAlreadyTaken || !txResult.committed) {
+        console.log(`[Firebase Join] ゲスト枠の登録競合が発生したため観戦確認へ移行します`);
+        const latestSnap = await roomRef.once("value");
+        return await this._handleRoomFullForSpectator(cleanCode, latestSnap.val() || roomData);
+      }
+
       await roomRef.child("status").set("connected");
 
       // 切断時の自動反映
@@ -688,39 +708,53 @@ const P2P = {
     this._addListener(specListRef, "child_changed", onSpecChange);
   },
 
-  /** オーナー側: 観戦承認モーダル表示 */
+  /** オーナー側: 観戦承認モーダル表示（既存モーダルを破壊しない独立フローティングUI） */
   _showSpectatorRequestModal(spec) {
     if (this._pendingSpectatorModalId === spec.id) return;
     this._pendingSpectatorModalId = spec.id;
 
+    // 既存の観戦ポップアップがあれば先に除去
+    const prevPopup = document.getElementById("spectator-request-popup");
+    if (prevPopup) prevPopup.remove();
+
     const safeName = this._escapeHtml(spec.name || "観戦希望者");
-    if (typeof showModal === "function") {
-      showModal(
-        "👁️ 観戦リクエスト",
-        `<div style="text-align:center; padding:18px 10px; color:#f8fafc;">
-          <div style="font-size:44px; margin-bottom:12px;">👀</div>
-          <p style="font-size:16px; font-weight:bold; color:#38bdf8; margin-bottom:8px;">
-            <b>${safeName}</b> さんが観戦しようとしています。<br>許可しますか？
-          </p>
-          <p style="font-size:13px; color:#94a3b8; line-height:1.6;">
-            許可すると、盤面がリアルタイムに共有されます。<br>
-            （※手札は観戦者には見えません）
-          </p>
-        </div>`,
-        `<div style="display:flex; gap:12px; justify-content:center;">
-          <button class="btn" style="background:#e11d48; border-color:#fda4af; color:#fff;" onclick="P2P.resolveSpectatorRequest('${spec.id}', false, '${safeName}')">❌ 拒否する</button>
-          <button class="btn" style="background:#10b981; border-color:#6ee7b7; color:#fff;" onclick="P2P.resolveSpectatorRequest('${spec.id}', true, '${safeName}')">⭕ 許可する</button>
-        </div>`
-      );
-    } else {
-      const ok = confirm(`${spec.name || "観戦希望者"} さんが観戦しようとしています。許可しますか？`);
-      this.resolveSpectatorRequest(spec.id, ok, spec.name);
-    }
+
+    const popup = document.createElement("div");
+    popup.id = "spectator-request-popup";
+    popup.style.cssText = `
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 100000;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.2s ease-out;
+    `;
+
+    popup.innerHTML = `
+      <div style="background: #1e293b; border: 2px solid #38bdf8; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); max-width: 420px; width: 90%; padding: 22px; color: #f8fafc; text-align: center; box-sizing: border-box;">
+        <div style="font-size: 40px; margin-bottom: 8px;">👀</div>
+        <h3 style="margin: 0 0 10px; font-size: 18px; color: #38bdf8; font-weight: bold;">👁️ 観戦リクエスト</h3>
+        <p style="font-size: 15px; margin: 0 0 10px; line-height: 1.5; color: #e2e8f0;">
+          <b>${safeName}</b> さんが観戦しようとしています。<br>許可しますか？
+        </p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 0 0 20px; line-height: 1.5;">
+          許可すると、盤面がリアルタイムに共有されます。<br>（※手札は観戦者には見えません）
+        </p>
+        <div style="display: flex; gap: 14px; justify-content: center;">
+          <button class="btn" style="background: #e11d48; border-color: #fda4af; color: #fff; padding: 10px 22px; font-weight: bold;" onclick="P2P.resolveSpectatorRequest('${spec.id}', false, '${safeName}')">❌ 拒否する</button>
+          <button class="btn" style="background: #10b981; border-color: #6ee7b7; color: #fff; padding: 10px 22px; font-weight: bold;" onclick="P2P.resolveSpectatorRequest('${spec.id}', true, '${safeName}')">⭕ 許可する</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(popup);
   },
 
-  /** オーナー側: 観戦リクエストの承認/拒否処理 */
+  /** オーナー側: 観戦リクエストの承認/拒否処理（独立UIのみ閉じる） */
   resolveSpectatorRequest(specId, isApproved, specName) {
-    if (typeof closeModal === "function") closeModal();
+    const popup = document.getElementById("spectator-request-popup");
+    if (popup) popup.remove();
     this._pendingSpectatorModalId = null;
     if (!this._roomRef) return;
 
