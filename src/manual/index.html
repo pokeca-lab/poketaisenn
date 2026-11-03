@@ -96,6 +96,10 @@
           <span class="toc-num" style="background:#0ea5e9;">00</span>
           <span class="toc-label">接続・入室手順</span>
         </a>
+        <a href="#sec-spectator" class="toc-item" style="border:1.5px solid #38bdf8;">
+          <span class="toc-num" style="background:#0284c7;">👁️</span>
+          <span class="toc-label" style="color:#0369a1; font-weight:800;">観戦者モード</span>
+        </a>
         <a href="#sec-01" class="toc-item">
           <span class="toc-num">01</span>
           <span class="toc-label">ターンの流れ</span>
@@ -262,22 +266,76 @@
         </div>
 
         <!-- 👁️ 観戦者モードについて -->
-        <div class="callout callout-tip" style="margin-top:18px; border-left:4px solid #38bdf8; background:#f0f9ff;">
-          <b style="color:#0284c7; font-size:15px;">👁️ 観戦者モード（マッチング済み対戦のリアルタイム観戦）</b><br>
-          ・すでに2名が対戦中のルーム番号を入力して「ルームに入る」を押すと、<b>「このルームIDはすでにマッチング済みです。観戦しますか？」</b>という確認画面が表示されます。<br>
-          ・「OK」を押すと、対戦中のオーナー（ホスト）に観戦リクエストが届きます。オーナーが「許可する」を押すと、リアルタイムに盤面を観戦できるようになります（拒否された場合はロビーへ戻ります）。<br>
-          ・<b>【安心の手札非公開】</b>：対戦者双方の手札カードの中身は見えず、スリーブ裏面として枚数のみ表示されるため、フェアで安全に観戦できます。<br>
-          ・<b>【対戦チャット参加】</b>：観戦者も対戦チャットに最初から参加可能で、応援やコメントを送ることができます！<br>
-          ・<b>【ボイス通話参加（承認制）】</b>：画面上部バーの「🎙️ 通話」ボタンを押すと、ルームオーナーへ通話参加リクエストを送信できます。オーナーが許可すると、対戦プレイヤーと観戦者による3人同時のボイスチャットに参加できます。<br>
-          ・<b>【観戦終了】</b>：画面上部の「🚪 観戦終了」ボタンで、いつでも安全にロビーに戻れます。
+        <div class="subsection" id="sec-spectator" style="margin-top:28px; background:linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%); border:2px solid #38bdf8; border-radius:16px; padding:22px 20px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+            <span style="display:inline-block; font-size:26px;">👁️</span>
+            <h3 style="margin:0; font-size:18px; color:#0369a1; font-weight:800;">観戦者モード（リアルタイム盤面観戦＆通話・チャット参加）</h3>
+            <span class="version-badge" style="background:#0284c7; font-size:11px; padding:2px 8px;">Ver 1.5 新機能</span>
+          </div>
+          <p style="font-size:14px; line-height:1.7; color:#334155; margin-bottom:16px;">
+            すでにマッチング済みの対戦部屋に第三者として入室し、<b>対戦の様子をリアルタイムに観戦できる機能</b>です。<br>
+            友達の対戦の応援、リモート大会の観戦・配信、初心者へのティーチングやアドバイスなど、幅広く活用いただけます。
+          </p>
+
+          <div style="background:#ffffff; border:1px solid #bae6fd; border-radius:12px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(56,189,248,0.08);">
+            <h4 style="margin:0 0 10px; font-size:15px; color:#0284c7; font-weight:700;">🚀 観戦の始め方（かんたん3ステップ）</h4>
+            <ol style="margin:0; padding-left:22px; font-size:13.5px; line-height:1.8; color:#1e293b;">
+              <li><b>ルーム番号を入力して入室</b>：ロビーの「ルーム番号で入室」欄に、対戦中の<b>6桁のルーム番号</b>を入力して「入室」を押します。</li>
+              <li><b>観戦確認ダイアログで「OK」</b>：すでに2名がマッチング済みの場合、<b>「このルームIDはすでにマッチング済みです。観戦しますか？」</b>と表示されるので「OK」を選択します。</li>
+              <li><b>オーナーの承認で観戦スタート</b>：部屋のオーナー（ホスト）に観戦リクエストが届きます。オーナーが「⭕ 許可する」を押すと、即座に盤面同期が始まり観戦画面へ切り替わります（※ロビー待機中の場合は「対戦開始待機中」となり、対戦が始まると自動的に観戦画面へ移動します）。</li>
+            </ol>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-bottom:16px;">
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+              <div style="font-weight:bold; color:#0f172a; font-size:14px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                <span>🔒</span><span>安心の手札完全非公開（カンニング防止）</span>
+              </div>
+              <p style="margin:0; font-size:12.5px; color:#64748b; line-height:1.6;">
+                対戦者双方の手札カードの中身は観戦者には一切見えず、スリーブ裏面の枚数のみが表示されます。作戦や手札事故が第三者に漏れる心配がなく、競技対戦でも安心してご利用いただけます。
+              </p>
+            </div>
+
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+              <div style="font-weight:bold; color:#0f172a; font-size:14px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                <span>⚡</span><span>盤面・トラッシュ・サイド完全リアルタイム同期</span>
+              </div>
+              <p style="margin:0; font-size:12.5px; color:#64748b; line-height:1.6;">
+                バトル場・ベンチのポケモン、ついているエネルギーやダメカン、スタジアム、トラッシュ、ロストゾーンの状況が瞬時に同期されます。カードをダブルクリックすると拡大画面でテキストを確認できます。
+              </p>
+            </div>
+
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+              <div style="font-weight:bold; color:#0f172a; font-size:14px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                <span>💬</span><span>対戦チャットにいつでも参加</span>
+              </div>
+              <p style="margin:0; font-size:12.5px; color:#64748b; line-height:1.6;">
+                画面右上の吹き出しボタン（💬）から、対戦チャットに参加して応援やコメントを送信できます。観戦者からの発言は発言者名の前に「[観戦]」と明記されます。
+              </p>
+            </div>
+
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+              <div style="font-weight:bold; color:#0f172a; font-size:14px; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                <span>🎙️</span><span>3人ボイス通話に対応（オーナー承認制）</span>
+              </div>
+              <p style="margin:0; font-size:12.5px; color:#64748b; line-height:1.6;">
+                観戦バーの「🎙️ 通話」ボタンを押すとオーナーへ通話参加リクエストを送信。オーナーが許可すると、対戦プレイヤー2名＋観戦者による3人同時の高品質ボイスチャット（SkyWay）に参加できます。
+              </p>
+            </div>
+          </div>
+
+          <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:10px; padding:12px 16px; font-size:13px; color:#065f46; line-height:1.6;">
+            <b>🚪 いつでもワンクリックで安全に退室可能</b><br>
+            画面上部の観戦ステータスバーにある<b>「🚪 観戦終了」ボタン</b>を押せば、進行中の対戦に一切影響を与えることなく、いつでも安全にロビー画面へ戻ることができます。
+          </div>
         </div>
 
         <!-- 💡 接続のヒント -->
         <div class="callout callout-note" style="margin-top:18px;">
           <b>💡 接続がうまくいかない場合のチェックポイント</b><br>
-          ・ホストとゲストで入力した「4桁のルーム番号」が完全に一致しているかご確認ください。<br>
+          ・ホストとゲストで入力した「6桁のルーム番号」が完全に一致しているかご確認ください。<br>
           ・画面右上の「接続状態」が 🟢（接続中）になると、自動的に「対戦を開始する」ボタンが押せるようになります。<br>
-          ・万が一通信が途切れてしまった場合でも、同じ4桁のルーム番号を入力すればすぐに元の対戦に復帰できます。
+          ・万が一通信が途切れてしまった場合でも、同じ6桁のルーム番号を入力すればすぐに元の対戦に復帰できます。
         </div>
       </div>
 
@@ -969,7 +1027,8 @@
         <p>
           Discordなどの外部アプリを開かなくても、<b>ブラウザだけでそのまま相手と直接音声で会話</b>ができます（利用料やアカウント登録は一切不要です）。<br>
           「🎙️ 通話」ボタンを押すと相手に呼び出し音が届き、相手が受けると通話開始！<br>
-          <span style="color:#d97706; font-size:12px; font-weight:bold;">※ ハウリング防止のためイヤホンのご使用を推奨します。</span>
+          <span style="color:#d97706; font-size:12px; font-weight:bold;">※ ハウリング防止のためイヤホンのご使用を推奨します。</span><br>
+          <span style="color:#0284c7; font-size:12px; font-weight:bold;">※ 観戦者がいる場合、観戦者からの参加リクエストをオーナーが承認することで、3人同時のマルチボイスチャットも楽しめます！</span>
         </p>
 
         <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; margin:14px 0;">
@@ -1540,6 +1599,29 @@
               <td><b>相手と通話する</b></td>
               <td colspan="2"><b>「🎙️ 通話」</b>ボタンを押して相手を呼び出し、相手が受託すると通話開始</td>
               <td>通話アプリ不要・完全無料。通話バーはドラッグで好きな位置へ移動できます。</td>
+            </tr>
+
+            <!-- 👁️ 観戦者モード -->
+            <tr class="cheat-cat-row">
+              <td colspan="5">👁️ 観戦者モード（マッチング済み対戦のリアルタイム観戦）</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">観戦の開始</td>
+              <td><b>対戦を観戦する</b></td>
+              <td colspan="2">ロビーで対戦中の<b>6桁ルーム番号</b>を入力して「入室」 → 「観戦しますか？」にOK → オーナーの許可で観戦開始</td>
+              <td>手札は完全非公開（カンニング防止）。盤面・トラッシュ・サイドがリアルタイム同期されます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">チャット・通話参加</td>
+              <td><b>応援・3人ボイス通話</b></td>
+              <td colspan="2">画面右上<b>「💬」</b>でチャット参加（[観戦]タグ付き）。観戦バーの<b>「🎙️ 通話」</b>でオーナーへ通話参加リクエスト</td>
+              <td>オーナーが許可すると対戦者と3人同時に音声会話できます。</td>
+            </tr>
+            <tr>
+              <td class="cheat-target-cell">観戦終了</td>
+              <td><b>ロビーに戻る</b></td>
+              <td colspan="2">画面上部バーの<b>「🚪 観戦終了」</b>ボタンを押す</td>
+              <td>対戦プレイヤーに影響を与えることなく、いつでも安全にロビーへ退室できます。</td>
             </tr>
 
             <!-- ロビー・戦績・データ引き継ぎ -->
