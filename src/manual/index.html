@@ -188,16 +188,16 @@
               </li>
               <li>
                 <b>② 「ルームを作成」ボタンをクリック</b><br>
-                「2 ルーム」枠の青い「ルームを作成」を押すと、ランダムな<b>4桁のルーム番号</b>が即座に発行されます。
+                「2 ルーム」枠の青い「ルームを作成」を押すと、ランダムな<b>6桁のルーム番号</b>が即座に発行されます。
                 <div class="connect-ui-mock">
                   <span class="connect-ui-mock-badge">ホスト側画面プレビュー</span><br>
-                  ルーム番号 <b style="font-size:16px; color:#60a5fa; letter-spacing:1px;">7249</b> 
+                  ルーム番号 <b style="font-size:16px; color:#60a5fa; letter-spacing:1px;">724912</b> 
                   <button type="button" style="background:#3b82f6; color:#fff; border:none; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:bold; margin-left:6px;">コピー</button>
                 </div>
               </li>
               <li>
-                <b>③ 相手に4桁番号を伝える</b><br>
-                「コピー」ボタンを押して、LINEやDiscord、SNSなどで対戦相手に4桁の番号を伝えます。
+                <b>③ 相手に6桁番号を伝える</b><br>
+                「コピー」ボタンを押して、LINEやDiscord、SNSなどで対戦相手に6桁の番号を伝えます。
               </li>
               <li>
                 <b>④ あなたのデッキをセット</b><br>
@@ -236,14 +236,14 @@
                 <div class="connect-ui-mock">
                   <span class="connect-ui-mock-badge" style="background:#059669;">ゲスト側画面プレビュー</span><br>
                   <div style="display:flex; gap:6px; margin-top:4px;">
-                    <span style="background:#334155; padding:4px 8px; border-radius:4px; font-size:12px; color:#cbd5e1;">7249 (4桁入力)</span>
+                    <span style="background:#334155; padding:4px 8px; border-radius:4px; font-size:12px; color:#cbd5e1;">724912 (6桁入力)</span>
                     <span style="background:#059669; color:#fff; padding:4px 10px; border-radius:4px; font-size:12px; font-weight:bold;">ルームに入る</span>
                   </div>
                 </div>
               </li>
               <li>
-                <b>③ ホストから教えてもらった4桁番号を入力</b><br>
-                送られてきた4桁の番号（例: <code>7249</code>）を入力し、緑色の「ルームに入る」ボタンを押します。
+                <b>③ ホストから教えてもらった6桁番号を入力</b><br>
+                送られてきた6桁の番号（例: <code>724912</code>）を入力し、緑色の「ルームに入る」ボタンを押します。
               </li>
               <li>
                 <b>④ あなたのデッキをセット</b><br>
@@ -1058,21 +1058,30 @@
          ===================================================== -->
     <article class="manual-chapter" id="sec-08">
       <div class="chapter-number">CHAPTER 09</div>
-      <h2 class="chapter-title">🃏 一人回しツールの使い方（研究・デッキテスト）</h2>
+      <h2 class="chapter-title">🃏 一人回しツールの使い方（ポケカ一人回し練習・デッキテスト）</h2>
 
       <p>
-        ロビー最上部のタブで「一人回し」を選ぶと、先攻・後攻の2デッキを登録し、1台の端末で両方の視点を切り替えながら練習できます。
+        ロビー最上部のタブで<b>「🃏 一人回し」</b>を選ぶと、先攻・後攻の2つのデッキを登録し、1台のPCやスマートフォンで両方の視点を切り替えながら一人回し練習ができます。新デッキの初動展開テストや事故率の検証、対面相性の研究に最適です。
       </p>
 
       <div class="subsection">
-        <h3 class="subsection-title">1. 自動上下スワップ（手番交代）</h3>
+        <h3 class="subsection-title">1. 一人回しの始め方（簡単3ステップ）</h3>
+        <ol class="manual-ordered-list" style="margin-left: 20px; line-height: 1.8; color: #334155;">
+          <li><b>モード切替</b>：ロビー上部の「🃏 一人回し」タブをクリックします。</li>
+          <li><b>デッキ登録</b>：先攻（指定デッキ1）・後攻（指定デッキ2）のデッキコードを貼り付けて「読込」を押すか、サンプルデッキから選択します。同じデッキ同士のミラー対戦練習も可能です。</li>
+          <li><b>対戦開始</b>：「一人回しスタート」ボタンを押すと対戦準備画面へ進み、たねポケモンのセットや個別マリガンを経て一人回しが始まります。</li>
+        </ol>
+      </div>
+
+      <div class="subsection">
+        <h3 class="subsection-title">2. 自動上下スワップ（手番交代）</h3>
         <p>
-          「ターン終了」ボタンを押すと、<b>画面の上下が自動で反転</b>し、常に手番側のプレイヤーが手前に来るようスムーズに視点が入れ替わります。
+          「ターン終了」ボタンを押すと、<b>画面の上下が自動で反転</b>し、常に手番側のプレイヤーが手前に来るようスムーズに視点が入れ替わります。対戦相手役のデッキも自分で直感的に操作できます。
         </p>
       </div>
 
       <div class="subsection">
-        <h3 class="subsection-title">2. セッション自動セーブ ＆ 中断再開</h3>
+        <h3 class="subsection-title">3. セッション自動セーブ ＆ 中断再開</h3>
         <p>
           一人回しの盤面はブラウザに常時自動保存されています。誤ってタブを閉じたりリロードしてしまっても、ロビー上部の復元バナーから直前の状態へ瞬時に復帰できます。
         </p>
