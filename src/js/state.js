@@ -169,7 +169,14 @@ function resetOpponentCards() {
   state.mustPromoteToActive = false;
 }
 
+/** 共有スタジアム状態の初期化（対戦開始・退室・ルーム切替時） */
+function resetStadiumState() {
+  state.stadium = null;
+  state.stadiumTs = 0;
+}
+
 window.resetOpponentCards = resetOpponentCards;
+window.resetStadiumState = resetStadiumState;
 window.state = state;
 
 

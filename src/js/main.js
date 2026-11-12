@@ -442,6 +442,9 @@ const actions = {
         P2P.disconnect();
       }
       state.oppExited = false;
+      if (typeof resetStadiumState === "function") {
+        resetStadiumState();
+      }
       if (typeof BattleTimer !== "undefined") {
         BattleTimer.reset();
       }

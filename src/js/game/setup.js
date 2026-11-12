@@ -28,6 +28,12 @@ function startBattleSetup() {
   state.myLost = [];
   state.tempCards = [];
   state.playCard = null;
+  if (typeof resetStadiumState === "function") {
+    resetStadiumState();
+  } else {
+    state.stadium = null;
+    state.stadiumTs = 0;
+  }
   state.selectedHandIndices.clear();
   state.turn = 1;
   state.turnStep = 1;
@@ -119,7 +125,12 @@ function startSoloBattleSetup() {
 
   state.tempCards = [];
   state.playCard = null;
-  state.stadium = null;
+  if (typeof resetStadiumState === "function") {
+    resetStadiumState();
+  } else {
+    state.stadium = null;
+    state.stadiumTs = 0;
+  }
   state.selectedHandIndices.clear();
   state.turn = 1;
   state.turnStep = 1;

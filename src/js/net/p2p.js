@@ -255,6 +255,7 @@ const P2P = {
   async host(code) {
     if (!this.available()) return false;
     this._destroy();
+    if (typeof resetStadiumState === "function") resetStadiumState();
     this.role = "host";
     this.lastError = null;
 
@@ -361,6 +362,7 @@ const P2P = {
     }
 
     this._destroy();
+    if (typeof resetStadiumState === "function") resetStadiumState();
     this.role = "guest";
     this.roomCode = cleanCode;
     this.lastError = null;
@@ -580,6 +582,7 @@ const P2P = {
     state.setupStep = "done";
     state.roomNo = cleanCode;
     state.oppName = state.spectatorGuestName;
+    if (typeof resetStadiumState === "function") resetStadiumState();
 
     // ホスト・ゲストの退室監視
     this._addListener(this._roomRef.child("host"), "value", (hSnap) => {
@@ -679,6 +682,7 @@ const P2P = {
     this._destroy();
     state.isSpectator = false;
     state.spectatorId = null;
+    if (typeof resetStadiumState === "function") resetStadiumState();
 
     const bar = document.getElementById("spectator-bar");
     if (bar) bar.style.display = "none";
@@ -836,8 +840,12 @@ const P2P = {
       }
 
       // スタジアム・ターン情報の更新
-      if (s.stadium) state.stadium = s.stadium;
-      if (s.stadiumTs) state.stadiumTs = Number(s.stadiumTs) || 0;
+      const incomingStadiumTs = Number(s.stadiumTs) || 0;
+      const currentStadiumTs = Number(state.stadiumTs) || 0;
+      if (incomingStadiumTs > currentStadiumTs || (incomingStadiumTs === 0 && currentStadiumTs === 0)) {
+        state.stadium = s.stadium ? s.stadium : null;
+        state.stadiumTs = incomingStadiumTs;
+      }
       if (s.turn) state.turn = s.turn;
       if (s.turnStep) state.turnStep = s.turnStep;
 
@@ -904,6 +912,33 @@ const P2P = {
     this._setState(P2P_STATES.DISCONNECTED, "接続を切断しました");
     if (typeof showToast === "function") {
       showToast("対戦ルームから切断しました");
+    }
+    if (typeof renderAll === "function") renderAll();
+  },
+
+  /** 相手退室モーダル等からロビーに戻る際の後処理 */
+  returnToLobbyAfterExit() {
+    if (typeof closeModal === "function") closeModal();
+    if (window.VoiceChat) {
+      VoiceChat.endCall(false);
+    }
+    this._destroy();
+    const roomBox = document.getElementById("room-box");
+    if (roomBox) roomBox.classList.add("hidden");
+    this._setState(P2P_STATES.DISCONNECTED, "ロビーに戻りました");
+    state.oppExited = false;
+    if (typeof resetStadiumState === "function") {
+      resetStadiumState();
+    }
+    if (typeof BattleTimer !== "undefined") {
+      BattleTimer.reset();
+    }
+    const gameEl = document.getElementById("game");
+    const lobbyEl = document.getElementById("lobby");
+    if (gameEl) gameEl.classList.add("hidden");
+    if (lobbyEl) lobbyEl.classList.remove("hidden");
+    if (typeof checkSoloResumeBanner === "function") {
+      checkSoloResumeBanner();
     }
     if (typeof renderAll === "function") renderAll();
   },
@@ -1125,7 +1160,7 @@ const P2P = {
             </div>`,
             `<div style="display:flex; gap:8px; justify-content:flex-end;">
               <button class="btn" onclick="closeModal()">このまま盤面を見る</button>
-              <button class="btn red" onclick="closeModal(); document.getElementById('game').classList.add('hidden'); document.getElementById('lobby').classList.remove('hidden');">ロビーに戻る</button>
+              <button class="btn red" onclick="P2P.returnToLobbyAfterExit()">ロビーに戻る</button>
             </div>`
           );
         }
