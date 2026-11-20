@@ -2,902 +2,600 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>ポケアリ宣伝ポスター - パターンA（王道大会ポップ）</title>
+  <title>ポケアリ 宣伝ポスター - パターンA (超ポップ＆キュート)</title>
   <style>
-    @page {
-      size: A4 portrait;
-      margin: 0;
-    }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-    html, body {
-      width: 210mm;
-      height: 297mm;
-      margin: 0;
-      padding: 0;
-      background: #ffffff;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
-    }
-    .poster-page {
-      width: 210mm;
-      height: 297mm;
-      position: relative;
-      overflow: hidden;
-      display: flex !important;
-      flex-direction: column;
-    }
     
-    /* =========================================================================
-       印刷 ＆ 画面共通リセット・A4サイズ定義
-       ========================================================================= */
-    @page {
-      size: A4 portrait;
-      margin: 0;
+  @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap');
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  html, body {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "Kosugi Maru", -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .poster-canvas {
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10mm 12mm 9mm 12mm;
+  }
+
+  /* 装飾SVGアイコン共通 */
+  .poke-chara-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+  }
+  .poke-ball-svg {
+    display: inline-block;
+    vertical-align: middle;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  }
+
+  /* 吹き出し共通 */
+  .pop-bubble {
+    background: #ffffff;
+    border: 3px solid #0f172a;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-weight: 900;
+    font-size: 13px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 10;
+  }
+  .pop-bubble::after {
+    content: "";
+    position: absolute;
+    bottom: -9px;
+    left: 20px;
+    border-width: 9px 8px 0;
+    border-style: solid;
+    border-color: #0f172a transparent;
+    display: block;
+    width: 0;
+  }
+  .pop-bubble::before {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 22px;
+    border-width: 7px 6px 0;
+    border-style: solid;
+    border-color: #ffffff transparent;
+    display: block;
+    width: 0;
+    z-index: 1;
+  }
+
+  /* キラキラスター */
+  .deco-star {
+    position: absolute;
+    pointer-events: none;
+    font-size: 18px;
+    animation: twinkle 2s infinite ease-in-out;
+  }
+
+
+    /* パターンA 背景: ポルカドット＋カラフルグラデーション */
+    .theme-park {
+      background: radial-gradient(#fde047 15%, transparent 16%) 0 0 / 24px 24px,
+                  linear-gradient(180deg, #fef9c3 0%, #fff7ed 40%, #e0f2fe 100%);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
-      background: #0f172a;
-      color: #1e293b;
-      min-height: 100vh;
+    /* 最上部ヘッダー */
+    .park-top {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      padding: 20px 0 60px;
+      background: #ffffff;
+      border: 3.5px solid #0f172a;
+      border-radius: 24px;
+      padding: 6px 16px;
+      box-shadow: 0 6px 0px #0f172a;
+      margin-bottom: 3.5mm;
     }
-
-    /* =========================================================================
-       画面操作用ツールバー（印刷時は非表示）
-       ========================================================================= */
-    .preview-control-bar {
-      position: sticky;
-      top: 16px;
-      z-index: 1000;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1.5px solid #38bdf8;
-      border-radius: 9999px;
-      padding: 8px 18px;
+    .park-top-logo img {
+      height: 12mm;
+      display: block;
+    }
+    .park-top-badges {
       display: flex;
-      align-items: center;
-      gap: 14px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      margin-bottom: 24px;
+      gap: 8px;
     }
-
-    .preview-title {
-      color: #38bdf8;
-      font-weight: 800;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .tab-group {
-      display: flex;
-      background: #1e293b;
-      border-radius: 9999px;
-      padding: 3px;
-      gap: 2px;
-    }
-
-    .tab-btn {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      padding: 6px 14px;
-      border-radius: 9999px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .tab-btn:hover {
-      color: #f8fafc;
-    }
-
-    .tab-btn.active {
-      background: #38bdf8;
-      color: #0f172a;
-      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4);
-    }
-
-    .print-btn {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
+    .badge-capsule {
+      background: #ff5252;
       color: #ffffff;
-      border: none;
-      border-radius: 9999px;
-      padding: 7px 18px;
       font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .print-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.5);
-    }
-
-    .instruction-tip {
-      font-size: 12px;
-      color: #cbd5e1;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-
-    .instruction-tip b {
-      color: #facc15;
-    }
-
-    /* =========================================================================
-       A4ポスターキャンバス（210mm × 297mm）
-       ========================================================================= */
-    .poster-page { width: 210mm; height: 297mm; position: relative; overflow: hidden; display: flex; flex-direction: column; }
-
-    .poster-page.active-poster {
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* =========================================================================
-       共通パーツスタイル
-       ========================================================================= */
-    .badge {
+      font-weight: 900;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      border: 2px solid #0f172a;
+      box-shadow: 0 3px 0px #0f172a;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 4px 12px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
+    }
+    .badge-capsule.blue {
+      background: #38bdf8;
+      color: #0f172a;
     }
 
-    .sparkle {
-      display: inline-block;
-      animation: bounce 2s infinite ease-in-out;
-    }
-
-    /* =========================================================================
-       🎨 パターンA: 【王道ポップ・大会アピール型】（元気なイエロー＆ブルー）
-       ========================================================================= */
-    .poster-a {
-      background: linear-gradient(180deg, #eff6ff 0%, #ffffff 45%, #fffbeb 100%);
-      padding: 12mm 14mm 10mm 14mm;
-      justify-content: space-between;
-    }
-
-    /* パターンA: 背景装飾ボール・星 */
-    .poster-a::before {
-      content: "";
-      position: absolute;
-      top: -60px;
-      right: -60px;
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #fde047 0%, rgba(253, 224, 71, 0) 70%);
-      opacity: 0.6;
-      pointer-events: none;
-    }
-
-    /* ヘッダー部 */
-    .poster-a .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 5mm;
-    }
-
-    .poster-a .logo-wrap img {
-      height: 14mm;
-      width: auto;
-      object-fit: contain;
-    }
-
-    .poster-a .top-badges {
-      display: flex;
-      gap: 6px;
-    }
-
-    .poster-a .badge-free {
-      background: #ef4444;
-      color: #ffffff;
-      box-shadow: 0 3px 8px rgba(239, 68, 68, 0.35);
-    }
-
-    .poster-a .badge-nobrowser {
-      background: #0284c7;
-      color: #ffffff;
-      box-shadow: 0 3px 8px rgba(2, 132, 199, 0.35);
-    }
-
-    /* ヒーローキャッチ部 */
-    .poster-a .hero-section {
+    /* ヒーロータイトルエリア */
+    .park-hero {
+      position: relative;
       text-align: center;
-      margin-bottom: 4mm;
+      margin-bottom: 3.5mm;
     }
-
-    .poster-a .sub-catch {
+    .park-hero-sub {
       display: inline-block;
-      background: #fef08a;
-      color: #854d0e;
-      border: 2px dashed #eab308;
+      background: #ffde59;
+      color: #713f12;
+      font-size: 14px;
+      font-weight: 900;
+      padding: 4px 20px;
       border-radius: 9999px;
-      padding: 4px 18px;
-      font-size: 13.5px;
-      font-weight: 800;
-      margin-bottom: 6px;
+      border: 2.5px solid #0f172a;
+      box-shadow: 0 3px 0px #0f172a;
+      margin-bottom: 5px;
     }
-
-    .poster-a .main-catch {
-      font-size: 26px;
+    .park-hero-title {
+      font-size: 30px;
       font-weight: 900;
       line-height: 1.25;
       color: #0f172a;
       letter-spacing: -0.5px;
-      text-shadow: 2px 2px 0px #ffffff;
+      text-shadow: 3px 3px 0px #ffffff, 5px 5px 0px #facc15;
     }
-
-    .poster-a .main-catch .highlight-blue {
+    .park-hero-title .em-red {
+      color: #ef4444;
+      text-shadow: 3px 3px 0px #ffffff, 5px 5px 0px #fca5a5;
+    }
+    .park-hero-title .em-blue {
       color: #0284c7;
-      background: linear-gradient(transparent 65%, #bae6fd 65%);
+      text-shadow: 3px 3px 0px #ffffff, 5px 5px 0px #93c5fd;
     }
 
-    .poster-a .main-catch .highlight-red {
-      color: #dc2626;
-      background: linear-gradient(transparent 65%, #fecaca 65%);
-    }
-
-    /* ビジュアルプレビュー部 */
-    .poster-a .visual-stage {
+    /* キャラクターが飛び出すビジュアルエリア */
+    .park-stage {
       position: relative;
-      height: 72mm;
-      margin-bottom: 5mm;
+      height: 82mm;
+      background: #ffffff;
+      border: 4px solid #0f172a;
+      border-radius: 28px;
+      box-shadow: 0 8px 0px #0f172a;
+      padding: 4mm 6mm;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      margin-bottom: 4mm;
     }
 
-    .poster-a .pc-mockup {
-      width: 128mm;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
+    /* ポップな飾り枠（対戦画面） */
+    .park-mockup-wrap {
+      position: relative;
+      width: 122mm;
+    }
+    .park-mockup-wrap img {
+      width: 100%;
+      border-radius: 14px;
       border: 3px solid #0f172a;
-      z-index: 1;
+      display: block;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
     }
-
-    .poster-a .sp-mockup {
+    .park-sp-wrap {
       position: absolute;
-      right: 8mm;
-      bottom: -4mm;
+      right: -16mm;
+      bottom: -6mm;
       width: 44mm;
-      height: auto;
-      border-radius: 12px;
-      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+      z-index: 5;
+    }
+    .park-sp-wrap img {
+      width: 100%;
+      border-radius: 16px;
       border: 3.5px solid #0f172a;
-      z-index: 2;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
       transform: rotate(4deg);
+      display: block;
     }
 
-    .poster-a .float-sticker {
+    /* ピカチュウ（左上に配置） */
+    .chara-pika-anchor {
       position: absolute;
-      left: 6mm;
-      top: 6mm;
-      background: #f59e0b;
-      color: #ffffff;
-      padding: 8px 14px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 900;
-      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
-      transform: rotate(-6deg);
-      z-index: 3;
-      border: 2px solid #ffffff;
-      text-align: center;
-      line-height: 1.3;
+      left: -8mm;
+      top: -10mm;
+      width: 32mm;
+      height: 32mm;
+      z-index: 10;
+    }
+    .bubble-pika {
+      position: absolute;
+      left: 18mm;
+      top: -6mm;
+      background: #fff;
+      transform: rotate(-4deg);
+      white-space: nowrap;
     }
 
-    /* 特長3カード */
-    .poster-a .features-grid {
+    /* イーブイ（右上に配置） */
+    .chara-eevee-anchor {
+      position: absolute;
+      right: -8mm;
+      top: -10mm;
+      width: 32mm;
+      height: 32mm;
+      z-index: 10;
+    }
+    .bubble-eevee {
+      position: absolute;
+      right: 18mm;
+      top: -6mm;
+      background: #fff;
+      transform: rotate(4deg);
+      white-space: nowrap;
+    }
+    .bubble-eevee::after { left: auto; right: 20px; }
+    .bubble-eevee::before { left: auto; right: 22px; }
+
+    /* 魅力3つのステッカーカード */
+    .park-cards {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 3.5mm;
-      margin-bottom: 5mm;
+      margin-bottom: 4mm;
     }
-
-    .feature-card {
+    .park-card {
       background: #ffffff;
-      border-radius: 10px;
-      padding: 3.5mm 3mm;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-      border: 2px solid #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      border: 3.5px solid #0f172a;
+      border-radius: 20px;
+      padding: 3.5mm 3.5mm 3mm;
+      box-shadow: 0 5px 0px #0f172a;
       text-align: center;
+      position: relative;
     }
+    .park-card.c-yellow { background: #fefce8; border-color: #0f172a; }
+    .park-card.c-pink { background: #fdf2f8; border-color: #0f172a; }
+    .park-card.c-blue { background: #f0f9ff; border-color: #0f172a; }
 
-    .poster-a .card-1 { border-color: #93c5fd; background: #f8fafc; }
-    .poster-a .card-2 { border-color: #fde047; background: #fefce8; }
-    .poster-a .card-3 { border-color: #86efac; background: #f0fdf4; }
-
-    .feature-icon-badge {
-      font-size: 20px;
-      margin-bottom: 2mm;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #ffffff;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    .card-ribbon {
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #f59e0b;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 2px 12px;
+      border-radius: 9999px;
+      border: 2px solid #0f172a;
+      box-shadow: 0 2px 0px #0f172a;
+      white-space: nowrap;
     }
+    .card-ribbon.r-pink { background: #ec4899; }
+    .card-ribbon.r-blue { background: #0284c7; }
 
-    .feature-title {
-      font-size: 13px;
+    .card-icon-big {
+      font-size: 26px;
+      margin-top: 1mm;
+      margin-bottom: 1.5mm;
+      display: block;
+    }
+    .card-h {
+      font-size: 13.5px;
       font-weight: 900;
       color: #0f172a;
       margin-bottom: 1.5mm;
       line-height: 1.3;
     }
-
-    .feature-desc {
+    .card-p {
       font-size: 10px;
-      color: #475569;
-      line-height: 1.45;
-      font-weight: 500;
-    }
-
-    .feature-desc b {
-      color: #0f172a;
+      color: #334155;
       font-weight: 700;
+      line-height: 1.45;
+      text-align: left;
+    }
+    .card-p b {
+      color: #ef4444;
     }
 
-    /* フッター・QRアクション部 */
-    .poster-a .action-footer {
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-      border-radius: 14px;
-      padding: 4mm 6mm;
-      color: #ffffff;
+    /* フッター：特大QRコード ＆ みんなで遊ぼうエリア */
+    .park-footer {
+      background: #ffffff;
+      border: 4px solid #0f172a;
+      border-radius: 26px;
+      padding: 3.5mm 6mm;
+      box-shadow: 0 8px 0px #0f172a;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 10px 24px rgba(2, 132, 199, 0.35);
-      border: 2.5px solid #bae6fd;
+      position: relative;
+    }
+    .footer-chara-pochama {
+      position: absolute;
+      left: 3mm;
+      bottom: -6mm;
+      width: 26mm;
+      height: 26mm;
+      z-index: 10;
+    }
+    .footer-chara-purin {
+      position: absolute;
+      right: 38mm;
+      bottom: -6mm;
+      width: 26mm;
+      height: 26mm;
+      z-index: 10;
     }
 
-    .footer-text-col {
+    .footer-info {
+      padding-left: 24mm;
       flex: 1;
-      padding-right: 4mm;
     }
-
-    .footer-cta-lead {
+    .footer-banner-pill {
+      background: #facc15;
+      color: #0f172a;
       font-size: 12px;
-      font-weight: 800;
-      color: #fde047;
-      letter-spacing: 0.5px;
-      margin-bottom: 1mm;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .footer-cta-main {
-      font-size: 19px;
       font-weight: 900;
+      padding: 3px 14px;
+      border-radius: 9999px;
+      border: 2px solid #0f172a;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 1.5mm;
+    }
+    .footer-big-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #0f172a;
       line-height: 1.25;
-      margin-bottom: 2mm;
+      margin-bottom: 1.5mm;
     }
-
-    .footer-specs {
+    .footer-tag-list {
       display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
+      gap: 5px;
       font-size: 9.5px;
-      font-weight: 700;
+      font-weight: 800;
     }
-
-    .footer-spec-item {
-      background: rgba(255, 255, 255, 0.2);
+    .footer-tag-list span {
+      background: #f1f5f9;
+      border: 1.5px solid #0f172a;
+      border-radius: 6px;
       padding: 2px 7px;
-      border-radius: 4px;
+      color: #0f172a;
+    }
+    .footer-url-text {
+      font-size: 9.5px;
+      font-weight: 800;
+      color: #0284c7;
+      margin-top: 1.5mm;
+      font-family: Consolas, monospace;
     }
 
-    .footer-url {
-      font-family: Consolas, Monaco, monospace;
-      font-size: 10px;
-      color: #e0f2fe;
-      margin-top: 2mm;
-      font-weight: 600;
-    }
-
-    .footer-qr-col {
+    /* QRコードブロック */
+    .footer-qr-frame {
       display: flex;
       flex-direction: column;
       align-items: center;
-      background: #ffffff;
-      padding: 3mm 3mm 2mm;
-      border-radius: 10px;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.2);
+      background: #ffde59;
+      border: 3px solid #0f172a;
+      border-radius: 18px;
+      padding: 3mm 3.5mm 2mm;
+      box-shadow: 0 4px 0px #0f172a;
+      position: relative;
     }
-
-    .footer-qr-col img {
-      width: 32mm;
-      height: 32mm;
+    .qr-badge-bubble {
+      position: absolute;
+      top: -10px;
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 9.5px;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      border: 1.5px solid #0f172a;
+      white-space: nowrap;
+      box-shadow: 0 2px 0px #0f172a;
+    }
+    .footer-qr-frame img {
+      width: 29mm;
+      height: 29mm;
       display: block;
+      border-radius: 8px;
+      background: #ffffff;
     }
-
-    .footer-qr-caption {
+    .qr-text-under {
       font-size: 9px;
       font-weight: 900;
       color: #0f172a;
-      margin-top: 1.5mm;
+      margin-top: 1mm;
       letter-spacing: 0.5px;
     }
-
-    /* =========================================================================
-       🎨 パターンB: 【一人回し・デッキ研究特化型】（ミント＆エメラルドグリーン）
-       ========================================================================= */
-    .poster-b {
-      background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 40%, #f0fdf4 100%);
-      padding: 12mm 14mm 10mm 14mm;
-      justify-content: space-between;
-    }
-
-    .poster-b .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4mm;
-    }
-
-    .poster-b .logo-wrap img {
-      height: 13mm;
-      width: auto;
-    }
-
-    .poster-b .top-tag {
-      background: #059669;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 4px 14px;
-      border-radius: 9999px;
-      box-shadow: 0 3px 8px rgba(5, 150, 105, 0.3);
-    }
-
-    .poster-b .hero-section {
-      text-align: center;
-      margin-bottom: 4mm;
-    }
-
-    .poster-b .research-badge {
-      display: inline-block;
-      background: #d1fae5;
-      color: #065f46;
-      border: 2px solid #34d399;
-      border-radius: 8px;
-      padding: 3px 14px;
-      font-size: 13px;
-      font-weight: 900;
-      margin-bottom: 5px;
-      letter-spacing: 0.5px;
-    }
-
-    .poster-b .main-catch {
-      font-size: 25px;
-      font-weight: 900;
-      line-height: 1.28;
-      color: #064e3b;
-    }
-
-    .poster-b .main-catch .mark-green {
-      color: #059669;
-      background: linear-gradient(transparent 65%, #a7f3d0 65%);
-    }
-
-    .poster-b .main-catch .mark-orange {
-      color: #ea580c;
-      background: linear-gradient(transparent 65%, #fed7aa 65%);
-    }
-
-    /* パターンB ビジュアル: 一人回し画面強調 */
-    .poster-b .visual-stage {
-      position: relative;
-      height: 74mm;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 4mm;
-    }
-
-    .poster-b .solo-mockup {
-      width: 134mm;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 12px 28px rgba(6, 78, 59, 0.2);
-      border: 3px solid #065f46;
-      z-index: 1;
-    }
-
-    .poster-b .code-callout {
-      position: absolute;
-      left: 4mm;
-      bottom: 2mm;
-      background: #ffffff;
-      border: 2px solid #059669;
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 11px;
-      font-weight: 800;
-      color: #065f46;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
-      z-index: 2;
-    }
-
-    .poster-b .swap-callout {
-      position: absolute;
-      right: 4mm;
-      top: 3mm;
-      background: #f97316;
-      color: #ffffff;
-      border-radius: 8px;
-      padding: 7px 12px;
-      font-size: 11px;
-      font-weight: 900;
-      box-shadow: 0 6px 14px rgba(249, 115, 22, 0.35);
-      z-index: 2;
-      text-align: center;
-      line-height: 1.3;
-    }
-
-    /* パターンB ステップ解説ブロック */
-    .poster-b .step-block {
-      background: #ffffff;
-      border: 2px solid #a7f3d0;
-      border-radius: 12px;
-      padding: 4mm 5mm;
-      margin-bottom: 4mm;
-      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.08);
-    }
-
-    .poster-b .step-title {
-      font-size: 13px;
-      font-weight: 900;
-      color: #065f46;
-      margin-bottom: 3mm;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .poster-b .step-list {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 3mm;
-    }
-
-    .poster-b .step-item {
-      background: #f0fdf4;
-      border-radius: 8px;
-      padding: 2.5mm 3mm;
-      border-left: 3px solid #059669;
-    }
-
-    .poster-b .step-num {
-      font-size: 10px;
-      font-weight: 900;
-      color: #059669;
-      margin-bottom: 1mm;
-    }
-
-    .poster-b .step-name {
-      font-size: 11.5px;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 1mm;
-    }
-
-    .poster-b .step-desc {
-      font-size: 9.5px;
-      color: #475569;
-      line-height: 1.4;
-    }
-
-    /* パターンB フッター */
-    .poster-b .action-footer {
-      background: linear-gradient(135deg, #059669 0%, #047857 100%);
-      border-radius: 14px;
-      padding: 4mm 6mm;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 10px 24px rgba(5, 150, 105, 0.35);
-      border: 2.5px solid #6ee7b7;
-    }
-
-    /* =========================================================================
-       🎨 パターンC: 【オンライン対戦・放課後バトル型】（ビビッドパープル＆シアン）
-       ========================================================================= */
-    .poster-c {
-      background: linear-gradient(180deg, #faf5ff 0%, #ffffff 40%, #f0fdfa 100%);
-      padding: 12mm 14mm 10mm 14mm;
-      justify-content: space-between;
-    }
-
-    .poster-c .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4mm;
-    }
-
-    .poster-c .logo-wrap img {
-      height: 13mm;
-      width: auto;
-    }
-
-    .poster-c .battle-badge {
-      background: linear-gradient(135deg, #a855f7, #7c3aed);
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 4px 14px;
-      border-radius: 9999px;
-      box-shadow: 0 3px 8px rgba(168, 85, 247, 0.35);
-    }
-
-    .poster-c .hero-section {
-      text-align: center;
-      margin-bottom: 4mm;
-    }
-
-    .poster-c .bubble-tag {
-      display: inline-block;
-      background: #f3e8ff;
-      color: #7e22ce;
-      border: 2px solid #c084fc;
-      border-radius: 9999px;
-      padding: 3px 16px;
-      font-size: 13px;
-      font-weight: 900;
-      margin-bottom: 5px;
-    }
-
-    .poster-c .main-catch {
-      font-size: 25px;
-      font-weight: 900;
-      line-height: 1.28;
-      color: #3b0764;
-    }
-
-    .poster-c .main-catch .mark-purple {
-      color: #9333ea;
-      background: linear-gradient(transparent 65%, #e9d5ff 65%);
-    }
-
-    .poster-c .main-catch .mark-cyan {
-      color: #0891b2;
-      background: linear-gradient(transparent 65%, #a5f3fc 65%);
-    }
-
-    /* パターンC ビジュアル: スマホ＆PC対戦強調 */
-    .poster-c .visual-stage {
-      position: relative;
-      height: 74mm;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 4mm;
-    }
-
-    .poster-c .main-stage-img {
-      width: 126mm;
-      border-radius: 8px;
-      box-shadow: 0 12px 28px rgba(88, 28, 135, 0.22);
-      border: 3px solid #6b21a8;
-      z-index: 1;
-    }
-
-    .poster-c .sp-side-img {
-      position: absolute;
-      left: 6mm;
-      bottom: -3mm;
-      width: 44mm;
-      border-radius: 12px;
-      box-shadow: 0 14px 28px rgba(0,0,0,0.35);
-      border: 3px solid #0f172a;
-      z-index: 2;
-      transform: rotate(-5deg);
-    }
-
-    .poster-c .online-pill {
-      position: absolute;
-      right: 6mm;
-      top: 6mm;
-      background: #06b6d4;
-      color: #ffffff;
-      padding: 8px 14px;
-      border-radius: 12px;
-      font-size: 12.5px;
-      font-weight: 900;
-      box-shadow: 0 6px 16px rgba(6, 182, 212, 0.35);
-      transform: rotate(5deg);
-      z-index: 3;
-      border: 2px solid #ffffff;
-      text-align: center;
-      line-height: 1.3;
-    }
-
-    /* パターンC 特長 */
-    .poster-c .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 3.5mm;
-      margin-bottom: 5mm;
-    }
-
-    .poster-c .card-p1 { border-color: #d8b4fe; background: #faf5ff; }
-    .poster-c .card-p2 { border-color: #67e8f9; background: #ecfeff; }
-    .poster-c .card-p3 { border-color: #fbcfe8; background: #fdf2f8; }
-
-    /* パターンC フッター */
-    .poster-c .action-footer {
-      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-      border-radius: 14px;
-      padding: 4mm 6mm;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 10px 24px rgba(124, 58, 237, 0.35);
-      border: 2.5px solid #c4b5fd;
-    }
-
-    /* =========================================================================
-       印刷時専用スタイル（@media print）
-       ========================================================================= */
-    @media print {
-      body {
-        background: transparent !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-
-      .preview-control-bar,
-      .instruction-tip {
-        display: none !important;
-      }
-
-      .poster-page {
-        box-shadow: none !important;
-        margin: 0 !important;
-        page-break-after: always;
-        page-break-inside: avoid;
-      }
-
-      /* 非アクティブなポスターは印刷しない */
-      
-    }
-  
   </style>
 </head>
 <body>
-  <article class="poster-page poster-a active-poster">
+  <div class="poster-canvas theme-park">
 
-    <!-- 最上部ロゴ ＆ バッジ -->
-    <div class="top-bar">
-      <div class="logo-wrap">
+    <!-- ヘッダー -->
+    <div class="park-top">
+      <div class="park-top-logo">
         <img src="assets/logo_banner_slim.png" alt="ポケカラボアリーナ (ポケアリ)">
       </div>
-      <div class="top-badges">
-        <span class="badge badge-free">🎉 完全無料</span>
-        <span class="badge badge-nobrowser">⚡ アプリDL不要・即起動</span>
+      <div class="park-top-badges">
+        <span class="badge-capsule">🎉 完全無料！</span>
+        <span class="badge-capsule blue">⚡ アプリDL不要・すぐ遊べる！</span>
       </div>
     </div>
 
-    <!-- ヒーローキャッチコピー -->
-    <div class="hero-section">
-      <div class="sub-catch">🏆 大会で熱くなった君へ！放課後も、家でも、すぐに対戦！</div>
-      <h1 class="main-catch">
+    <!-- キャッチコピー -->
+    <div class="park-hero">
+      <div class="park-hero-sub">🏆 大会のあとも！学校でもおうちでも！</div>
+      <h1 class="park-hero-title">
         スマホ・PCのブラウザで動く！<br>
-        <span class="highlight-blue">ポケカ一人回し</span> ＆ <span class="highlight-red">オンライン対戦</span>
+        <span class="em-red">ポケカ一人回し</span> ＆ <span class="em-blue">オンライン対戦</span>✨
       </h1>
     </div>
 
-    <!-- 画面ビジュアルステージ -->
-    <div class="visual-stage">
-      <div class="float-sticker">
-        ✨ 公式デッキコードを<br>貼るだけで即展開！
+    <!-- ビジュアルステージ（ピカチュウ＆イーブイが飛び出す！） -->
+    <div class="park-stage">
+      <!-- 左上ピカチュウ -->
+      <div class="chara-pika-anchor"><svg viewBox="0 0 100 100" class="poke-chara-svg" aria-label="ピカチュウ">
+  <polygon points="26,38 8,4 38,22" fill="#ffd533"/>
+  <polygon points="8,4 18,13 14,21 8,4" fill="#2d3748"/>
+  <polygon points="74,38 92,4 62,22" fill="#ffd533"/>
+  <polygon points="92,4 82,13 86,21 92,4" fill="#2d3748"/>
+  <ellipse cx="50" cy="56" rx="36" ry="32" fill="#ffd533"/>
+  <circle cx="25" cy="62" r="8.5" fill="#ef4444"/>
+  <circle cx="75" cy="62" r="8.5" fill="#ef4444"/>
+  <circle cx="36" cy="50" r="5" fill="#1e293b"/>
+  <circle cx="38" cy="48" r="2" fill="#ffffff"/>
+  <circle cx="64" cy="50" r="5" fill="#1e293b"/>
+  <circle cx="62" cy="48" r="2" fill="#ffffff"/>
+  <polygon points="50,56 48,54 52,54" fill="#1e293b"/>
+  <path d="M44,60 Q50,64 50,61 Q50,64 56,60" fill="none" stroke="#1e293b" stroke-width="2.2" stroke-linecap="round"/>
+</svg></div>
+      <div class="pop-bubble bubble-pika">⚡ 1人でも練習できるピカ！</div>
+
+      <!-- 右上イーブイ -->
+      <div class="chara-eevee-anchor"><svg viewBox="0 0 100 100" class="poke-chara-svg" aria-label="イーブイ">
+  <ellipse cx="20" cy="22" rx="10" ry="24" transform="rotate(-32 20 22)" fill="#c28b57"/>
+  <ellipse cx="22" cy="23" rx="5" ry="16" transform="rotate(-32 22 23)" fill="#78350f"/>
+  <ellipse cx="80" cy="22" rx="10" ry="24" transform="rotate(32 80 22)" fill="#c28b57"/>
+  <ellipse cx="78" cy="23" rx="5" ry="16" transform="rotate(32 78 23)" fill="#78350f"/>
+  <ellipse cx="50" cy="50" rx="32" ry="27" fill="#c28b57"/>
+  <path d="M22,70 Q50,90 78,70 Q68,90 50,88 Q32,90 22,70 Z" fill="#fde68a"/>
+  <ellipse cx="37" cy="48" rx="4.5" ry="6.5" fill="#5c2d16"/>
+  <circle cx="38" cy="45" r="2" fill="#ffffff"/>
+  <ellipse cx="63" cy="48" rx="4.5" ry="6.5" fill="#5c2d16"/>
+  <circle cx="62" cy="45" r="2" fill="#ffffff"/>
+  <circle cx="50" cy="54" r="1.5" fill="#5c2d16"/>
+  <path d="M46,58 Q50,62 54,58" fill="none" stroke="#5c2d16" stroke-width="2" stroke-linecap="round"/>
+</svg></div>
+      <div class="pop-bubble bubble-eevee">🌟 ともだちとバトルブイ♪</div>
+
+      <!-- メイン対戦画面＆スマホ画面 -->
+      <div class="park-mockup-wrap">
+        <img src="assets/battle_pc.png" alt="ポケアリ 対戦画面">
+        <div class="park-sp-wrap">
+          <img src="assets/battle_sp.png" alt="スマホ版 対戦画面">
+        </div>
       </div>
-      <img src="assets/battle_pc.png" alt="ポケアリ 対戦盤面" class="pc-mockup">
-      <img src="assets/battle_sp.png" alt="スマホ版 対戦盤面" class="sp-mockup">
     </div>
 
-    <!-- 特長3カラム -->
-    <div class="features-grid">
-      <div class="feature-card card-1">
-        <div class="feature-icon-badge">🃏</div>
-        <div class="feature-title">デッキコード即展開</div>
-        <div class="feature-desc">
-          ポケカ公式の<b>18桁デッキコード</b>を貼るだけで60枚瞬時にセット！新弾カードや環境人気デッキもすぐに試せる！
-        </div>
+    <!-- 3大ステッカーカード -->
+    <div class="park-cards">
+      <div class="park-card c-yellow">
+        <div class="card-ribbon">カンタン準備！</div>
+        <span class="card-icon-big">🃏</span>
+        <div class="card-h">公式コードを貼るだけ！</div>
+        <p class="card-p">
+          ポケカ公式の<b>18桁デッキコード</b>を入れるだけで、自作デッキや最新の環境デッキが瞬時に60枚そろう！
+        </p>
       </div>
 
-      <div class="feature-card card-2">
-        <div class="feature-icon-badge">🔄</div>
-        <div class="feature-title">2デッキ一人回し</div>
-        <div class="feature-desc">
-          手番終了で<b>画面の上下が自動反転</b>！対戦相手がいなくても、先攻・後攻の両方を1人で回して事故率や初動をテスト！
-        </div>
+      <div class="park-card c-pink">
+        <div class="card-ribbon r-pink">一人回し特化！</div>
+        <span class="card-icon-big">🔄</span>
+        <div class="card-h">自動で手番交代！</div>
+        <p class="card-p">
+          ターン終了で<b>画面が自動反転</b>！相手がいなくても先攻・後攻の両方を自分で操作して初動展開をテストできる！
+        </p>
       </div>
 
-      <div class="feature-card card-3">
-        <div class="feature-icon-badge">🌐</div>
-        <div class="feature-title">友だちとオンライン対戦</div>
-        <div class="feature-desc">
-          <b>6桁のルーム番号</b>を教えるだけで即マッチ！無料ボイス通話・チャット・観戦機能・リアル効果音も完備！
-        </div>
+      <div class="park-card c-blue">
+        <div class="card-ribbon r-blue">みんなで対戦！</div>
+        <span class="card-icon-big">🌐</span>
+        <div class="card-h">番号を送るだけ対戦！</div>
+        <p class="card-p">
+          <b>6桁のルーム番号</b>をLINE等で教えるだけで即バトル！無料ボイス通話・チャット・観戦機能もぜんぶ完備！
+        </p>
       </div>
     </div>
 
-    <!-- フッター・QRコードアクション -->
-    <div class="action-footer">
-      <div class="footer-text-col">
-        <div class="footer-cta-lead">
-          <span>📲</span> スマホのカメラをかざして今すぐアクセス！
+    <!-- 特大QRコードフッター（ポッチャマ＆プリン付き） -->
+    <div class="park-footer">
+      <div class="footer-chara-pochama"><svg viewBox="0 0 100 100" class="poke-chara-svg" aria-label="ポッチャマ">
+  <circle cx="50" cy="44" r="32" fill="#38bdf8"/>
+  <path d="M26,44 Q36,28 50,38 Q64,28 74,44 Q76,64 50,64 Q24,64 26,44 Z" fill="#ffffff"/>
+  <path d="M28,68 Q50,58 72,68 Q76,90 50,90 Q24,90 28,68 Z" fill="#1d4ed8"/>
+  <circle cx="43" cy="76" r="3.5" fill="#ffffff"/>
+  <circle cx="57" cy="76" r="3.5" fill="#ffffff"/>
+  <ellipse cx="38" cy="45" rx="3.5" ry="6" fill="#1e293b"/>
+  <circle cx="39" cy="43" r="1.5" fill="#ffffff"/>
+  <ellipse cx="62" cy="45" rx="3.5" ry="6" fill="#1e293b"/>
+  <circle cx="61" cy="43" r="1.5" fill="#ffffff"/>
+  <ellipse cx="50" cy="52" rx="6.5" ry="4.5" fill="#facc15"/>
+</svg></div>
+      <div class="footer-chara-purin"><svg viewBox="0 0 100 100" class="poke-chara-svg" aria-label="プリン">
+  <polygon points="22,34 16,8 40,20" fill="#f472b6"/>
+  <polygon points="20,18 24,30 34,22" fill="#701a75"/>
+  <polygon points="78,34 84,8 60,20" fill="#f472b6"/>
+  <polygon points="80,18 76,30 66,22" fill="#701a75"/>
+  <circle cx="50" cy="54" r="34" fill="#fbcfe8"/>
+  <path d="M46,30 Q58,22 58,34 Q58,40 50,38 Q42,36 46,30 Z" fill="#fbcfe8"/>
+  <path d="M46,30 Q58,22 58,34 Q58,40 50,38" fill="none" stroke="#f472b6" stroke-width="2"/>
+  <circle cx="35" cy="52" r="8" fill="#06b6d4"/>
+  <circle cx="35" cy="52" r="5" fill="#0e7490"/>
+  <circle cx="37" cy="49" r="2.5" fill="#ffffff"/>
+  <circle cx="65" cy="52" r="8" fill="#06b6d4"/>
+  <circle cx="65" cy="52" r="5" fill="#0e7490"/>
+  <circle cx="63" cy="49" r="2.5" fill="#ffffff"/>
+  <path d="M47,64 Q50,68 53,64" fill="none" stroke="#be185d" stroke-width="2" stroke-linecap="round"/>
+</svg></div>
+
+      <div class="footer-info">
+        <div class="footer-banner-pill">
+          <svg viewBox="0 0 100 100" class="poke-ball-svg">
+  <circle cx="50" cy="50" r="46" fill="#ef4444" stroke="#1e293b" stroke-width="5"/>
+  <path d="M 4 50 A 46 46 0 0 0 96 50 Z" fill="#ffffff" stroke="#1e293b" stroke-width="5"/>
+  <line x1="4" y1="50" x2="96" y2="50" stroke="#1e293b" stroke-width="6"/>
+  <circle cx="50" cy="50" r="14" fill="#ffffff" stroke="#1e293b" stroke-width="5"/>
+  <circle cx="50" cy="50" r="6" fill="#ffffff" stroke="#94a3b8" stroke-width="1.5"/>
+</svg> スマホのカメラをかざして今すぐスタート！
         </div>
-        <div class="footer-cta-main">
-          登録不要！ブラウザですぐに遊べる<br>
-          ポケカ対戦シミュレーター「ポケアリ」
+        <div class="footer-big-title">
+          ブラウザを開けばそこが対戦アリーナ！<br>
+          「ポケアリ」でポケカをもっと楽しもう！
         </div>
-        <div class="footer-specs">
-          <span class="footer-spec-item">💻 PC対応</span>
-          <span class="footer-spec-item">📱 スマホ対応</span>
-          <span class="footer-spec-item">📟 タブレット対応</span>
-          <span class="footer-spec-item">🆓 ずっと無料</span>
+        <div class="footer-tag-list">
+          <span>📱 スマホ対応</span>
+          <span>💻 パソコン対応</span>
+          <span>🆓 ずっと無料</span>
+          <span>🔒 登録不要</span>
         </div>
-        <div class="footer-url">
-          https://pokeca-lab.github.io/poketaisenn/
-        </div>
+        <div class="footer-url-text">https://pokeca-lab.github.io/poketaisenn/</div>
       </div>
-      <div class="footer-qr-col">
+
+      <div class="footer-qr-frame">
+        <div class="qr-badge-bubble">カメラでGO!</div>
         <img src="assets/qr_pokeari.svg" alt="ポケアリ アクセスQRコード">
-        <span class="footer-qr-caption">▲ 今すぐプレイ！ ▲</span>
+        <span class="qr-text-under">▲ 今すぐプレイ！ ▲</span>
       </div>
     </div>
-  
-</article>
+
+  </div>
 </body>
 </html>
